@@ -1,13 +1,13 @@
-Week-01_Course overview and architecture trends.md
+# Week-01_Course overview and architecture trends.md
 Date：2026-09-08(二)
 教學資源：
 
-0 分鐘 3 秒0:03
+## 0 分鐘 3 秒0:03
 @1 0 分鐘 3 秒
 offered by the Computer Science Department. And today there will be two parts. So the first part I will talk about what is computer architecture. And then the second part will be on the course logistics, including like the grading requirements and like if you want to add course, what's the policy and stuff like that. Okay.
 本課程由計算機科學系開設。今天的安排分為兩部分：第一部分我將介紹什麼是電腦體系結構；第二部分則講解課程的相關安排，包括評分要求以及選課（如加選課程）的政策等。好的。
 
-@1 0 分鐘 22 秒
+## @1 0 分鐘 22 秒
 And...
 @1 0 分鐘 24 秒
 Typically all the lectures will be recorded, so if you don't want to come, it's totally fine. Okay, yeah.
