@@ -5,7 +5,7 @@ Date：2026-09-08(二)
 ## 0 分鐘 3 秒0:03
 offered by the Computer Science Department. And today there will be two parts. So the first part I will talk about what is computer architecture. And then the second part will be on the course logistics, including like the grading requirements and like if you want to add course, what's the policy and stuff like that. Okay.
 > 本課程由計算機科學系開設。今天的安排分為兩部分：第一部分我將介紹什麼是電腦體系結構；第二部分則講解課程的相關安排，包括評分要求以及選課（如加選課程）的政策等。好的。
-- **計算機結構（Computer Architecture）**是研究電腦硬體如何設計與運作的學科，核心目標是在效能、成本與功耗之間取得最佳平衡。
+- **計算機結構（Computer Architecture）**是研究電腦硬體如何設計、運作及協同處理資料的學科，核心目標是在效能、成本與功耗之間取得最佳平衡。
   <br>它主要探討 CPU、記憶體、輸入輸出設備及匯流排之間如何協同工作，以有效執行程式。<br>其重要內容包含：指令集架構（ISA）、資料路徑設計、控制單元、快取記憶體（Cache）、流水線（Pipeline）、平行處理、多核心處理器及記憶體階層等。
   <br>從軟硬體關係來看，計算機結構是連結作業系統、編譯器與硬體平台的基礎，使程式能轉換為機器指令並由 CPU 執行。因此，計算機結構不僅是資訊科學的重要基礎，更是設計高效能電腦、嵌入式系統、AI運算平台與現代網路設備的核心知識。
 
