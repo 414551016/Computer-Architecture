@@ -26,7 +26,169 @@
 - NOT 閘：單一輸入，進行真假反轉。
   > 規則：將輸入訊號反向，輸入 0 輸出 1，輸入 1 輸出 0。
 - NAND 閘：將 AND 閘輸出接上 NOT 閘，簡寫為前端帶有小圓圈的符號。
+類型	ANSI及IEEE標準	IEC標準	漢名	短釋	邏輯函數表示	真值表
+AND	AND	AND	「與」閘／「及」閘／「且」閘	全入皆高才出高。
+一低出低。
 
+A
+⋅
+B
+{\displaystyle A\cdot B}或
+A
+∧
+B
+{\displaystyle A\land B}
+
+輸入	輸出
+A	B	A
+AND
+
+B
+
+0	0	0
+0	1	0
+1	0	0
+1	1	1
+AND有0則0
+
+OR	OR	OR	「或」閘	全入皆低才出低。
+一高出高。
+
+A
++
+B
+{\displaystyle A+B\,}或
+A
+∨
+B
+{\displaystyle A\lor B}
+
+輸入	輸出
+A	B	A OR B
+0	0	0
+0	1	1
+1	0	1
+1	1	1
+OR有1則1
+
+NOT	NOT	NOT	「非」閘／反相器／「反」閘／變流器	輸入的高低狀態逆轉。	
+A
+¯
+{\displaystyle {\bar {A}}}	
+輸入	輸出
+A	NOT A
+0	1
+1	0
+在電子領域，NOT閘也常稱反相器（Inverter）。符號後圓圈常稱泡泡，泡泡常用來表示外部邏輯狀態及內部邏輯狀態（氣泡右側及氣泡左側）的否定關係（1變0、0變1）。電路圖一定要定義0和1的狀態，通常高電位＝1 （=5V） , 低電位＝0（=GND）；當然有些時候如果要將高電位設為0時，可以直接在電路圖中說明，這稱為直接極性指示，可參見IEEE Std 91／91A跟IEC 60617-12，兩者表示法中泡泡跟電路圖中的說明可以在使用特殊形狀符號及矩形國標符號的電路圖中使用，但純邏輯電路圖只有泡泡可用。
+NAND	NAND	NAND	「與非」閘／「反及」閘／「非與」閘／「反且」閘	全入皆高才出低。
+一低出高。
+
+A
+⋅
+B
+¯
+{\displaystyle {\overline {A\cdot B}}}	
+輸入	輸出
+A	B	A NAND B
+0	0	1
+0	1	1
+1	0	1
+1	1	0
+NOR	NOR	NOR	「或非」閘／「反或」閘／「非或」閘	全入皆低才出高。
+一高出低。
+
+A
++
+B
+¯
+{\displaystyle {\overline {A+B}}}	
+輸入	輸出
+A	B	A
+NOR
+
+B
+
+0	0	1
+0	1	0
+1	0	0
+1	1	0
+XOR	XOR	XOR	「互斥或」閘／「互斥或」閘	只有其中一項輸入為高，輸出為高；否則出低。	
+A
+⊕
+B
+{\displaystyle A\oplus B}	
+輸入	輸出
+A	B	A
+XOR
+
+B
+
+0	0	0
+0	1	1
+1	0	1
+1	1	0
+XOR閘（exclusive-OR）的輸出為1只有當兩項輸入是不同的狀態；反之當兩者輸入相同，輸出為0，不論輸入為0或1。如果有超過兩項輸入，當輸入端為1的數目是奇數。實際使用上，這些閘由更基本的邏輯閘組合而成。
+XNOR	XNOR	XNOR	「同或」閘／「反互斥或」閘／「互斥反或」閘／「互斥或非」閘	只有其中一項輸入為高，輸出為低；否則出高。	
+A
+⊕
+B
+¯
+{\displaystyle {\overline {A\oplus B}}}
+或
+
+A
+⊙
+B
+{\displaystyle {A\odot B}}
+
+輸入	輸出
+A	B	A XNOR
+B
+
+0	0	1
+0	1	0
+1	0	0
+1	1	1
+BUF	NOT	NOT	「是」閘／同相器／「同」閘／中繼器	輸出的高低狀態與輸入相同。	
+A
+{\displaystyle A}	
+輸入	輸出
+A	BUF A
+0	0
+1	1
+IMPLY	IMPLY	XNOR	「蘊含」閘／「蘊含」閘	如果第一輸入為低，輸出高，否則輸出與第二輸入相同的高低狀態。	
+A
+→
+B
+{\displaystyle A\to B}	
+輸入	輸出
+A	B	A IMPLY B
+0	0	1
+0	1	1
+1	0	0
+1	1	1
+NIMPLY	NIMPLY	NIMPLY	「蘊含非」閘／「蘊含非」閘	如果第一輸入為低，輸出低，否則輸出與第二輸入相反的高低狀態。	
+A
+→
+B
+¯
+{\displaystyle {\overline {A\to B}}}
+或
+
+¬
+(
+a
+→
+b
+)
+{\displaystyle \lnot (a\to b)}
+
+輸入	輸出
+A	B	A NIMPLY B
+0	0	0
+0	1	0
+1	0	1
+1	1	0
 
 
 
