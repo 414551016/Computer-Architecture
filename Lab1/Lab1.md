@@ -274,4 +274,204 @@ cd $LAB1_ROOT/riscvbyp
 **This backpressure lets memory transfers wait while the processor is stalled. The reference core needs no separate response-side skid buffer. When modifying the pipeline, consume every response exactly once and keep response-ready signals consistent with the accepting stage.**  
 >這種 backpressure（反壓）可讓記憶體傳輸在處理器 stall 時等待。參考 core 不需獨立的 response-side skid buffer。修改管線時，必須確保每個回應剛好被消費一次，且 response-ready 訊號要與實際接受回應的 stage 一致。
 
+### 3.6 Objective 4: Integrating a Pipelined MulDiv Unit - 整合管線化乘除法單元
+**The reference core uses iterative mul/div and stalls D and X until a result is ready. It is simple but inefficient. Integrate pipelined mul/div so independent instructions continue in parallel, and stall only for a true data dependency.**  
+>參考 core 使用 iterative mul/div，會讓 D、X stage 一直 stall 到結果完成。這很簡單但效率差。此目標要整合 pipeline mul/div，使獨立指令能平行繼續，只有真正資料相依時才 stall。
+
+**A functional 4-stage pipelined model is provided in `riscvlong/riscvlong-CoreDpathPipeMulDiv.v`. It performs multiplication/division with functional operators (`*`, `/`, `%`) in its first stage and uses three dummy stages to pipeline the result. Bypassing inside the mul/div unit is not allowed.**  
+>`riscvlong/riscvlong-CoreDpathPipeMulDiv.v` 已提供功能性四級 pipeline 模型。第一級以運算子 `*`、`/`、`%` 計算乘除法，後三級是用來管線化結果的 dummy stage。**不允許在 mul/div 單元內部做 bypass。**
+
+**Your goal is to support additional M instructions, integrate the unit, and implement logic that executes it in parallel while correctly managing hazards.**  
+>目標是支援額外 M 指令、整合此單元，並完成讓它平行執行及正確管理 hazard 的邏輯。
+
+```bash
+cd $LAB1_ROOT/riscvlong
+./setup.sh
+```
+
+**Replace iterative `imuldiv_IntMulDivIterative` with the provided pipelined unit: include `riscvlong-CoreDpathPipeMulDiv.v` in `riscvlong-CoreDpath.v`, update affected include paths, add stall/bypass signals in `riscvlong-CoreCtrl.v` and `riscvlong-CoreDpath.v`, then wire everything in `riscvlong-Core.v`.**  
+>以提供的管線化單元取代 iterative `imuldiv_IntMulDivIterative`：在 `riscvlong-CoreDpath.v` include `riscvlong-CoreDpathPipeMulDiv.v`，更新受影響的 include path，在 `riscvlong-CoreCtrl.v`、`riscvlong-CoreDpath.v` 加入 stall／bypass 訊號，最後在 `riscvlong-Core.v` 把各部分接好。
+
+**A direct solution is to extend the main pipeline by two stages. The first two mul/div stages overlap X and M; the final two are inserted before W. Feed the mul/div unit immediately after Decode rather than after Execute, and connect pipeline stall signals correctly. This increases latency for all instructions, not only `mul` and `div`, so benchmark performance is expected to change.**  
+>直接的做法是主管線加長兩級。mul/div 前兩級與既有 X、M 重疊；最後兩級插在 W 前。mul/div 應在 Decode 後立即接收資料，而不是 Execute 後；也必須正確連接管線的 stall 訊號。這會增加**所有**指令（不僅 `mul`、`div`）的延遲，因此 benchmark 效能預期會改變。
+
+**After extending the pipeline, add forwarding, stalling, and bypassing for hazards. More efficient multi-cycle designs are possible, but this simplified design is sufficient for the lab.**  
+>延長管線後，要為 hazard 加入 forwarding、stalling、bypassing。雖可有更有效率的多周期設計，但此簡化設計已足以完成本實驗。
+
+## 4 Testing Methodology - 測試方法
+**Most assembly tests are provided. You must create custom tests for `mulh`, `mulhu`, and `mulhsu`, and at least one additional test that either targets a bug you found or verifies bypass paths. You may use macros in `riscv-macros.h` or raw assembly.**  
+>大部分組合測試已提供。但你必須為 `mulh`、`mulhu`、`mulhsu` 撰寫自訂測試，並額外至少寫一個測試：針對你遇到的 bug 或驗證完成版處理器的 bypass path。可用 `riscv-macros.h` 的巨集或直接寫組合語言。
+
+**All tests are in `$LAB1_ROOT/tests/riscv`. New tests must follow existing naming conventions, be included in the appropriate `.mk` file, and have their `.vmh` name added to the `tests` variable in `$LAB1_ROOT/build/Makefile`.**  
+>所有測試位於 `$LAB1_ROOT/tests/riscv`。新測試必須遵循既有命名規則、加入適當的 `.mk` 檔，並將它的 `.vmh` 檔名加入 `$LAB1_ROOT/build/Makefile` 的 `tests` 變數。
+
+**Test files normally include `riscv-macros.h` and begin with `TEST_RISCV_BEGIN` to set up `.text`; every test ends with `TEST_RISCV_END`, which includes pass/fail routines.**  
+>測試檔通常 include `riscv-macros.h`，並以 `TEST_RISCV_BEGIN` 設定 `.text` 區段開頭；每個測試以 `TEST_RISCV_END` 結束，其中含有 pass／fail 例程。
+
+**`TEST_IMM_OP(instruction, source value, immediate value, expected result)` is a common macro for immediate arithmetic tests.**  
+>`TEST_IMM_OP(指令, 來源值, 立即數值, 預期結果)` 是常用的立即數算術測試巨集。
+
+## Page 8 - Building tests and evaluation
+**For example, the macro can verify `0 + 0 = 0`, `1 + 1 = 2`, and so on. Macro implementations are in `riscv-macros.h`. Usually `csrw` writes a special CSR so the simulator can track status: value 1 means pass; a line number means failure.**  
+>例如，此巨集可驗證 `0 + 0 = 0`、`1 + 1 = 2` 等。巨集的實作在 `riscv-macros.h`。通常 `csrw` 會把資料寫入特殊 CSR，讓模擬器追蹤狀態：寫入 1 表示通過；寫入行號表示失敗位置。
+
+**Other common macros include `SRC0_EQ_X` macros, which test matching source and destination registers, and `BYP` macros, which verify bypassing logic.**  
+>其他常見巨集有 `SRC0_EQ_X`，用來測來源與目的暫存器相同的情況；以及 `BYP`，用來驗證 bypassing 邏輯。
+
+### 4.1 Compiling New Assembly Tests - 編譯新的組合測試
+**To see currently compiled tests, open `$LAB1_ROOT/tests/riscv/riscv.mk`. To compile tests, create a separate `build` directory and run `configure` for the RISC-V cross compiler:**  
+>要看目前被編譯的測試，開啟 `$LAB1_ROOT/tests/riscv/riscv.mk`。編譯測試時，建立獨立的 `build` 目錄，並對 RISC-V cross compiler 執行 `configure`：
+
+```bash
+# Assembly tests
+cd $LAB1_ROOT/tests
+mkdir build
+cd build
+../configure --host=riscv32-unknown-elf
+
+# Benchmarks
+cd $LAB1_ROOT/ubmark
+mkdir build
+cd build
+../configure --host=riscv32-unknown-elf
+```
+
+**The `--host=riscv32-unknown-elf` option chooses the course cross compiler instead of standard `gcc`. Then compile and convert the assembly tests:**  
+>`--host=riscv32-unknown-elf` 指定使用課程提供的 cross compiler，而不是一般 `gcc`。接著編譯並轉換組合測試：
+
+```bash
+make
+../convert
+```
+
+**`make` compiles assembly into binaries. Since the Verilog processor cannot run these directly, `convert` creates object dumps and `.vmh` files in `bin`, `dump`, and `vmh`. The simulator can load and run a test as long as its `.vmh` is in `vmh`. Add its filename to the Makefile. Linker warnings about missing `_start` are expected because the simulator uses a custom entry point.**  
+>`make` 將組合語言編譯成執行檔。但 Verilog 處理器不能直接執行它們，所以 `convert` 會建立 object dump 與 `.vmh`，放入 `bin`、`dump`、`vmh`。只要需要的 `.vmh` 在 `vmh`，模擬器就能載入測試執行。記得把檔名加入 Makefile。連結器警告缺少 `_start` 是預期現象，因為模擬器使用自訂 entry point。
+
+**If you add or modify assembly tests, rerun `make` and `../convert` in the build directory. Full setup is needed only when the build directory was deleted. `make install` is not required.**  
+>若新增或修改組合測試，只須在 build 目錄重跑 `make` 與 `../convert`。只有刪掉 build 目錄後才需要完整設定；本實驗不需 `make install`。
+
+### 5 Evaluation - 評估
+**Evaluation uses C benchmarks in `$LAB1_ROOT/ubmark`:**  
+>評估使用 `$LAB1_ROOT/ubmark` 的 C benchmarks：
+
+- **`ubmark-vvadd.c`: Vector-vector addition**
+  >向量加向量。
+- **`ubmark-cmplx-mult.c`: Complex multiplication**
+  >複數乘法。
+- **`ubmark-masked-filter.c`: Masked filtering**
+  >遮罩式過濾。
+- **`ubmark-bin-search.c`: Binary search**
+  >二元搜尋。
+
+**Run all benchmarks in `build`; statistics are saved automatically in `.out` files. `riscvstall` uses the suffix `-stall.out`; `riscvbyp` uses `-byp.out`. For example, the `ubmark-vvadd.c` output for `riscvstall` is `ubmark-vvadd-stall.out`. To run the stall benchmarks:**  
+>在 `build` 執行所有 benchmark；統計資料會自動存到 `.out`。`riscvstall` 使用 `-stall.out` 後綴，`riscvbyp` 使用 `-byp.out`。例如，`riscvstall` 執行 `ubmark-vvadd.c` 的輸出為 `ubmark-vvadd-stall.out`。執行 stall benchmark：
+
+```bash
+cd $LAB1_ROOT/build
+make run-bmark-riscvstall
+```
+
+將上述目標中的 `riscvstall` 換成 `riscvbyp`，即可執行 bypass 版本。
+
+## 6 Submission 
+### 6.1 Modified Files - 繳交／應修改檔案
+
+**For this assignment, the following files should be modified:**  
+>本作業預期修改下列檔案：
+
+```text
+riscvstall-CoreCtrl.v, riscvstall-InstMsg.v
+imuldiv-IntMulIterative.v, imuldiv-IntMulDivIterative.v,
+imuldiv-MulDivReqMsg.v
+riscvbyp-CoreCtrl.v, riscvbyp-CoreDpath.v, riscvbyp-Core.v
+riscvlong-CoreCtrl.v, riscvlong-CoreDpath.v, riscvlong-Core.v,
+riscvlong-CoreDpathPipeMulDiv.v
+```
+
+### 6.2 Deliverables - 繳交成果
+
+**Submit a `.tar.gz` of the working directory and preserve the original structure. Ensure sources are in `$LAB1_ROOT/riscvstall`, `$LAB1_ROOT/riscvbyp`, and `$LAB1_ROOT/riscvlong`. Before packaging, remove generated files:**  
+>繳交工作目錄的 `.tar.gz`，且要保留原始目錄結構。確認原始碼位於 `$LAB1_ROOT/riscvstall`、`$LAB1_ROOT/riscvbyp`、`$LAB1_ROOT/riscvlong`。打包前先移除編譯產物：
+
+```bash
+cd $LAB1_ROOT/build
+make clean
+cd $LAB1_ROOT/tests
+rm -rf build
+cd $LAB1_ROOT/ubmark
+rm -rf build
+```
+
+**Create the tarball:**  
+>建立壓縮檔：
+```bash
+cd $LAB1_ROOT
+cd ..
+tar -cvzf student_id-lab1.tar.gz lab1
+```
+
+**The submission must include `riscvstall` source, `riscvbyp` source, `riscvlong` source, and the additional M-extension assembly tests.**  
+>繳交檔必須包含：`riscvstall` 原始碼、`riscvbyp` 原始碼、`riscvlong` 原始碼，以及額外 M extension 組合測試。
+
+### 6.3 Submission Instructions - 繳交說明
+
+- **Ensure code is inside the `lab1` folder. If the tarball is not created from this folder, grading will not be possible.**  
+ > 確認程式碼位於 `lab1` 資料夾內。若壓縮檔不是從此資料夾建立，助教將無法評分。
+- **Submit the tarball via e3.**  
+  >透過 e3 繳交壓縮檔。
+
+## 7 Grading Rubric - 評分標準
+| Objective | 中文 | 比例 |
+|---|---|---:|
+| Objective 1: RISCV-stall | 補齊 stall 處理器控制器 | 35% |
+| Objective 2: RISC-V M Instructions | 實作額外 M 指令 | 15% |
+| Objective 3: RISCV-bypass | 實作 bypass 處理器 | 20% |
+| Objective 4: RISCV-long | 整合長管線與 pipeline mul/div | 30% |
+
+## 8 Tips - 提示
+- **Use incremental development - never code everything at once and hope it works.**  
+  >採漸進式開發；不要一次改完所有程式才期待它通過。
+- **Use `gtkwave` to debug with waveforms.**  
+  >使用 `gtkwave` 透過波形除錯。
+- **Take advantage of the unit testing framework.**  
+  >善用單元測試框架。
+- **Sketch the hardware before coding.**  
+  >寫程式前先畫出硬體資料流。
+- **Define control-datapath interactions clearly.**  
+  >清楚定義控制器和資料路徑間的互動。
+
+## 9 Acknowledgments - 致謝
+
+**This lab is adapted from ECE 4750 at Cornell University and ECE 475 at Princeton University.**  
+>本實驗改編自 Cornell University 的 ECE 4750 與 Princeton University 的 ECE 475。
+
+**Figure 1: Datapath**  
+>圖 1：資料路徑。**
+圖中核心資料流的英文／中文對照如下：
+
+| English label | 中文 |
+|---|---|
+| Fetch / Decode / Execute / Memory / Writeback | 取指／解碼／執行／記憶體／寫回五級管線。 |
+| PC | 程式計數器。 |
+| Inst Mem | 指令記憶體。 |
+| Reg File | 暫存器檔。 |
+| Data Mem | 資料記憶體。 |
+| ALU | 算術邏輯單元。 |
+| Muldiv | 乘除法單元。 |
+| Subword | 子字組資料處理（byte／halfword 的符號或零延伸）。 |
+| `op0_mux`, `op1_mux`, `execute_mux`, `wb_mux`, `pc_mux` | 分別選擇運算元、執行結果、寫回資料、下一個 PC 的多工器。 |
+| `branch_targ`, `J_targ`, `Jr_targ` | 分支、`jal`、`jalr` 的目標位址。 |
+| `rf_rdata*`, `rf_wen_out`, `rf_waddr` | 暫存器檔讀取資料、寫入啟用、寫入位址。 |
+| `dmemreq_*`, `dmemresp_mux_sel` | 資料記憶體請求／回應相關訊號。 |
+
+> 初學者讀圖方式：先沿著一條普通 `add` 指令走 F→D→X→M→W；接著比較 `lw`、branch、`mul` 各自在哪個 mux 或單元選擇不同路徑。這能幫助你理解控制表的每個欄位。
+
+
+
+
+
+
+
+
+
 
