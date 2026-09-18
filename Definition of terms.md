@@ -82,10 +82,14 @@ Pipelined（管線化） 是一種 CPU 設計技術，將執行一條指令的�
   <br>若不使用 Pipeline：指令1 完成後 → 指令2 才開始 → 指令3 才開始...
   <br>Pipeline 的想法：如同工廠生產線：工人1：切菜 → 工人2：炒菜 → 工人3：擺盤。
   <br>此時：指令1在執行 → 指令2在解碼 → 指令3在取指令，同時進行。
-  
-- 
 
 
+## 何謂 rv32i？
+RV32I（RISC-V 32-bit Integer Base Instruction Set） 是 RISC-V 最基本的 32 位元整數指令集架構（ISA）。其中：<br>RV = RISC-V。<br>32 = 32 位元處理器。<br>I = Integer（基本整數指令集）。<br>RV32I 提供 CPU 最基本的功能，包括：整數加減運算、邏輯運算（AND、OR、XOR）、載入與儲存資料（Load/Store）、分支與跳躍控制（Branch/Jump）。<br>RV32I 具有 32 個通用暫存器（x0~x31），每個暫存器寬度為 32 位元。<br>例：add x3, x1, x2
+
+
+## 何謂 rv64i？
+RV64I（RISC-V 64-bit Integer Base Instruction Set） 是 RISC-V 的 64 位元基礎整數指令集架構。其中：<br>RV = RISC-V<br>64 = 64 位元處理器<br>I = Integer（基本整數指令集）。<br>RV64I 保留 RV32I 的所有基本功能，但：<br>暫存器擴充為 64 位元。<br>可直接處理 64 位元整數。<br>支援更大的記憶體位址空間。<br>適合 Linux、伺服器與高效能運算系統。<br>例：ld x5, 0(x10)表示從記憶體載入 64 位元資料到暫存器 x5。
 
 
 
