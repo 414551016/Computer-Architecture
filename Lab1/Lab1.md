@@ -72,6 +72,40 @@ export LAB1_ROOT=$PWD
 >處理器原始碼分為三個目錄：`riscvstall`（僅停頓）、`riscvbyp`（含旁路）、`riscvlong`（含管線化乘除法單元）。
 
 ### 2.2 Building the Project - 建置專案
+**Before building the project, ensure you have completed the environment setup as outlined in Lab 0. First, compile the tests as described in Section 4.1:**  
+>建置專案前，先確認已完成 Lab 0 的環境設定。接著依第 4.1 節先編譯測試：
+
+```bash
+cd $LAB1_ROOT/tests
+mkdir build && cd build
+../configure --host=riscv32-unknown-elf
+make
+../convert
+```
+
+**Next, compile the reference processors and run the RISC-V assembly tests.**  
+>接著編譯參考處理器並執行 RISC-V 組合語言測試。
+
+**Note: By default, only the `riscvstall` processor is enabled in the Makefile. After completing the bypass implementation, uncomment the corresponding `riscvbyp` entries in `$LAB1_ROOT/build/Makefile`. Similarly, after completing `riscvlong`, uncomment the corresponding entries before building and running its tests.**  
+>注意：預設 Makefile 只啟用 `riscvstall`。完成 bypass 後，必須在 `$LAB1_ROOT/build/Makefile` 取消 `riscvbyp` 相關項目的註解。完成 `riscvlong` 後，也要取消它的相關項目註解，才能建置與測試。
+
+```bash
+cd $LAB1_ROOT/build
+make
+make check
+make check-asm-riscvstall
+make check-asm-rand-riscvstall
+make check-asm-riscvbyp
+make check-asm-rand-riscvbyp
+make check-asm-riscvlong
+make check-asm-rand-riscvlong
+```
+
+**Running `make` builds the processor simulators. Targets without `-rand` use synchronous memory with a fixed 1-cycle response. Targets with `-rand` use memory with random delays. To see how tests are defined, open the Makefile and check the “List of Assembly Tests” section. Add new tests by appending to the `tests` variable.**  
+>`make` 會建立處理器模擬器。名稱沒有 `-rand` 的目標使用固定一個 cycle 回應的同步記憶體；有 `-rand` 的目標使用隨機延遲的記憶體。要查看測試如何定義，開啟 Makefile 的「List of Assembly Tests」區段；新增測試時，把檔名加到 `tests` 變數。
+
+**To use the simulator without random delays, execute `make check-asm-riscvstall`. Alternatively, to introduce random delays, run `make check-asm-rand-riscvstall`, which uses `riscvstall-randdelay-sim` instead of `riscvstall-sim`.**  
+>不使用隨機延遲時，執行 `make check-asm-riscvstall`；要模擬隨機延遲時，執行 `make check-asm-rand-riscvstall`，它使用 `riscvstall-randdelay-sim`，而非 `riscvstall-sim`。
 
 
 
