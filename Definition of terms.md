@@ -22,6 +22,9 @@ RISC-V（讀作 "Risk Five"） 是一種開放式的指令集架構（Instructio
       - D：雙精度浮點
       - A：原子操作
   - 容易教學與研究：<br>由於架構簡潔，許多計算機結構課程使用 RISC-V 作為教學架構。
-  - 與您課程的關係：<br>在「計算機結構（Computer Architecture）」課程中，學生常需要設計：
+  - 與您課程的關係：<br>在「計算機結構（Computer Architecture）」課程中，學生常需要設計。而實作平台通常就是 RISC-V。因為它的指令格式簡單，非常適合學習 CPU 設計原理。
     <br>Single-Cycle Processor → Pipelined Processor → Cache → Branch Prediction
-  - 
+    - 例如：add x3, x1, x2
+      >表示：x3 = x1 + x2
+      ><br>CPU 只需完成：讀取 x1, 讀取 x2, 相加, 寫回 x3,即可執行。
+- 總結：<br>RISC-V 是一種開源的精簡指令集架構（ISA），由加州大學柏克萊分校提出，強調簡潔、模組化與可擴充性。與 x86 與 ARM 不同，RISC-V 不需支付授權費，任何人皆可自由設計相容處理器，因此近年廣泛應用於嵌入式系統、物聯網、AI晶片及學術研究。由於其指令格式規則且易於實作，許多計算機結構課程皆以 RISC-V 作為 CPU 設計與管線化處理器實驗平台。未來隨著開源硬體發展，RISC-V 被視為最具潛力的新世代處理器架構之一。
