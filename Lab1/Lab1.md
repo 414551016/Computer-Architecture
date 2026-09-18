@@ -41,6 +41,7 @@ tar -xf lab1.tar
 cd lab1
 export LAB1_ROOT=$PWD
 ```
+
 **Within the lab root directory, you will find eight subdirectories, each serving a specific purpose:**  
 >在實驗根目錄中有八個子目錄，各自用途如下：
 - **`build`: Makefile and compiled code**
