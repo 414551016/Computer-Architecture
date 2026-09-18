@@ -107,10 +107,50 @@ make check-asm-rand-riscvlong
 **To use the simulator without random delays, execute `make check-asm-riscvstall`. Alternatively, to introduce random delays, run `make check-asm-rand-riscvstall`, which uses `riscvstall-randdelay-sim` instead of `riscvstall-sim`.**  
 >不使用隨機延遲時，執行 `make check-asm-riscvstall`；要模擬隨機延遲時，執行 `make check-asm-rand-riscvstall`，它使用 `riscvstall-randdelay-sim`，而非 `riscvstall-sim`。
 
+**You may also run individual tests directly. For instance, to run `riscv-addi`:**  
+>你也可以直接執行單一測試。例如要跑 `riscv-addi`：
 
+```bash
+cd $LAB1_ROOT/build
+./riscvstall-sim +exe=../tests/build/vmh/riscv-addi.vmh +stats=1
+```
 
+**Use `+stats=1` to display statistics (off by default), and `+vcd=1` to generate a waveform file (`.vcd`) viewable in `gtkwave`. Each new run overwrites the file, so rename it if you want to keep it.**  
+>`+stats=1` 顯示統計資料（預設關閉）；`+vcd=1` 產生可用 `gtkwave` 開啟的波形檔（`.vcd`）。每次新執行都會覆寫同名波形檔；要保留請先改名。
 
+**The Makefile invokes `riscvstall-sim` and `riscvstall-randdelay-sim` for `make check-asm-riscvstall` and `make check-asm-rand-riscvstall`. The `riscvstall` simulators use the stall-based processor, while the `riscvbyp` simulators target the bypass-based processor. At first both share the same stall-based implementation, but once you add bypassing the two versions diverge.**  
+>Makefile 分別以 `riscvstall-sim`、`riscvstall-randdelay-sim` 執行兩種 `riscvstall` 測試。`riscvstall` 模擬器使用 stall 處理器；`riscvbyp` 模擬器使用 bypass 處理器。起初兩者共用 stall 版實作；加入 bypass 後，兩者會分歧。
 
+**Commands such as `make check-asm-`, `make check-asm-rand-`, and `make run-bmark-*` produce a `.vcd` waveform dump for each test. Automatic tests for `riscvstall`, `riscvbyp`, and `riscvlong` run in sequence will overwrite existing `.vcd` files.**  
+>`make check-asm-`、`make check-asm-rand-`、`make run-bmark-*` 等指令，會為每個測試產生 `.vcd` 波形檔。依序跑 `riscvstall`、`riscvbyp`、`riscvlong` 的自動測試會覆寫既有 `.vcd`。
+
+## 3 Pipelined 5-Stage RISC-V Processor with Bypassing
+**In this lab you will use a fully implemented RISC-V datapath with stalling and a partially completed control unit. The datapath includes the iterative multiply/divide unit.**  
+>本實驗使用一個已完成的、採 stall 的 RISC-V 資料路徑與部分未完成的控制器。資料路徑已含反覆運算式（iterative）乘除法單元。
+
+**The lab has four main objectives:**  
+>本實驗有四項主要目標：
+- 1. **Extend the control unit to support more instructions.**
+  >擴充控制器以支援更多指令。
+- 2. **Implement additional M-extension instructions.**
+  >實作額外的 M extension 指令。
+- 3. **Add bypassing to the datapath and the control unit.**
+  >在資料路徑與控制器加入 bypassing。
+- 4. **Integrate a pipelined multiply/divide unit.**
+  >整合管線化乘除法單元。
+
+**Begin with Objective 1 in `riscvstall`. For Objective 2, complete the missing M-extension instructions. Then copy source files to `riscvbyp` for Objective 3, rename the files, and update include paths. Finally move to `riscvlong` for Objective 4 and integrate the pipelined mul/div unit.**  
+>先在 `riscvstall` 完成目標一；再補齊目標二缺少的 M extension 指令。之後將原始碼複製到 `riscvbyp`，改名與更新 include path，完成目標三。最後移到 `riscvlong` 整合管線化乘除法單元，完成目標四。
+
+### 3.1 Objective 1: Enhancing the Control Unit - 擴充控制器
+**In this objective, you will only modify the control unit (`riscvstall-CoreCtrl.v`). All required datapath inputs and control outputs already exist. Add an entry to the control-output table for every RISC-V instruction. The control-signal columns are predefined; normally no additional signals are needed, except perhaps helper signals for branches.**  
+>此目標只修改控制器 `riscvstall-CoreCtrl.v`。資料路徑所需輸入與控制器輸出都已存在。你必須為每條 RISC-V 指令在控制輸出表中加上一列。控制訊號欄位已事先定義，通常不用再新增訊號；分支指令可能需要輔助訊號。
+
+**The processor has five stages: Fetch (F), Decode (D), Execute (X), Memory (M), and Writeback (W). Signal suffixes `_Fhl`, `_Dhl`, `_Xhl`, `_Mhl`, `_Whl` identify the stage of use. `hl` means valid for one cycle after a clock edge.**  
+>處理器有五級：取指（F）、解碼（D）、執行（X）、記憶體（M）、寫回（W）。訊號後綴 `_Fhl`、`_Dhl`、`_Xhl`、`_Mhl`、`_Whl` 表示該訊號使用的 stage。`hl` 表示時脈邊緣後的一個 cycle 內有效。
+
+**Below are the rv32i and rv32m instructions to be implemented. Refer to `riscv-isa.txt` for details.**  
+>以下列出要實作的 `rv32i` 與 `rv32m` 指令；細節請查 `riscv-isa.txt`。
 
 
 
