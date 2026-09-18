@@ -72,7 +72,7 @@ Pipelined（管線化） 是一種 CPU 設計技術，將執行一條指令的�
     - Structural Hazard（結構冒險）
       <br>兩個階段同時搶同一個硬體資源。
   - **總結：**
-    <br>Pipelined（管線化）是一種將 CPU 指令執行流程分割為多個階段，並讓多條指令同時在不同階段運作的處理器設計技術。其概念類似工廠生產線，可提高硬體利用率與整體吞吐量。以 RISC-V 為例，通常包含 IF、ID、EX、MEM、WB 五個階段。然而，管線化可能產生資料冒險、控制冒險及結構冒險等問題，因此需搭配 Forwarding、Stall 與 Branch Prediction 等機制解決。現代 CPU 幾乎都採用管線化架構作為提升效能的重要方法。
+    <br>Pipelined（管線化）是一種將 CPU 指令執行流程**分割為多個階段**，並讓多條指令同時在不同階段運作的處理器設計技術。其概念類似工廠生產線，可提高硬體利用率與整體吞吐量。以 RISC-V 為例，通常包含 IF、ID、EX、MEM、WB 五個階段。然而，管線化可能產生資料冒險、控制冒險及結構冒險等問題，因此需搭配 Forwarding、Stall 與 Branch Prediction 等機制解決。現代 CPU 幾乎都採用管線化架構作為提升效能的重要方法。
 
 ## Pipelined RISC-V Processor
 如果您正在修 Computer Architecture（計算機結構） 或 RISC-V 相關課程，那麼 Pipelined RISC-V Processor（管線化 RISC-V 處理器） 是非常重要的核心概念。
