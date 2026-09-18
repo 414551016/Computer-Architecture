@@ -5,9 +5,10 @@ RISC-V（讀作 "Risk Five"） 是一種開放式的指令集架構（Instructio
   - RISC = Reduced Instruction Set Computer（精簡指令集電腦）
   - V = 羅馬數字 5，代表伯克萊大學第五代 RISC 架構
 - RISC-V 與 x86、ARM 的差異
+  >RISC-V 最大優勢在於任何人都能免費使用與修改，不需要支付 ARM 授權費或取得 x86 授權。
   |架構|代表廠商|特性|
   |--|--|--|
   |x86|Intel、AMD|效能強、生態成熟|
   |ARM|Apple、高通、聯發科|低功耗|
   |RISC-V|開源社群|開源、可客製化|
-  RISC-V 最大優勢在於任何人都能免費使用與修改，不需要支付 ARM 授權費或取得 x86 授權。
+  
