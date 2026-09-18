@@ -25,7 +25,7 @@
 - **Applying techniques to handle data and control hazards.**  
   >使用技術處理資料 hazard 與控制 hazard。
 
-### 1. Reminder - 提醒
+## 1. Reminder - 提醒
 - **Submission Deadline: 9/28 (Mon) 11:59 p.m.**  
   >繳交期限：9 月 28 日（週一）晚上 11:59。
 - **Please refer to Lab 0 for the academic integrity requirements.**  
@@ -33,8 +33,8 @@
 - **No sharing or distribution of lab materials is allowed.**  
   >不允許分享或散布實驗教材。
 
-### 2. Setup 
-#### 2.1 Getting Started - 環境與開始
+## 2. Setup 
+### 2.1 Getting Started - 環境與開始
 **Once you have the Lab 1 materials, extract them by entering the following commands:**  
 >取得 Lab 1 材料後，以以下指令解壓縮並設定實驗根目錄：
 ```bash
@@ -71,7 +71,7 @@ export LAB1_ROOT=$PWD
 **The processor source code is provided in three directories: `riscvstall` (stalling only), `riscvbyp` (with bypassing), and `riscvlong` (with a pipelined mul/div unit).**  
 >處理器原始碼分為三個目錄：`riscvstall`（僅停頓）、`riscvbyp`（含旁路）、`riscvlong`（含管線化乘除法單元）。
 
-#### 2.2 Building the Project - 建置專案
+### 2.2 Building the Project - 建置專案
 
 
 
