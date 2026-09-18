@@ -33,7 +33,6 @@
 - **No sharing or distribution of lab materials is allowed.**  
   >不允許分享或散布實驗教材。
 
-
 ### 2. Setup / 2.1 Getting Started - 環境與開始
 **Once you have the Lab 1 materials, extract them by entering the following commands:**  
 >取得 Lab 1 材料後，以以下指令解壓縮並設定實驗根目錄：
@@ -42,8 +41,24 @@ tar -xf lab1.tar
 cd lab1
 export LAB1_ROOT=$PWD
 ```
-
-
+**Within the lab root directory, you will find eight subdirectories, each serving a specific purpose:**  
+>在實驗根目錄中有八個子目錄，各自用途如下：
+- **`build`: Makefile and compiled code**
+  >`build`：Makefile 與編譯產物。
+- **`imuldiv`: Integer multiply/divide unit**
+  >`imuldiv`：整數乘除法單元。
+- **`riscvstall`: Pipelined RISC-V processor with stalling**
+  >只有 stall 的管線式處理器。
+- **`riscvbyp`: Pipelined RISC-V processor with bypassing**
+  >具 bypassing 的管線式處理器。
+- **`riscvlong`: Pipelined RISC-V processor with bypassing and a pipelined mul/div unit**
+  >具有 bypassing 與管線化乘除法單元的處理器。
+- **`tests`: Assembly test build system**
+  >組合語言測試的建置系統。
+- **`ubmark`: Benchmarks for evaluation**
+  >用於效能評估的 benchmark。
+- **`vc`: Additional Verilog components**
+  >其他 Verilog 元件。
 
 
 
