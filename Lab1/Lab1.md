@@ -33,7 +33,8 @@
 - **No sharing or distribution of lab materials is allowed.**  
   >不允許分享或散布實驗教材。
 
-### 2. Setup / 2.1 Getting Started - 環境與開始
+### 2. Setup 
+#### 2.1 Getting Started - 環境與開始
 **Once you have the Lab 1 materials, extract them by entering the following commands:**  
 >取得 Lab 1 材料後，以以下指令解壓縮並設定實驗根目錄：
 ```bash
@@ -61,8 +62,16 @@ export LAB1_ROOT=$PWD
 - **`vc`: Additional Verilog components**
   >其他 Verilog 元件。
 
+**The `tests` directory contains a build system that compiles assembly tests into Verilog memory hex (`.vmh`) files for initializing processor memory. Inside its `riscv` subdirectory are tests that check each ISA instruction, plus a few for pseudo-instructions. These are not implemented in hardware but expanded by the compiler or assembler into actual instructions.**  
+>`tests` 目錄的建置系統會將組合語言測試編譯成 Verilog 記憶體十六進位檔（`.vmh`），用來初始化處理器記憶體。其中的 `riscv` 子目錄，包含各 ISA 指令的測試，以及少量虛擬指令測試。虛擬指令不需由硬體直接實作；編譯器或組譯器會先把它展開成真正的指令。
 
+**Always test each newly implemented instruction with its corresponding assembly test before moving on. See Section 4 for testing procedures. Compile the tests as described in Section 4.1 before running them.**  
+>每完成一條新指令，務必先跑該指令對應的組合語言測試，再進行下一步。測試流程見第 4 節；執行測試之前，先依第 4.1 節編譯測試。
 
+**The processor source code is provided in three directories: `riscvstall` (stalling only), `riscvbyp` (with bypassing), and `riscvlong` (with a pipelined mul/div unit).**  
+>處理器原始碼分為三個目錄：`riscvstall`（僅停頓）、`riscvbyp`（含旁路）、`riscvlong`（含管線化乘除法單元）。
+
+#### 2.2 Building the Project - 建置專案
 
 
 
