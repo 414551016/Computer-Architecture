@@ -33,6 +33,7 @@
 - **No sharing or distribution of lab materials is allowed.**  
   >不允許分享或散布實驗教材。
 
+
 ### 2. Setup / 2.1 Getting Started - 環境與開始
 **Once you have the Lab 1 materials, extract them by entering the following commands:**  
 >取得 Lab 1 材料後，以以下指令解壓縮並設定實驗根目錄：
