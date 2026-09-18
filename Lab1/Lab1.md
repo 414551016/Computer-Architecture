@@ -152,16 +152,126 @@ cd $LAB1_ROOT/build
 **Below are the rv32i and rv32m instructions to be implemented. Refer to `riscv-isa.txt` for details.**  
 >以下列出要實作的 `rv32i` 與 `rv32m` 指令；細節請查 `riscv-isa.txt`。
 
+**Already Implemented: Minimal Subset for Assembly Tests**  
+>已完成：足以執行基本組合測試的最小子集合
 
+- **Register-Immediate Arithmetic: `addi`, `ori`, `lui`, `auipc`**
+  >暫存器－立即數算術。
+- **Register-Register Arithmetic: `add`**
+  >暫存器－暫存器算術。
+- **Memory: `lw`, `sw`**
+  >記憶體存取。
+- **Jump: `jal`**
+  >跳躍。
+- **Branch: `bne`, `blt`**
+  >分支。
+- **Diagnostic: `csrw`**
+  >診斷指令。
 
+**rv32im: Subset for Running Raw C Code (No Syscalls)**  
+>可執行不含系統呼叫之原始 C 程式的 rv32im 子集合
 
+- **Register-Immediate Arithmetic: `andi`, `xori`, `slli`, `srli`, `srai`, `slti`, `sltiu`**
+- **Register-Register Arithmetic: `sub`, `slt`, `sltu`, `sll`, `srl`, `sra`, `and`, `or`, `xor`**
+- **Memory: `lb`, `lbu`, `lh`, `lhu`, `sb`, `sh`**
+- **Jump: `jalr`**
+- **Branch: `beq`, `bge`, `bltu`, `bgeu`**
+- **Multiply/Divide: `mul`, `div`, `divu`, `rem`, `remu`**
 
+**The control unit differs from a traditional multi-cycle processor. Instead of a finite-state machine (FSM), control signals are pipelined to the datapath stage where needed. Each control-table row specifies one instruction's control signals, not a state.**  
+>本實驗的控制器不同於傳統多周期處理器。它不使用有限狀態機（FSM），而是把控制訊號沿管線送至需要它的資料路徑 stage。控制表的每一列描述一條指令所需的控制訊號，而非一個狀態。
 
+**Table 1: Summary of control signals.**  
+>表 1：控制訊號摘要。
 
+| English signal meaning | 中文說明 |
+|---|---|
+| `INST_VAL`: valid instruction, used for assertions | 有效指令；供 assertion 檢查。 |
+| `J_EN`: jump determinable in Decode (`jal`, `jr`) | 解碼期可判定的跳躍。 |
+| `BR_SEL`: branch type | 分支型別，決定檢查哪些分支條件。 |
+| `PC_SEL`: PC mux select | PC 多工器選擇。 |
+| `OP0_SEL` / `OP1_SEL`: operand mux select | 運算元 0／1 多工器選擇。 |
+| `RS_EN` / `RT_EN`: read operand from regfile | 是否由暫存器檔讀取運算元；用於判斷 stall 或 bypass。 |
+| `ALU_FN`: ALU function | ALU 功能。 |
+| `MULDIV_FN`: mul/div function | 乘除法功能。 |
+| `MULDIV_EN`: mul/div request valid | 乘除法請求是否有效。 |
+| `MULDIV_SEL`: select lower/upper 32 result bits | 選擇乘除結果低／高 32 位元。 |
+| `EX_SEL`: execute output mux select | 選擇 ALU 或 mul/div 的執行期輸出。 |
+| `MEM_REQ`, `MEM_LEN`, `MEM_SEL` | 記憶體請求、資料長度（word=0、byte=1、halfword=2）、符號／無符號回應選擇。 |
+| `WB_SEL`: writeback mux select | 選擇執行期輸出或記憶體回應寫回。 |
+| `RF_WEN`, `RF_WADDR` | 暫存器檔寫入啟用與寫入位址。 |
+| `CSR_WEN` | CSR 寫入啟用。
 
+**All control signals are set in Decode (D) and pipelined to the stage where they are needed. For example, `alu_fn_Dhl` is set in Decode and becomes `alu_fn_Xhl` in Execute to drive the ALU.**  
+>所有控制訊號都在解碼期（D）設定，並沿管線傳到實際需要它們的 stage。例如 `alu_fn_Dhl` 在 D 設定，傳到執行期成為 `alu_fn_Xhl`，用來控制 ALU。
 
+**Instruction encodings, fields, and control-signal fields are defined in `riscv-InstMsg.v`. These parameters are global `define`s beginning with `RISCV_INST_MSG_`, to avoid namespace conflicts.**  
+>指令編碼、欄位及控制訊號欄位定義在 `riscv-InstMsg.v`。這些參數是以 `RISCV_INST_MSG_` 開頭的全域 ``define``，用來避免名稱空間衝突。
 
+### 3.2 Example: Adding the `lh` Instruction - 加入 `lh` 指令的範例
+**This section demonstrates adding `lh` from the rv32i ISA. Because the datapath already supports all rv32i instructions, only the control unit changes.**  
+>本節以 rv32i 的 `lh` 為例，說明如何加一條指令。因資料路徑已支援所有 rv32i 指令，所以只需修改控制器。
 
+**For subword memory operations such as `lb`, use `lw` as a model: `lw` reads operand 0 from the register file and operand 1 as an immediate, uses the ALU to form the address, issues a memory request in X, and writes the response in W.**  
+>對 `lb` 這種子字組記憶體操作，可參考 `lw`：`lw` 從暫存器檔讀取運算元 0，使用立即數作為運算元 1，ALU 在 X 算出位址，於 X 發出記憶體請求，最後在 W 寫回回應資料。
 
+**`lh` is the same as `lw`, except that it reads a halfword and sign-extends it. Set memory length to 2 (`ml_h`) and choose the sign-extended halfword response (`dmm_h`) in the control-output table.**  
+>`lh` 與 `lw` 相同，差別是它讀取 halfword（半字，16 位元）後要做 sign extension（符號延伸）。在控制表中，記憶體長度設為 2（`ml_h`），回應多工器選擇符號延伸的 halfword（`dmm_h`）。
+
+```verilog
+`RISCV_INST_MSG_LH : cs={y, n, br_none, pm_p, am_rdat, y, bm_imm_i, n,
+alu_add, md_x, n, mdm_x, em_x, ld, ml_h, dmm_h, wm_mem, y, rd, n};
+```
+
+**Ensure this appears on one source-code line. Add `riscv-lh.vmh` to the Makefile's `tests` list, then run `make check-asm-riscvstall`. For most instructions, adding a control-table row is sufficient, but verify the datapath and select appropriate controls.**  
+>確定上列在原始碼中是一整行。將 `riscv-lh.vmh` 加入 Makefile 的 `tests` 清單，然後執行 `make check-asm-riscvstall`。多數指令只要新增控制表的一列即可，但仍須確認資料路徑並選擇正確控制訊號。
+
+### 3.3 Objective 2: Remaining RISC-V M Instructions (`mulh`, `mulhu`, `mulhsu`)
+**Three multiply instructions are missing: `mulh`, `mulhu`, and `mulhsu`. Implement them and write at least one assembly test for each.**  
+>尚缺三條乘法指令：`mulh`、`mulhu`、`mulhsu`。必須實作它們，且每條至少撰寫一個組合語言測試。
+
+**They return the high 32 bits of a 64-bit product:**  
+>它們回傳 64 位元乘積的高 32 位元：
+
+- **`mulh`: signed × signed**
+  >有號數 × 有號數。
+- **`mulhu`: unsigned × unsigned**
+  >無號數 × 無號數。
+- **`mulhsu`: signed × unsigned**
+  >有號數 × 無號數。
+
+**Study existing multiplication code. In particular, extend `imuldiv-IntMulIterative.v` and `imuldiv-IntMulDivIterative.v`, then update datapath and control logic so each instruction generates the correct high 32-bit result.**  
+>研究既有乘法程式，特別是擴充 `imuldiv-IntMulIterative.v` 與 `imuldiv-IntMulDivIterative.v`；再更新資料路徑與控制邏輯，讓每條指令產生正確的高 32 位元結果。
+
+### 3.4 Objective 3: Implementing Bypassing - 實作旁路
+**After completing `riscvstall`, copy source files to `riscvbyp` and run:**  
+>完成 `riscvstall` 後，把原始碼複製到 `riscvbyp` 並執行：
+
+```bash
+cd $LAB1_ROOT/riscvbyp
+./setup.sh
+```
+
+**`setup.sh` copies files from `../riscvstall`, renames files and relevant build entries from the `riscvstall` prefix to `riscvbyp`, and performs basic build updates. Verify filenames afterward.**  
+>`setup.sh` 會從 `../riscvstall` 複製檔案，將檔名與相關建置項目的 `riscvstall` 前綴改為 `riscvbyp`，並做基本建置更新。之後請確認檔名正確。
+
+**Add bypass muxes in `riscvbyp-CoreDpath.v`; Figure 1 helps identify the muxes and the values that must be forwarded. Add control signals in `riscvbyp-CoreCtrl.v` to select the bypass muxes.**  
+>在 `riscvbyp-CoreDpath.v` 加入 bypass 多工器；圖 1 可協助找出位置與應轉送的值。在 `riscvbyp-CoreCtrl.v` 加入控制訊號，選擇這些 bypass 多工器。
+
+**Bypassing forwards values needed in Decode before they reach the register file. The processor must be fully bypassed, forwarding from X, M, and W. Helper signals may describe whether a source register should be forwarded; for example, `rs1_X_byp_Dhl`. These helper signals determine bypass mux selection.**  
+>Bypassing 會在值尚未寫入暫存器檔之前，將 Decode 所需的值直接轉送過去。處理器必須完整支援從 X、M、W 轉送。可使用輔助訊號描述某來源暫存器是否應被轉送，例如 `rs1_X_byp_Dhl`；它們決定 bypass mux 的選擇。
+
+**Finally, integrate the modified control unit and datapath in `riscvbyp-Core.v`. Bypassing does not remove all stalls: a load-use hazard must still stall because a load's memory response is not yet available. Modify stall logic so that it stalls only for load-use hazards, not every data hazard. Introduce a pipelined `is_load` indicator for this purpose.**  
+>最後在 `riscvbyp-Core.v` 整合修改後的控制器與資料路徑。Bypassing 並不能消除所有 stall：load-use hazard 仍必須 stall，因為 load 的記憶體回應尚未可用。修改 stall 邏輯，使其只在 load-use hazard 時停頓，而不是每種資料相依都停頓。可加入沿管線傳遞的 `is_load` 指示訊號來判斷。
+
+### 3.5 Additional Architectural Details - 補充架構細節
+**Bubble bits indicate whether a stage contains an invalid entry. When a stage is stalled or squashed while the next stage can advance, insert a bubble into that next stage. If the next stage is also stalled, retain its pipeline state. Invalid bubbles must not cause side effects such as register writes or memory requests.**  
+>Bubble bit 表示某 pipeline stage 是否為無效項目。若一個 stage 被 stall 或 squash，但下一個 stage 可前進，便在下一個 stage 插入 bubble；若下一 stage 也被 stall，就維持它原本的 pipeline state。無效 bubble 不可造成副作用，例如寫入暫存器或發出記憶體請求。
+
+**Instruction and data memory use a `val/rdy` handshake: a response is accepted on a rising clock edge only when both `val` and `rdy` are asserted. If the processor cannot accept a response, the memory model retains pending information until transfer completes. Random-delay memory may delay response availability.**  
+>指令與資料記憶體使用 `val/rdy` 握手：只有在上升緣時 `val` 與 `rdy` 都為 asserted，回應才被接受。若處理器不能接受回應，記憶體模型會保留待處理資訊直到傳輸完成。random-delay 記憶體也可能延後回應可用時間。
+
+**This backpressure lets memory transfers wait while the processor is stalled. The reference core needs no separate response-side skid buffer. When modifying the pipeline, consume every response exactly once and keep response-ready signals consistent with the accepting stage.**  
+>這種 backpressure（反壓）可讓記憶體傳輸在處理器 stall 時等待。參考 core 不需獨立的 response-side skid buffer。修改管線時，必須確保每個回應剛好被消費一次，且 response-ready 訊號要與實際接受回應的 stage 一致。
 
 
