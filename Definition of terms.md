@@ -12,4 +12,16 @@ RISC-V（讀作 "Risk Five"） 是一種開放式的指令集架構（Instructio
   |x86|Intel、AMD|效能強、生態成熟|
   |ARM|Apple、高通、聯發科|低功耗|
   |RISC-V|開源社群|開源、可客製化|
-  
+- RISC-V 的特色
+  - 開源：<br>企業、學校、研究機構都能自由設計自己的 CPU：不需授權費、不需專利限制。
+  - 模組化設計：
+    - 基本指令集很小：RV32I、RV64I。
+    - 需要功能再加入：
+      - M：乘除法
+      - F：單精度浮點
+      - D：雙精度浮點
+      - A：原子操作
+  - 容易教學與研究：<br>由於架構簡潔，許多計算機結構課程使用 RISC-V 作為教學架構。
+  - 與您課程的關係：<br>在「計算機結構（Computer Architecture）」課程中，學生常需要設計：
+    <br>Single-Cycle Processor → Pipelined Processor → Cache → Branch Prediction
+  - 
