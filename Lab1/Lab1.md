@@ -1,6 +1,6 @@
 # Computer Architecture
 > 計算機架構
-#  Lab 1: Pipelined RISC-V Processor
+#  Lab 1: Pipelined [RISC-V](https://github.com/414551016/Computer-Architecture/blob/main/Definition%20of%20terms.md#%E4%BD%95%E8%AC%82-risc-v) Processor
 > 實驗一：具管線化的 RISC-V 處理器
 
 **Institute of Computer Science and Engineering, National Yang Ming Chiao Tung University. Revision: 9-14-2026.**  
