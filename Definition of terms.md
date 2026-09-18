@@ -35,8 +35,44 @@ Pipelined（管線化） 是一種 CPU 設計技術，將執行一條指令的�
 - 生產線比喻：
   <br>假設生產一輛車要經過：車身組裝 → 噴漆 → 檢驗 → 出貨。若一次只做一台車：車1完成後 → 車2才能開始。
   <br>但若採用生產線：車1 → 噴漆。車2 → 組裝。多台車可以同時進行不同工作。這就是 CPU 管線化也是相同概念。
-- 
-
+- 非管線化（Non-Pipelined）：
+  <br>一條指令完成後才執行下一條：
+  - 指令1：取指 → 解碼 → 執行 → 完成
+  - 指令2：取指 → 解碼 → 執行 → 完成
+  - 指令3：取指 → 解碼 → 執行 → 完成
+  <br>**CPU 常有部分硬體閒置。**
+- **管線化（Pipelined）**
+  <br>以經典 RISC-V 五級管線為例：
+  - IF 取指令 (Instruction Fetch)。
+  - ID 指令解碼 (Instruction Decode)。
+  - EX 執行 (Execute)。
+  - MEM 存取記憶體 (Memory Access)。
+  - WB 寫回 (Write Back)。
+  <br>**此時多條指令同時運作：**
+  - Cycle 1: 指令1 IF
+  - Cycle 2: 指令1 ID 指令2 IF
+  - Cycle 3: 指令1 EX 指令2 ID 指令3 IF
+  - Cycle 4: 指令1 MEM 指令2 EX 指令3 ID
+- 管線化的優點：
+  - 提高吞吐量（Throughput），
+    <br>例如：
+    - 單週期 CPU：100 條指令可能需要 500 個週期
+    - 管線化 CPU：100 條指令可能只需約 104 個週期
+    <br>因此：
+    - 效能提高
+    - CPU利用率提高
+    - 硬體閒置減少
+  - 管線化的問題：
+    - Data Hazard（資料冒險）
+      - 第1條指令執行：add x1,x2,x3。
+      - 第2條指令執行：sub x4,x1,x5。
+      <br>第二條指令需要等待第一條 x1 結果。
+    - Control Hazard（控制冒險）
+      <br>例：beq x1,x2,label，CPU 不知道是否跳轉。
+    - Structural Hazard（結構冒險）
+      <br>兩個階段同時搶同一個硬體資源。
+  - **總結：**
+    <br>Pipelined（管線化）是一種將 CPU 指令執行流程分割為多個階段，並讓多條指令同時在不同階段運作的處理器設計技術。其概念類似工廠生產線，可提高硬體利用率與整體吞吐量。以 RISC-V 為例，通常包含 IF、ID、EX、MEM、WB 五個階段。然而，管線化可能產生資料冒險、控制冒險及結構冒險等問題，因此需搭配 Forwarding、Stall 與 Branch Prediction 等機制解決。現代 CPU 幾乎都採用管線化架構作為提升效能的重要方法。
 
 ## Pipelined RISC-V Processor
 如果您正在修 Computer Architecture（計算機結構） 或 RISC-V 相關課程，那麼 Pipelined RISC-V Processor（管線化 RISC-V 處理器） 是非常重要的核心概念。
