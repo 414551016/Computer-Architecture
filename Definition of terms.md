@@ -129,9 +129,9 @@ ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行�
 ## 何謂 RAW、WAW 與 WAR Hazard？
 在 Pipeline（管線化處理器） 中，多條指令會同時執行，因此可能發生資料相依（Data Dependency）問題，稱為 Data Hazard（資料冒險）。
 - 三種常見的資料冒險為：
-  - RAW（Read After Write）
-  - WAR（Write After Read）
-  - WAW（Write After Write）
+  - RAW（Read After Write）為寫後讀相依，後續指令需使用前一指令尚未寫回的結果，是最常見且必須處理的冒險。
+  - WAR（Write After Read）為讀後寫相依，可能因執行順序改變而使讀取到錯誤資料。
+  - WAW（Write After Write）為寫後寫相依，兩條指令寫入相同目的暫存器時可能造成結果覆蓋。
 
 ### RAW（Read After Write）寫後讀相依（真實相依）
 後面的指令要讀取資料，但前面的指令尚未完成寫入。例如：
@@ -150,11 +150,27 @@ sub 就要讀取 x1
 
 ### WAR（Write After Read）讀後寫相依（反相依）
 前面的指令還沒完成讀取資料，後面的指令卻先把資料改掉。例如：
+```
+I1: sub x5, x1, x2
+I2: add x1, x3, x4
+若執行順序錯誤：
+I2 先改寫 x1
+I1 才去讀 x1
+則 I1 讀到錯誤資料。
+```
 
-
-
-
-
+### WAW（Write After Write）寫後寫相依（輸出相依）
+意思是：兩個指令都要寫同一個目的暫存器，但順序錯亂。例如：
+```
+I1: add x1, x2, x3
+I2: sub x1, x4, x5
+正確結果應是：最後 x1 為 I2 的結果
+但若：I2 先寫入而I1 後寫入，則最終 x1 變成 I1 的值。產生 WAW Hazard。
+```
+**解決方式**
+- Register Renaming（暫存器重新命名）
+- Scoreboarding
+- Tomasulo Algorithm
 
 
 
