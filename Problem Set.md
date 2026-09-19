@@ -71,8 +71,8 @@ For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR haz
 
 ### 知識點與目標
 - **RAW (Read After Write)**：先寫後讀，是真正的資料相依。
-- **WAW (Write After Write)**：兩條指令寫同一個 register。
-- **WAR (Write After Read)**：先讀後寫同一個 register。
+- **WAW (Write After Write)**：寫後寫，兩條指令寫同一個 register。
+- **WAR (Write After Read)**：先讀後寫，同一個 register。
 - 解題時，先列出每條指令讀／寫的 register，再檢查所有前後指令組合。
 
 
