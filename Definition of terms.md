@@ -126,10 +126,22 @@ ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行�
 **總結**<br>ALU（Arithmetic Logic Unit，算術邏輯單元）是 CPU 中負責執行算術與邏輯運算的核心組件。其主要功能包括加減乘除、位元運算（AND、OR、XOR）、資料比較及位移運算等。當程式執行時，CPU 會先從暫存器取得資料，再交由 ALU 完成計算，最後將結果寫回暫存器或記憶體。在 RISC-V 等處理器中，ALU 通常位於 Pipeline 的 Execute（EX）階段，是指令執行的關鍵單元。ALU 的設計效率直接影響處理器的效能、功耗與硬體複雜度，因此是計算機結構與處理器設計中的重要核心元件。
 
 
+## 何謂 RAW、WAW 與 WAR Hazard？
+在 Pipeline（管線化處理器） 中，多條指令會同時執行，因此可能發生資料相依（Data Dependency）問題，稱為 Data Hazard（資料冒險）。
+- 三種常見的資料冒險為：
+  - RAW（Read After Write）
+  - WAR（Write After Read）
+  - WAW（Write After Write）
 
-
-
-
+### RAW（Read After Write）寫後讀相依（真實相依）
+後面的指令要讀取資料，但前面的指令尚未完成寫入。例如：
+```
+add x1, x2, x3 # x1 = x2 + x3
+sub x4, x1, x5 # 需要讀取 x1
+問題：
+add 尚未把結果寫入 x1
+sub 就要讀取 x1
+```
 
 
 
