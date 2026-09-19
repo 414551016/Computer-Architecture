@@ -37,6 +37,7 @@ $$
 | B | $2 / 2\text{ GHz}$ | 1.0 ns |
 
 **答案：選擇處理器 B。** 它每條指令平均只需 1.0 ns，比 A 的 1.2 ns 快，約快 20%。
+
 <br><br>
 ## 第 3 題：RISC-V 資料 Hazard
 For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR hazards. Provide a list for each hazard. Hint: remember that you have to check more than just neighboring instructions.
@@ -68,16 +69,30 @@ For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR haz
 | WAR | `add x1` → `sub x3` | x3 | 前者讀 x3，後者才寫 x3。 |
 | WAR | `add x1` → `andi x2` | x2 | 前者讀 x2，後者才寫 x2。 |
 | WAR | `sub x3` → `sub x6` | x6 | 前者讀 x6，後者才寫 x6。 |
-
-### 知識點與目標
+**知識點與目標**
 - **RAW (Read After Write)**：先寫後讀，是真正的資料相依。
 - **WAW (Write After Write)**：寫後寫，兩條指令寫同一個 register。
 - **WAR (Write After Read)**：先讀後寫，同一個 register。
 - 解題時，先列出每條指令讀／寫的 register，再檢查所有前後指令組合。
 
+<br><br>
+## 第 4 題：Architecture 或 Implementation
+For each of the characteristics below, complete the table by checking the appropriate entry (Architecture or Implementation) to indicate whether each feature is most often a characteristic of a computer architecture or of a particular CPU implementation.
+>請判斷下列特性通常屬於「電腦架構（Architecture）」或「特定 CPU 的實作方式（Implementation）」。
 
-
-
+**解答**
+| Characteristic | 中文 | 答案 |
+| --- | --- | --- |
+| # of bits in an instruction | 一條指令有幾個位元 | Architecture |
+| # of registers visible to programmers | 程式設計者看得到的暫存器數量 | Architecture |
+| # of floating-point divider units | 浮點除法器數量 | Implementation |
+| RISC vs. CISC | RISC 或 CISC | Architecture |
+| # of instructions issued per cycle | 每 cycle 可發射幾條指令 | Implementation |
+| Clock rate of the processor | 處理器時脈頻率 | Implementation |
+| Pipeline depth | 管線深度 | Implementation |
+**知識點與目標**
+- **Architecture / ISA**：程式、組譯器與程式設計者可見的規格。
+- **Implementation / Microarchitecture**：晶片內部如何實作該規格，例如管線深度、功能單元數量與時脈速度。
 
 
 
