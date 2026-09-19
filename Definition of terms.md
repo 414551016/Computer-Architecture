@@ -157,8 +157,8 @@ ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行�
 ## 何謂 RAW、WAW 與 WAR Hazard？
 在 Pipeline（管線化處理器） 中，多條指令會同時執行，因此可能發生資料相依（Data Dependency）問題，稱為 Data Hazard（資料冒險）。
 - 三種常見的資料冒險為：
-  - RAW（Read After Write）為寫後讀相依，後續指令需使用前一指令尚未寫回的結果，是最常見且必須處理的冒險。
-  - WAR（Write After Read）為讀後寫相依，可能因執行順序改變而使讀取到錯誤資料。
+  - RAW（Read After Write）為先寫後讀相依，後續指令需使用前一指令尚未寫回的結果，是最常見且必須處理的冒險。
+  - WAR（Write After Read）為先讀後寫相依，可能因執行順序改變而使讀取到錯誤資料。
   - WAW（Write After Write）為寫後寫相依，兩條指令寫入相同目的暫存器時可能造成結果覆蓋。
 
 ### RAW（Read After Write）寫後讀相依（真實相依）
