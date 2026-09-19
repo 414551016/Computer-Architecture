@@ -86,6 +86,34 @@ Pipelined（管線化） 是一種 CPU 設計技術，將執行一條指令的�
 
 ## 何謂 rv32i？
 RV32I（RISC-V 32-bit Integer Base Instruction Set） 是 RISC-V 最基本的 32 位元整數指令集架構（ISA）。其中：<br>RV = RISC-V。<br>32 = 32 位元處理器。<br>I = Integer（基本整數指令集）。<br>RV32I 提供 CPU 最基本的功能，包括：整數加減運算、邏輯運算（AND、OR、XOR）、載入與儲存資料（Load/Store）、分支與跳躍控制（Branch/Jump）。<br>RV32I 具有 32 個通用暫存器（x0~x31），每個暫存器寬度為 32 位元。<br>例：add x3, x1, x2
+**計算機結構課程最常見的 RV32I 整數運算指令**
+```
+add
+addi
+sub
+and
+andi
+or
+ori
+xor
+xori
+sll
+srl
+sra
+slt
+slti
+lw
+sw
+beq
+bne
+jal
+jalr
+若加上 M Extension：
+mul
+mulh
+div
+rem
+```
 
 
 ## 何謂 rv64i？
@@ -171,9 +199,11 @@ I2: sub x1, x4, x5
 - Register Renaming（暫存器重新命名）
 - Scoreboarding
 - Tomasulo Algorithm
-
+<br><br>
 ## RISC-V 常用的整數運算指令（Arithmetic Instructions）
 add、sub、mul 與 addi 是 RISC-V 常用的整數運算指令，用來進行整數計算。add 用於兩個暫存器相加，sub 用於相減，mul 用於相乘，而 addi 則是將暫存器內容與立即數（常數）相加。前三者屬於暫存器對暫存器（Register-to-Register）運算，addi 則屬於暫存器對立即數（Register-to-Immediate）運算。例如 add x5,x1,x2 表示 x5=x1+x2，而 addi x5,x1,10 表示 x5=x1+10。這些指令由 CPU 的 ALU 在 Execute（EX）階段完成運算，是 RISC-V 程式執行的基本組成單元。
+**總結**
+RISC-V 常用的整數運算指令主要包括算術運算（add、addi、sub）、邏輯運算（and、or、xor）、位移運算（sll、srl、sra）、比較運算（slt、slti）、資料存取（lw、sw）以及流程控制（beq、bne、jal、jalr）等。其中 add 與 addi 為最基本的加法指令，sub 為減法，slt 用於比較大小，lw 與 sw 負責記憶體存取，而分支與跳躍指令則負責程式流程控制。若處理器支援 M Extension，還可使用 mul、div、rem 等乘除法指令。這些指令構成 RISC-V 處理器執行程式的核心基礎。
 ### add（Addition）：將兩個暫存器的值相加。
 ```
 語法：add rd, rs1, rs2
@@ -204,6 +234,53 @@ add x5, x1, x2 代表：x5 = x1 + x2
 範例：addi x5, x1, 10 代表：x5 = x1 + 10
 ```
 **add 與 addi 的差別**：add為兩個暫存器。addi為一個暫存器 + 一個常數
+
+### div 除法
+```
+div rd, rs1, rs2
+範例：div x5, x1, x2 代表：x5 = x1 ÷ x2
+```
+
+## RISC-V 常用的邏輯運算指令（Logic Instructions）
+### AND 位元與
+```
+and rd, rs1, rs2
+```
+
+### OR 位元或
+```
+or rd, rs1, rs2
+```
+
+### XOR 位元互斥或
+```
+xor rd, rs1, rs2
+```
+
+## RISC-V 常用位移運算指令（Shift Instructions）
+### sll(SHIFT LEFT LOGICAL) 左移
+```
+sll rd, rs1, rs2
+```
+
+### srl(SHIFT RIGHT LOGICAL) 右移
+```
+srl rd, rs1, rs2
+```
+
+### sra(SHIFT RIGHT ARITHMETIC) 算術右移
+```
+sra rd, rs1, rs2
+```
+
+## RISC-V 常用比較指令（Compare Instructions）
+- slt(Set Less Than) 小於則設為1
+```
+slt rd, rs1, rs2
+若 rs1 < rs2，rd = 1，否則 rd = 0
+```
+
+
 
 
 
