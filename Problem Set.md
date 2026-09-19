@@ -78,6 +78,7 @@ For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR haz
 <br><br>
 ## 第 4 題：Architecture 或 Implementation
 For each of the characteristics below, complete the table by checking the appropriate entry (Architecture or Implementation) to indicate whether each feature is most often a characteristic of a computer architecture or of a particular CPU implementation.
+>針對下列各項特徵，請在表格中勾選對應的選項（「體系結構」或「實作」），以標示此特徵通常屬於電腦體系結構範疇，或是屬於特定 CPU 實作範疇。
 >請判斷下列特性通常屬於「電腦架構（Architecture）」或「特定 CPU 的實作方式（Implementation）」。
 
 **解答**
