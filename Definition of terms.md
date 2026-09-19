@@ -92,9 +92,18 @@ RV32I（RISC-V 32-bit Integer Base Instruction Set） 是 RISC-V 最基本的 32
 RV64I（RISC-V 64-bit Integer Base Instruction Set） 是 RISC-V 的 64 位元基礎整數指令集架構。其中：<br>RV = RISC-V<br>64 = 64 位元處理器<br>I = Integer（基本整數指令集）。<br>RV64I 保留 RV32I 的所有基本功能，但：<br>暫存器擴充為 64 位元。<br>可直接處理 64 位元整數。<br>支援更大的記憶體位址空間。<br>適合 Linux、伺服器與高效能運算系統。<br>例：ld x5, 0(x10)表示從記憶體載入 64 位元資料到暫存器 x5。
 
 
-
-
-
+## 何謂 ALU
+ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行數學運算與邏輯運算的核心元件，可以視為 CPU 的「計算器」。<br>簡單來說：ALU 負責計算，控制單元（Control Unit）負責指揮。
+- ALU 的功能：
+  - 算術運算（Arithmetic）
+    - 加法 (+)
+    - 減法 (-)
+    - 乘法 (*)
+    - 除法 (/)
+    <br>範例：5 + 3 = 8
+    <br>CPU 會將數值送入 ALU 計算後得到結果。
+  - 邏輯運算（Logic）
+- 在 CPU 中的位置：
 
 
 
