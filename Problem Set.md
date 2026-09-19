@@ -100,7 +100,7 @@ For each of the characteristics below, complete the table by checking the approp
 Page B-60 in H&P6, Problem B.2 a,b.
 >請作答 Hennessy & Patterson 第 6 版教材 B-60 頁的 Problem B.2，第 (a)、(b) 小題。
 
-## 第 6 題：ISA 敘述判斷
+## 第 6 題：[ISA](https://github.com/414551016/Computer-Architecture/blob/main/Definition%20of%20terms.md#%E4%BD%95%E8%AC%82-isainstruction-set-architecture) 敘述判斷
 Which of the following statements about Instruction Set Architectures (ISAs) and their design trade-offs are true?
 >關於指令集體系結構 (ISA) 及其設計權衡，下列哪些敘述是正確的？
 
