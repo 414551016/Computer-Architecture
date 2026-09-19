@@ -40,7 +40,7 @@ $$
 
 ### 第 3 題：RISC-V 資料 Hazard
 For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR hazards. Provide a list for each hazard. Hint: remember that you have to check more than just neighboring instructions.
->請找出下列 RISC-V 程式中的所有 RAW、WAW 與 WAR hazard，並分別列出。提示：不要只檢查相鄰指令。
+>請找出下列 RISC-V 程式中的所有 RAW、WAW 與 WAR hazard（危險），並分別列出。提示：不要只檢查相鄰指令。
 1. add  x1, x2, x3
 2. sub  x3, x4, x6
 3. mul  x5, x4, x7
