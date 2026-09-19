@@ -106,7 +106,20 @@ ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行�
   - 位元移動（Shift）：sll、srl、sra
     <br>範例：0101 << 1 結果：1010
 - 在 CPU 中的位置：
-
+```
+       CPU
+ ┌─────────────────┐
+ │ Control Unit    │
+ │       ↓         │
+ │ Register File   │
+ │       ↓         │
+ │      ALU        │
+ │       ↓         │
+ │     Memory      │
+ └─────────────────┘
+```
+  工作流程：**暫存器讀取資料** → **ALU** → **產生結果** → **寫回暫存器**
+- 在 RISC-V 中的例子：
 
 
 
