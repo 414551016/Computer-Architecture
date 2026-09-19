@@ -280,13 +280,27 @@ slt rd, rs1, rs2
 若 rs1 < rs2，rd = 1，否則 rd = 0
 ```
 
+## 何謂 ISA（Instruction Set Architecture）？
+ISA（Instruction Set Architecture，指令集架構） 是介於軟體與硬體之間的標準介面，定義 CPU 能執行哪些指令、如何存取資料、有哪些暫存器，以及程式如何與處理器互動。
+<br>簡單來說：ISA 就是 CPU 的「語言規則」。程式設計師、編譯器產生的機器碼，都必須遵守 ISA 規範，CPU 才能正確執行。
+<br>RISC-V 是一種 ISA（Instruction Set Architecture，指令集架構）。兩者的關係就像：ISA = 語言規則。RISC-V = 某一種具體的語言規則
+```
+ISA
+├─ x86
+├─ ARM
+├─ MIPS
+└─ RISC-V #RISC-V 只是眾多 ISA 中的一種。
+```
+- **ISA 定義什麼？**
+  - CPU有哪些指令
+  - 暫存器如何設計
+  - 指令格式
+  - 記憶體存取方式
+  - 資料型態
+- ISA 與 CPU 的關係
 
-
-
-
-
-
-
+**總結**
+ISA（Instruction Set Architecture，指令集架構）是軟體與硬體之間的介面規範，定義處理器支援的指令、暫存器、資料型態與記憶體存取方式；而 RISC-V 則是一種具體的 ISA。關係上可視為「ISA 是概念，RISC-V 是實例」，如同作業系統是一個概念，而 Linux 是其實作。RISC-V 規範了指令格式與執行行為，處理器設計者則依據此規範實作不同的微架構，例如 Single-Cycle、Multi-Cycle 或 Pipelined Processor。只要遵循同一套 RISC-V ISA，不同處理器皆可執行相同的程式。
 
 
 
