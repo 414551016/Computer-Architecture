@@ -91,16 +91,28 @@ For each of the characteristics below, complete the table by checking the approp
 | # of instructions issued per cycle | 每 cycle 可發射幾條指令 | Implementation |
 | Clock rate of the processor | 處理器時脈頻率 | Implementation |
 | Pipeline depth | 管線深度 | Implementation |
+
 **知識點與目標**
 - **Architecture / ISA**：程式、組譯器與程式設計者可見的規格。
 - **Implementation / Microarchitecture**：晶片內部如何實作該規格，例如管線深度、功能單元數量與時脈速度。
 
+## 第 5 題：教材題
+Page B-60 in H&P6, Problem B.2 a,b.
+>請作答 Hennessy & Patterson 第 6 版教材 B-60 頁的 Problem B.2，第 (a)、(b) 小題。
 
+## 第 6 題：ISA 敘述判斷
+Which of the following statements about Instruction Set Architectures (ISAs) and their design trade-offs are true?
+>關於指令集體系結構 (ISA) 及其設計權衡，下列哪些敘述是正確的？
 
+| 選項 | 中文翻譯 | 答案 | 原因 |
+| --- | --- | --- | --- |
+| A | ISA 規定程式設計者可見的介面；微架構決定硬體如何實作。 | 真 | 這是 ISA 與 microarchitecture 的核心區別。 |
+| B | CPI 完全由 ISA 決定，與微架構無關。 | 假 | Cache、pipeline、branch prediction 等均會影響 CPI。 |
+| C | Amdahl's Law 表示只加速很小一部分工作，整體效能提升可能有限。 | 真 | 整體加速受未改善部分限制。 |
+| D | 儲存空間、編碼空間與多核心趨勢等技術限制，會影響 ISA 設計。 | 真 | ISA 設計會受到硬體與技術限制影響。 |
+| E | 減少 architected registers 可釋出編碼空間，但可能因暫存器不足而增加記憶體流量。 | 真 | 這是 ISA 設計的取捨。 |
 
-
-
-
+**答案：A、C、D、E 為真；B 為假。**
 
 
 
