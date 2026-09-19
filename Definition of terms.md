@@ -95,14 +95,16 @@ RV64I（RISC-V 64-bit Integer Base Instruction Set） 是 RISC-V 的 64 位元�
 ## 何謂 ALU
 ALU（Arithmetic Logic Unit，算術邏輯單元） 是 CPU 內部負責執行數學運算與邏輯運算的核心元件，可以視為 CPU 的「計算器」。<br>簡單來說：ALU 負責計算，控制單元（Control Unit）負責指揮。
 - ALU 的功能：
-  - 算術運算（Arithmetic）
-    - 加法 (+)
-    - 減法 (-)
-    - 乘法 (*)
-    - 除法 (/)
+  - 算術運算（Arithmetic）：加法 (+)、減法 (-)、乘法 (*)、除法 (/)
     <br>範例：5 + 3 = 8
     <br>CPU 會將數值送入 ALU 計算後得到結果。
-  - 邏輯運算（Logic）
+  - 邏輯運算（Logic）：AND、OR、XOR、NOT
+    <br>範例：1010 AND 1100 = 1000
+  - 比較運算：==、!=、<、>、<=、>=、`
+    <br>RISC-V 常見指令：slt x1, x2, x3
+    <br>表示：若 x2 < x3，則 x1 = 1，否則 x1 = 0
+  - 位元移動（Shift）：sll、srl、sra
+    <br>範例：0101 << 1 結果：1010
 - 在 CPU 中的位置：
 
 
