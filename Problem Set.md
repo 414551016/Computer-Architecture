@@ -47,8 +47,8 @@ For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR haz
 4. addi x5, x5, 1
 5. sub  x6, x3, x9
 6. andi x2, x1, x9
-讀寫暫存器整理
 
+**讀寫暫存器整理**
 | 指令 | 讀取 registers | 寫入 register |
 | --- | --- | --- |
 | `add x1, x2, x3` | x2、x3 | x1 |
@@ -58,8 +58,7 @@ For the following RISC-V code snippet, identify all of the RAW, WAW, and WAR haz
 | `sub x6, x3, x9` | x3、x9 | x6 |
 | `andi x2, x1, x9` | x1、x9 | x2 |
 
-解答
-
+**解答**
 | 類型 | 指令組合 | Register | 原因 |
 | --- | --- | --- | --- |
 | RAW | `mul` → `addi` | x5 | 後者讀取前者剛寫入的 x5。 |
