@@ -172,18 +172,38 @@ I2: sub x1, x4, x5
 - Scoreboarding
 - Tomasulo Algorithm
 
+## RISC-V 常用的整數運算指令（Arithmetic Instructions）
+add、sub、mul 與 addi 是 RISC-V 常用的整數運算指令，用來進行整數計算。add 用於兩個暫存器相加，sub 用於相減，mul 用於相乘，而 addi 則是將暫存器內容與立即數（常數）相加。前三者屬於暫存器對暫存器（Register-to-Register）運算，addi 則屬於暫存器對立即數（Register-to-Immediate）運算。例如 add x5,x1,x2 表示 x5=x1+x2，而 addi x5,x1,10 表示 x5=x1+10。這些指令由 CPU 的 ALU 在 Execute（EX）階段完成運算，是 RISC-V 程式執行的基本組成單元。
+### add（Addition）：將兩個暫存器的值相加。
+```
+語法：add rd, rs1, rs2
+rd：目的暫存器
+rs1：來源暫存器1
+rs2：來源暫存器2
+範例：
+add x5, x1, x2 代表：x5 = x1 + x2
+```
 
+### sub（Subtraction）將兩個暫存器相減。
+```
+語法：sub rd, rs1, rs2
+範例：sub x5, x1, x2 代表：x5 = x1 - x2
+```
 
+### mul（Multiply）兩個暫存器相乘。
+```
+語法：mul rd, rs1, rs2
+範例：mul x5, x1, x2 代表：x5 = x1 × x2
+```
+**注意**：mul 屬於 M Extension（RV32M/RV64M），並不包含在最基本的 RV32I 中。
 
-
-
-
-
-
-
-
-
-
+### addi（Add Immediate）將暫存器與一個立即數（Immediate）相加。
+```
+語法：addi rd, rs1, imm
+其中：imm = 常數
+範例：addi x5, x1, 10 代表：x5 = x1 + 10
+```
+**add 與 addi 的差別**：add為兩個暫存器。addi為一個暫存器 + 一個常數
 
 
 
