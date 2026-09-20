@@ -250,6 +250,17 @@ AND Gate ↓ ALU ↓ CPU
   - 定位高階且注重定量分析：採用被譽為電腦架構「聖經」的 Quantitative Approach（量化研究法）第 6 版作為教材，代表本課程並非停留在基礎的概念介紹（如大學部初階的 Computer Organization），而是著重於效能量化、複雜的微架構設計（如 Superscalar、Cache 記憶體階層與 Out-of-Order 執行）與效能優化分析。
   - 紮實的先修要求：門檻要求具備「電腦組織」的基礎知識，這是為了確保學生已掌握基本的組合語言（RISC-V/MIPS）、單週期/多週期 CPU 與基礎管線化（Pipeline）的概念，方能順利接軌後續的 4 個 Verilog 設計實驗與高階架構探討。
 <br>總體而言，這是一門針對資工系中高年級或研究所設計的深度電腦架構核心課程，建議修課學生預先複習電腦組織的內容，並熟悉 Verilog 語法以因應後續的實作挑戰。
+<br>計算機結構－計量方法 (Computer Architecture: A Quantitative Approach, 5/e)
+- Chapter 1 計量設計與分析的基礎
+- Chapter 2 記憶體層級的設計
+- Chapter 3 指令階層平行化及其開發
+- Chapter 4 向量、SIMD 與 GPU 結構當中的資料階層平行化
+- Chapter 5 執行緒階層平行化
+- Chapter 6 開發需求階層與資料階層平行化的數位倉儲型電腦
+- Appendix A 指令集原理
+- Appendix B 記憶體層級的回顧
+- Appendix C 管線化：基本與進階的觀念
+
 
 #### slide：23 Course Logistics
 <div align="left" >
