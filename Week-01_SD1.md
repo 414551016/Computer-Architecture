@@ -252,10 +252,31 @@ AND Gate ↓ ALU ↓ CPU
   <img src="./Lecture/SD1/SD1_page-0024.jpg" width="50%">
 </div>
 
-#### slide：25 Course Logistics
+#### slide：25 Course Structure（課程結構與成績評分機制）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0025.jpg" width="50%">
 </div>
+
+- 本教學頁面重點內容
+  - 學期評分項目與佔比（Grading Scheme）：
+    - Midterm（期中考）：20%（預計於 10/27 左右舉行）。
+    - Final（期末考）：30%（預計於 12/22 左右舉行）。
+    - Labs（實驗作業）：50%，包含 4 個 Verilog 硬體設計實驗。
+  - 不計分練習（Ungraded Problem Sets）：0%
+    - 目的：旨在協助學生理解與掌握課程觀念。
+    - 討論：鼓勵學生與同儕及助教/教授自由討論。
+    - 備考：對於期中、期末考的準備非常有幫助。
+- 對此課程結構的觀點與看法
+  - 重質重實作（Hands-on Emphasis）：
+    <br>實驗占比高達 50%，搭配前面的教學內容（包含需要實作 Pipeline、Reorder Buffer、Superscalar 與 Cache 等），顯示這門課程極度看重將理論轉化為 Verilog RTL 程式碼的實作能力。
+  - 考試與作業並重：
+    <br>期中與期末考合佔 50%，代表僅會寫 Code 還不夠，對指令集架構與微架構的理論觀念（如 Amdahl's Law、Hazards 機制等）也必須深刻理解。
+  - 學習資源的合理利用：
+    <br>雖然 Problem Sets 佔比為 0%，但它是連結「理論」與「筆試（50%）」的橋樑。不計分能減輕交作業的壓力，但認真完成將是考高分的關鍵。
+- 總結與建議：
+  <br>這是一門典型的硬核硬體設計與架構課程。建議策略為：
+  - 全力攻克 Labs：提早開始撰寫與 Debug Verilog，拿到這 50% 的基本盤。
+  - 活用 Problem Sets：雖然不計分，但務必親自練習並參與討論，作為期中/期末考前最佳的檢測指標。
 
 #### slide：26 Course Logistics
 <div align="left" >
