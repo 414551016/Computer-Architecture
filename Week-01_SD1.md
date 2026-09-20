@@ -117,7 +117,7 @@ AND Gate ↓ ALU ↓ CPU
 
 #### slide：8 Architecture is Constantly Changing（架構持續演進）
 <div align="left" >
-  <img src="./Lecture/SD1/SD1_page-0007.jpg" width="50%">
+  <img src="./Lecture/SD1/SD1_page-0008.jpg" width="50%">
 </div>
 
 驅動因素
