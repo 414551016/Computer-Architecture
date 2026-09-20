@@ -399,10 +399,27 @@ AND Gate ↓ ALU ↓ CPU
   - 全力攻克 Labs：提早開始撰寫與 Debug Verilog，拿到這 50% 的基本盤。
   - 活用 Problem Sets：雖然不計分，但務必親自練習並參與討論，作為期中/期末考前最佳的檢測指標。
 
-#### slide：26 Course Logistics
+## slide：26 Preview of Lab Assignments（實驗作業預覽）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0026.jpg" width="50%">
 </div>
+
+- 本教學頁面重點內容
+  |實驗代號  |主題（Topic）  |成績占比（Weight）  |核心學習內容與目標|
+  |--|--|--|--|
+  |Lab 0  |Environment Setup  |— (不計分)  |建立與熟悉 Verilog 開發環境與模擬工具鏈。|
+  |Lab 1  |Pipelined CPU with Bypassing  |5%  |設計具備管線化（Pipeline）與旁路/前饋機制（Bypassing/Forwarding）的 CPU，解決 Data Hazard。|
+  |Lab 2  |Reorder Buffer & Out-of-Order Writeback  |5%  |引入重排序緩衝區（ROB），實現亂序執行與寫回（Out-of-Order Execution & Writeback），支援精確中斷。|
+  |Lab 3  |Superscalar Processor|  20%  |設計超純量（Superscalar）處理器，實現單一時脈週期內發射與執行多條指令（Multi-issue）。|
+  |Lab 4  |Cache Design  |20%  |設計快取記憶體（L1 Cache），處理 Hit/Miss 邏輯與記憶體控制傳輸。|
+  
+- 對此頁面的看法與分析
+  - 漸進式的架構難度升級：
+    - Lab 1 & 2（各佔 5%）：屬於暖身與基礎奠基。從最基礎的 Pipeline 開始，接著加入 Out-of-Order 機制（ROB），讓學生逐步建立處理器資料通道（Datapath）與控制邏輯的概念。
+    - Lab 3 & 4（各佔 20%，合計 40%）：為本課程的重頭戲。Superscalar 處理器需處理極度複雜的平行發射與 Hazard 判斷；Cache Design 則直接挑戰記憶體階層（Memory Hierarchy）的設計，這兩項正是現代高效能 CPU 設計的最核心技術。
+  - 實作比重大（佔總成績 50%）：
+    - 配合 Slide 25 的成績占比，這 4 個 Lab 就佔了學期總成績的半壁江山（50%）。這意味著本課程不僅要求學生理解 Hennessy & Patterson 教科書中的理論公式，更強制要求能用 RTL（Verilog）實作出來。
+- 總結：<br>這份 Lab 清單展現了一門高強度、重實作的頂尖電腦架構課程。對於想從事 IC 設計、CPU/GPU 微架構設計或軟硬體協同優化的學生來說，完成這 4 個 Lab 將能獲得極為紮實的 RTL 寫作與硬體 Debug 實戰經驗。
 
 #### slide：27 Course Logistics
 <div align="left" >
