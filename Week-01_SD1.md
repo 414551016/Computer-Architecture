@@ -127,6 +127,22 @@ AND Gate ↓ ALU ↓ CPU
 
 我的看法：這張是研究領域的核心思想：需求推動架構、架構推動科技、科技再推動應用，三者互相影響。
 
+本教學頁面的重點在於說明電腦架構（Computer Architecture）如何受到應用需求與技術限制的雙向推動而持續演進：
+- 電腦系統疊層（The Computer Systems Stack）
+  <br>圖表左側展示了從最上層的軟體應用到最底層的物理技術所構成的抽象層級：
+  - 軟體/應用層：Application → Algorithm → Programming Language → OS / Virtual Machines → Compiler。
+  - 架構/介面層：Instruction Set Architecture (ISA) → Microarchitecture → Register-Transfer Level (RTL)。
+  - 硬體/物理層：Gate Level → Circuits → Devices → Physics / Technology。
+- 架構變革的兩大核心推動力
+  <br>圖表右側指出推動電腦架構變化的兩大方向（即上下兩個箭頭）：
+  - 由上而下的驅動力 —— 應用需求（Application Requirements）
+    - 引導架構改進：新的應用需求（如 AI、大數據、遊戲）會驅動並建議如何改進電腦架構。
+    - 提供研發資金：成功的應用帶來商業收益，進而資金回流用於支援新硬體與架構的研發。
+  - 由下而上的限制與突破 —— 技術限制（Technology Constraints）
+    - 限制執行效率：物理與半導體技術的極限（如功耗、散熱、製程）會限制哪些設計能夠被高效實現。
+    - 開創新架構可能：新技術的突破（如新材料、新製程）能讓過去無法實現的新架構變為可能。
+- 架構的回饋機制（Feedback Mechanism）
+  <br>電腦架構位於中央樞紐位置，能夠提供回饋資訊（Provide feedback），進一步引導上層應用發展以及下層技術研究的方向。
 
 
 
