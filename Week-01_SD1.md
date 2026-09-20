@@ -207,15 +207,54 @@ AND Gate ↓ ALU ↓ CPU
 - 總結：
   <br>Amdahl's Law 提醒架構師與軟體工程師：系統的最終效能往往不由「最快的部分」決定，而是由「無法改進的瓶頸（串行部分）」所限制。因此在進行系統優化時，應優先找出並縮減不可平行的瓶頸段落，才能最大化硬體投資的報酬率（ROI）。
 
-#### slide：16 Upheaval in Computer Design（電腦架構的大變革）
+#### slide：16 Upheaval in Computer Design（電腦設計的重大變革）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0016.jpg" width="50%">
 </div>
 
-#### slide：17 Today's Dominant Target Systems
+探討了推動半導體與電腦架構演進的物理限制，以及當前產業正面臨的重大轉型與範式轉移（Paradigm Shift）。
+- 本教學頁面重點內容
+  - 過去 50 年：摩爾定律主導（Moore's Law Ruled）<br>軟體模型的紅利：透過微縮（Scaling）技術，可以在不改變軟體寫法與模型的情況下，直接獲得更高的處理效能與更佳的能源效率（即「免費的午餐」）。
+  - 過去 10 年：技術微縮趨緩甚至停滯（Technology Scaling Slowed/Stopped）
+    - 丹納德縮放定律終結（Dennard Scaling is over）：工作電壓（Supply voltage）無法再按比例下降，導致晶片功耗與散熱問題加劇。
+    - 摩爾定律減速：每個電晶體的成本不再顯著下降。
+    - CMOS 無替代品：短期內尚無能商業化替代 CMOS 的新技術。
+    - 能耗瓶頸：能源效率（Energy efficiency）成為限制系統效能的主要關卡。
+  - 2020 年代起的轉變（2020s Shift）<br>AI / ML 驅動：人工智慧與機器學習成為算力需求的龐大推手。
+  - 軟體開發者再無「免費午餐」（No "free lunch" for software developers）<br>軟體工程師必須主動調整架構，平行化（Parallelism）與異質運算（Heterogeneity）已成為強制要求。
+- 對此頁面的看法與分析
+  - 單核效能紅利終結：傳統單純拉高 CPU 時脈的時代早已結束。如 Amdahl's Law 所預示，當單核效能無法靠製程自然提升時，系統設計必須轉向微架構創新與平行處理。
+  - DSA（領域特定架構）的崛起：如 Hennessy 與 Patterson（本課程教材作者）所強調，為了因應 AI/ML 的算力爆炸，傳統通用型 CPU（如 x86）逐漸讓位給異質運算（Heterogeneous Computing），例如結合 GPU、NPU、TPU 等專用加速器，在有限的功耗預算下追求極致的能源效率。   
+- 總結：<br>這頁投影片為整門「電腦架構」課程奠定了核心動機：當硬體物理層面（Dennard Scaling/Moore's Law）面臨極限時，電腦架構師的角色變得比以往任何時候都更加重要。現代軟硬體工程師必須深刻理解微架構、平行運算與記憶體階層設計，才能打造出能滿足 AI 時代需求的的高效能系統。
+
+#### slide：17 Today's Dominant Target Systems（當前主流目標系統）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0017.jpg" width="50%">
 </div>
+
+- 本教學頁面重點內容
+  - 行動裝置（Mobile: smartphone/tablet）
+    - 規模：每年出貨量超過 10 億台。
+    - 核心 ISA：由 ARM 指令集架構（ISA） 在單晶片系統（SoCs）中佔據主導地位。
+    - 異質整合：整合了 AI/神經網路引擎（Neural Engines）與各類專用加速器（如影像、音訊、資安、感測器）。
+  - 倉庫級電腦 / 雲端資料中心（Warehouse-Scale Computers, WSCs）
+    - 規模：每個資料中心擁有超過 10 萬個 CPU 核心。
+    - 架構組合：以 x86 架構為主，搭配快速成長的 Arm CPU 以及客製化加速器（如 Google TPU 等）。
+    - 瓶頸：能源消耗與碳足跡已成為當前最主要的發展瓶頸。
+  - 嵌入式與邊緣運算（Embedded and Edge）
+    - 應用領域：消費性電子、汽車電子（Automotive）與物聯網（IoT）。
+    - RISC-V 崛起：RISC-V ISA 在微控制器（MCU）與邊緣 AI 晶片中展現強勁的成長趨勢。
+    - Edge AI 爆發：邊緣 AI（如 TinyML、裝置端生成式 AI）正在快速擴張。
+- 看法與分析
+  - 三種市場，三套生存法則：
+    - Mobile 強調「極致能效比」；
+    - WSC 追求「大規模平行與降低 TCO（總擁有成本/能源開銷）」；
+    - Edge 則看重「成本、彈性與即時性」。
+  - ISA 的陣營演變（x86 vs ARM vs RISC-V）：
+    - 過去 x86 壟斷 PC 與伺服器，但現在 Arm 已跨入資料中心；
+    - 開源的 RISC-V 則在邊緣裝置與特定領域加速器（DSA）中快速崛起，呼應了本課程選用 RISC-V 作為教材核心 ISA 的趨勢。
+  - AI 驅動架構無所不在：從手機的神經網路引擎到 Edge 端運算，再到雲端的 AI 加速晶片，驗證了上一頁（Slide 16）提到的「AI/ML 正在驅動整體算力需求與異質運算發展」。
+- 總結<br>本頁投影片精準歸納了現代晶片設計的戰場——沒有單一架構能通吃所有市場。現代電腦架構師必須根據目標系統（Mobile、Cloud、Edge）的約束條件，靈活結合 ISA 選型、平行化設計與異質 AI 加速器，才能打造出具備競爭力的系統。
 
 #### slide：18 Today's Beyond Moore's Law
 <div align="left" >
