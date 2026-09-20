@@ -421,20 +421,55 @@ AND Gate ↓ ALU ↓ CPU
     - 配合 Slide 25 的成績占比，這 4 個 Lab 就佔了學期總成績的半壁江山（50%）。這意味著本課程不僅要求學生理解 Hennessy & Patterson 教科書中的理論公式，更強制要求能用 RTL（Verilog）實作出來。
 - 總結：<br>這份 Lab 清單展現了一門高強度、重實作的頂尖電腦架構課程。對於想從事 IC 設計、CPU/GPU 微架構設計或軟硬體協同優化的學生來說，完成這 4 個 Lab 將能獲得極為紮實的 RTL 寫作與硬體 Debug 實戰經驗。
 
-#### slide：27 Course Logistics
+## slide：27 Lab Integrity & Responsible AI Use（實驗作業誠信與責任式 AI 使用規範）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0027.jpg" width="50%">
 </div>
 
-#### slide：28 Course Logistics
+本頁投影片（Slide 27）主題為 「Lab Integrity & Responsible AI Use」（實驗作業誠信與責任式 AI 使用規範），明確宣佈了在生成式 AI 時代下，本課程對作業獨立性與學術誠信的界線：
+- 本教學頁面重點內容
+  - 實驗作業的核心目標：<br>Lab 的設計是為了培養學生獨立解決問題的能力。AI 工具可以作為學習輔助，但絕對不能取代學生自身的思考與實作。
+  - 使用 AI 工具的規範與界線：
+    - 允許範疇：可用於探索概念（Explore ideas）或進行程式碼除錯（Debug）。
+    - 學生責任：學生必須親自檢查、改寫並內化 AI 產生的建議，使其成為自己的作品。
+    - 抄襲與缺乏原創性的懲處：無論是抄襲他人還是直接複製 AI 生成的程式碼，只要作品缺乏原創性，一律予以懲處。
+  - 嚴禁公開散佈 Lab 成果（Red Line）：<br>禁止公開分享：嚴禁將 Lab 程式碼或解答公開上傳至 GitHub、Google Drive 等平台。
+  - 學術誠信後果：違反學術誠信規範者將面臨嚴厲處分，最高可導致本課程直接不及格（Failing the course）。
+- 對此頁面的看法與分析
+  - 極具前瞻性且務實的 AI 政策：<br>許多課程選擇一律禁止使用 AI，但本課程採取「負責任地使用（Responsible Use）」。這反映了產業現狀——業界（如 Google、Nvidia 等）已經廣泛使用 AI 來輔助寫碼與驗證，重點在於學生是否真正理解邏輯（Check, adapt, and make it your own）。
+  - 保護課程資產與維護公平性：<br>由於前一頁（Slide 26）提到的 Superscalar 與 Cache 等硬體設計 Lab 佔總成績高達 50%，嚴禁在 GitHub 上公開程式碼（No public sharing）是為了避免往後學期的作業被抄襲，維護課程評分的公平性。
+- 總結：<br>本頁投影片為學生劃出了明確的紅線：你可以把 AI 當成助教或 Debug 工具，但不能當成代寫工具。獨立完成這些高難度的 Verilog 實驗，才能真正建立起晶片設計的硬實力。
+
+## slide：28 Statistics（往年修課統計與成績分佈）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0028.jpg" width="50%">
 </div>
+
+本頁投影片（Slide 28）主題為 「Statistics」（往年修課統計與成績分佈），呈現了前一年（Last Year）學生修完這門電腦架構課程的最終成績分佈圖：
+- 本教學頁面重點內容
+  - 修課人數與留存率：<br>78 名學生堅持修完到了學期末（78 students last till the end of the semester）。
+  - 成績分佈（Grade Distribution）：
+    - 高分群（A族群）佔絕大多數：
+      - A 級距人數最多（約 25 人）。
+      - A+ 與 A- 各約 15 人。
+      - A 系統（A+, A, A-）合計約 55 人，佔總修課人數（78 人）的 70% 以上。
+    - 中等群（B族群）：<br>B+、B、B- 的人數顯著減少（各約 4~7 人不等）。
+    - 低分與未通過群（C / E / X）：<br>C+、C、E、X 等級距僅有極少數個位數學生（各約 1~3 人）。
+- 對此頁面的看法與分析
+  - 高投入、高回報（Hard work pays off）：<br>結合前面幾頁提到的硬核內容——包含高難度的 Superscalar 與 Cache Design 等 RTL 實作（佔 50%）、每週指定論文閱讀（In exam scope），這門課雖然極具挑戰性，但只要學生堅持到最後（last till the end），絕大多數（>70%）都能拿到 A- 以上的優異成績。
+  - 「高停修/棄選率」與「優勝劣汰」現象：
+    - 標題特意寫出「78 人堅持到最後」，隱含期初選課人數可能更多，中間有部分無法負擔 Lab 評估或理論難度的學生選擇退選。
+    - 留在課堂上的學生因投入大量時間完成高比重的 Lab 專案（50%）與備考（50%），整體學習效果顯著，因此呈現出非常漂亮的高分偏態（Right-skewed / Top-heavy）分佈。
+- 總結：<br>這張統計圖給予新學期學生的訊息非常明確：這是一門硬課，但絕非甜課或殺手課。只要願意付出時間克服 4 個 Lab 的寫碼挑戰並緊跟教學進度，順利通關並取得高分（A/A+）的機率非常高。
+
 
 #### slide：29 Course Logistics
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0029.jpg" width="50%">
 </div>
+
+
+
 
 #### slide：30 Course Logistics
 <div align="left" >
