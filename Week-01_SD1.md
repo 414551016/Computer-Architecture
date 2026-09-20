@@ -207,15 +207,95 @@ AND Gate ↓ ALU ↓ CPU
 - 總結：
   <br>Amdahl's Law 提醒架構師與軟體工程師：系統的最終效能往往不由「最快的部分」決定，而是由「無法改進的瓶頸（串行部分）」所限制。因此在進行系統優化時，應優先找出並縮減不可平行的瓶頸段落，才能最大化硬體投資的報酬率（ROI）。
 
+#### slide：16 Upheaval in Computer Design（電腦架構的大變革）
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0016.jpg" width="50%">
+</div>
 
+#### slide：17 Today's Dominant Target Systems
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0017.jpg" width="50%">
+</div>
 
+#### slide：18 Today's Beyond Moore's Law
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0018.jpg" width="50%">
+</div>
 
+#### slide：19 Trends in Machine Learning Hardware
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0019.jpg" width="50%">
+</div>
 
+#### slide：20 The Verticalization of Silicon
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0020.jpg" width="50%">
+</div>
 
+#### slide：21 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0021.jpg" width="50%">
+</div>
 
+#### slide：22 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0022.jpg" width="50%">
+</div>
 
+#### slide：23 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0023.jpg" width="50%">
+</div>
 
+#### slide：24 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0024.jpg" width="50%">
+</div>
 
+#### slide：25 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0025.jpg" width="50%">
+</div>
+
+#### slide：26 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0026.jpg" width="50%">
+</div>
+
+#### slide：27 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0027.jpg" width="50%">
+</div>
+
+#### slide：28 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0028.jpg" width="50%">
+</div>
+
+#### slide：29 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0029.jpg" width="50%">
+</div>
+
+#### slide：30 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0030.jpg" width="50%">
+</div>
+
+#### slide：31 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0031.jpg" width="50%">
+</div>
+
+#### slide：32 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0032.jpg" width="50%">
+</div>
+
+#### slide：33 Course Logistics
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0033.jpg" width="50%">
+</div>
 
 
 
