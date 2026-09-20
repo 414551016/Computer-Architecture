@@ -355,10 +355,23 @@ AND Gate ↓ ALU ↓ CPU
   <img src="./Lecture/SD1/SD1_page-0023.jpg" width="50%">
 </div>
 
-#### slide：24 Course Logistics
+## slide：24 Course Format（課程授課與學習形式）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0024.jpg" width="50%">
 </div>
+
+本教學頁面（Slide 24）主題為 「Course Format」（課程授課與學習形式），說明了本課程在課堂教學與課後自主學習方面的規範與要求：
+- 本教學頁面重點內容
+  - 實體授課（In-person lecture）：每週 2 小時的實體課堂教學。
+  - 自主學習（Independent study）：
+    - 指定閱讀材料：包含教科書指定章節（Computer Architecture: A Quantitative Approach, 6th Edition）、學術論文（Papers）或主題專題演講影片/導讀（Keynotes）。
+    - 學習輔助資源：提供簡短的閱讀指南（Reading guides）與研習問題（Study questions），協助學生掌握重點。
+    - 免繳交作業（No submission required）：這些自主學習的閱讀材料與問題無需額外上傳繳交。
+    - 納入考試範圍（Assigned material is within exam scope）：雖然不強制繳交，**但所有指定的閱讀材料均屬於期中與期末考的考題範圍**。
+- 對此頁面的看法與分析
+  - 自主學習與高度自律的要求：<br>「不用交作業（No submission required）但『會考（In exam scope）』」是高階大學/研究所課程常見的設計方式。這代表課程將學習主動權交給學生，但考核力道依然嚴謹。
+  - 培養閱讀軟硬體前沿文獻的能力：<br>課程除了指定 Hennessy & Patterson 的經典教科書外，還涵蓋了 Papers 與 Keynotes。對於現代電腦架構來說（例如前幾頁討論到的 AI 加速器、DSAs 與 晶片垂直整合等最新發展），單靠教科書是不夠的，必須透過閱讀最新論文與產業報告才能掌握實務脈動。
+- 總結：<br>本頁投影片提醒學生：課堂上的 2 小時只是精華導讀，真正的學習發生在課後的自主閱讀與思考。建議學生務必跟緊每週的 Reading guides 與 Study questions，將其作為自主檢測與備考的重要工具。
 
 #### slide：25 Course Structure（課程結構與成績評分機制）
 <div align="left" >
