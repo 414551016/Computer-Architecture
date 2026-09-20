@@ -74,5 +74,65 @@ What is Computer Architecture?（什麼是計算機架構？）
   <img src="./Lecture/SD1/SD1_page-0005.jpg" width="50%">
 </div>
 
+Compiler、OS、ISA（編譯器把 C 轉為組合語言）
+- Compiler（編譯器把 C 轉為組合語言）
+  <br>例如：a = b + c; 變成：add x1, x2, x3
+- ISA
+  <br>RISC-V 指令：add、addi、lw、sw
+- OS
+  <br>Linux Windows macOS 負責管理硬體。
+
+**總結**：
+<br>這張告訴你：C語言 → Compiler → RISC-V 指令 → CPU 執行 之後學 RISC-V 時會一直看到。
+
+#### slide：6 The Computer Systems Stack
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0006.jpg" width="50%">
+</div>
+
+低階硬體世界
+- How data flows through system.
+  <br>資料如何在硬體內部流動。
+  ```
+  從下到上
+  Physics ↓ Devices ↓ Circuits ↓ Logic Gates ↓ RTL
+  ```
+
+看法：這是數位電路課與計算機架構課的連結。
+```
+AND Gate ↓ ALU ↓ CPU
+```
+
+#### slide：7 This Course
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0007.jpg" width="50%">
+</div>
+
+- 本課程主要聚焦在：
+  - ISA
+  - Microarchitecture
+  - RTL
+
+表示你不會深入：半導體製程、電晶體設計，而是專注於 CPU 設計。
+
+#### slide：8 Architecture is Constantly Changing（架構持續演進）
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0007.jpg" width="50%">
+</div>
+
+驅動因素
+- Application Requirements
+  <br>應用需求：例如：AI、Gaming、Cloud
+- Technology Constraints
+
+我的看法：這張是研究領域的核心思想：需求推動架構、架構推動科技、科技再推動應用，三者互相影響。
+
+
+
+
+
+
+
+
 
 
