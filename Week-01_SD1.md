@@ -463,23 +463,58 @@ AND Gate ↓ ALU ↓ CPU
 - 總結：<br>這張統計圖給予新學期學生的訊息非常明確：這是一門硬課，但絕非甜課或殺手課。只要願意付出時間克服 4 個 Lab 的寫碼挑戰並緊跟教學進度，順利通關並取得高分（A/A+）的機率非常高。
 
 
-#### slide：29 Course Logistics
+## slide：29 Enrollment Cap Selection Process（選課人數上限與篩選流程）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0029.jpg" width="50%">
 </div>
 
+本頁投影片（Slide 29）主題為 「Enrollment Cap Selection Process」（選課人數上限與篩選流程），說明了當修課人數超出容量限制時的加簽/選課篩選規則：
 
 
-
-#### slide：30 Course Logistics
+## slide：30 Computer Organization（電腦組織）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0030.jpg" width="50%">
 </div>
 
-#### slide：31 Course Logistics
+本頁投影片（Slide 30）主題為 「Computer Organization」（電腦組織），以歷史著名的 RISC-I 處理器 為例，展示了早期的微處理器設計與晶片架構規範：
+- 本教學頁面重點內容
+  - RISC-I 晶片規格（1982 年）：
+    - 製程（Process）：採用 5um NMOS 製程製造。
+    - 晶片面積（Die Area）：77mm^2。
+    - 運作時脈（Clock Speed）：1MHz。
+    - 歷史地位：可能是世界上第一款超大型積體電路（VLSI）精簡指令集（RISC）微處理器。
+  - 架構特色：
+    - 基礎管線化處理器（Basic pipelined processor）：具備早期基本的指令管線化架構。
+    - 電晶體數量（Transistor Count）：約包含 50,000 個電晶體（~50,000 transistors）。
+  - 右側圖示：<br>展示了著名的 Berkeley RISC-I 晶片顯微剖面照片（Photo of Berkeley RISC I, © University of California, Berkeley）。
+- 對此頁面的看法與分析
+  - 歷史對比與摩爾定律（Moore's Law）的發端：<br>電晶體數量的震撼對比：1982 年的 RISC-I 僅有 50,000 個電晶體、主頻 1MHz；而現代的 AI 加速器（如 Nvidia B200）電晶體數量已高達 2,080 億個，提升了四百萬倍以上。本頁作為課程導論的結尾，為學生建立了電腦架構演進的縱深視角。
+  - 與課程講義與教科書作者的淵源：<br>Berkeley RISC-I 是本課程指定教科書作者之一 David A. Patterson 教授在加州大學柏克萊分校主導的代表性專案。該專案證明了使用簡單、精簡的指令集（RISC）能以更少電晶體達成更高的效能，並成為後續 SPARC、ARM 及今日 RISC-V 架構的重要基石。
+- 總結：<br>本頁投影片透過 RISC-I 這顆開創性的晶片，正式為後續的「電腦組織與微架構（Pipeline, Out-of-Order, Cache）」課程內容拉開序幕。它告訴學生：現代極度複雜的超級電腦與 AI 晶片，都是建立在這個基礎的流水線與硬體組織架構之上。
+
+## slide：31 Computer Architecture」（電腦架構）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0031.jpg" width="50%">
 </div>
+
+本頁投影片（Slide 31）主題為 「Computer Architecture」（電腦架構），相較於前一頁（Slide 30）介紹的單核心與基礎管線化，本頁展示了現代多核心與進階平行處理（Parallelism）的電腦架構：
+- 本教學頁面重點內容
+  - 各種層級的平行處理（Parallelism Techniques）：
+    - 指令級平行（Instruction Level Parallelism, ILP）：
+      - Superscalar（超純量）：每個時脈週期可發射與執行多條指令。
+      - Very Long Instruction Word (VLIW)：由編譯器將多個獨立指令打包成超長指令字元並平行執行。
+    - 長管線與管線平行（Long Pipelines / Pipeline Parallelism）：透過深度管線提升主頻與指令吞吐量。
+    - 進階記憶體與快取架構（Advanced Memory and Caches）：包含多層級快取（L1/L2/L3 Cache）等記憶體階層設計。
+    - 資料級平行（Data Level Parallelism, DLP）：<br>Vector（向量處理器）與 GPU：單一指令處理大量陣列/向量資料。
+    - 執行緒級平行（Thread Level Parallelism, TLP）：<br>Multithreading（多執行緒）、Multiprocessor（多處理器）、Multicore（多核心）、Manycore（眾核心）。
+  - 右側圖示：
+    - Intel Nehalem 微架構（Original Core i7） 晶片顯微照片（Photo of Intel Nehalem Processor, © Intel）。
+    - 電晶體數量：約 7 億 3100 萬個（~731,000,000 transistors）。
+    - 結構特徵：明顯可見 4 個 CPU 核心（Core）以及下方的共享三級快取（Shared L3 Cache）。
+- 對此頁面的看法與分析
+  - 對比 1982 年 RISC-I 的演進（Slide 30 vs Slide 31）：<br>從 RISC-I 的 5 萬個電晶體（1MHz、單核基本管線），躍升至 Intel Nehalem 的 7.31 億個電晶體（四核心、多執行緒、共享 L3 Cache）。這展現了摩爾定律（Moore's Law）與 Dennard 縮放比例定律（Dennard Scaling）如何推動電腦架構邁向多核與多層次平行。
+  - 貫穿本課程核心主題：<br>本頁所列出的技術，完全涵蓋了 Hennessy & Patterson 的經典教科書《Computer Architecture: A Quantitative Approach》的核心章節，也是學生在後續 Lab 中需要實作的關鍵技術（如 Lab 3 的 Superscalar 與 Lab 4 的 Cache Design）。
+- 總結：<br>本頁說明了現代電腦架構的核心就是「透過不同層級的平行（ILP, DLP, TLP）與記憶體階層來榨取極致效能」。從單核管線邁向多核、巨型快取與向量/GPU 運算，是現代高算力系統不可或缺的基石。
 
 #### slide：32 Course Logistics
 <div align="left" >
