@@ -250,7 +250,9 @@ AND Gate ↓ ALU ↓ CPU
   - 定位高階且注重定量分析：採用被譽為電腦架構「聖經」的 Quantitative Approach（量化研究法）第 6 版作為教材，代表本課程並非停留在基礎的概念介紹（如大學部初階的 Computer Organization），而是著重於效能量化、複雜的微架構設計（如 Superscalar、Cache 記憶體階層與 Out-of-Order 執行）與效能優化分析。
   - 紮實的先修要求：門檻要求具備「電腦組織」的基礎知識，這是為了確保學生已掌握基本的組合語言（RISC-V/MIPS）、單週期/多週期 CPU 與基礎管線化（Pipeline）的概念，方能順利接軌後續的 4 個 Verilog 設計實驗與高階架構探討。
 <br>總體而言，這是一門針對資工系中高年級或研究所設計的深度電腦架構核心課程，建議修課學生預先複習電腦組織的內容，並熟悉 Verilog 語法以因應後續的實作挑戰。
-<br>計算機結構－計量方法 (Computer Architecture: A Quantitative Approach, 5/e)
+
+**計算機結構－計量方法 (Computer Architecture: A Quantitative Approach, 5/e)**
+<br>這本由 John Hennessy 與 David Patterson 合著的《電腦架構：量化研究方法》第六版，是該領域最具影響力的經典教材，旨在透過量化分析與實務工程設計來拆解電腦系統。書中收錄了衡量效能、功耗與可靠性的核心數學公式，並提出諸如 Amdahl’s Law 與 90/10 局部性法則等設計準則，引導讀者理解硬體與軟體間的權衡。隨著 Moore’s Law 的減緩與 Dennard Scaling 的終結，本版特別強調了從通用型處理器向領域特定架構（DSA）的範式轉移，並深入探討了開源指令集 RISC-V、GPU 以及**倉庫級運算（WSC）**等現代技術。其核心目的在於教會工程師如何在物理限制與運算需求爆炸的時代，利用平行處理與新興材料重塑電腦架構的未來。
 - Chapter 1 計量設計與分析的基礎
 - Chapter 2 記憶體層級的設計
 - Chapter 3 指令階層平行化及其開發
