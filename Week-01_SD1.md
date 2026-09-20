@@ -144,11 +144,41 @@ AND Gate ↓ ALU ↓ CPU
 - 架構的回饋機制（Feedback Mechanism）
   <br>電腦架構位於中央樞紐位置，能夠提供回饋資訊（Provide feedback），進一步引導上層應用發展以及下層技術研究的方向。
 
+#### slide：9-10 Computers Then
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0009.jpg" width="48%">
+  <img src="./Lecture/SD1/SD1_page-0010.jpg" width="48%">
+</div>
 
+過去的電腦：IBM 650
+<br>特色：
+- 早期大型電腦
+- 體積巨大
+- 成本昂貴
 
+#### slide：11 Computers Now
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0011.jpg" width="50%">
+</div>
 
+現代電腦類型：
+- Personal（個人電腦）
+- Autonomous（自動駕駛）
+- Embodied（機器人）
+- Spatial（空間運算）
+- AI Factory（AI資料中心）
 
+我的看法：AI 已成為主流運算需求。未來許多架構設計都圍繞 AI。
 
+#### slide：12 Moore's Law（摩爾定律）
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0012.jpg" width="50%">
+</div>
 
+#### slide：13-14 Sequential Processor Performance
+<div align="left" >
+  <img src="./Lecture/SD1/SD1_page-0013.jpg" width="48%">
+  <img src="./Lecture/SD1/SD1_page-0014.jpg" width="48%">
+</div>
 
 
