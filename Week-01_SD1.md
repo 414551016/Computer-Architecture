@@ -256,10 +256,29 @@ AND Gate ↓ ALU ↓ CPU
   - AI 驅動架構無所不在：從手機的神經網路引擎到 Edge 端運算，再到雲端的 AI 加速晶片，驗證了上一頁（Slide 16）提到的「AI/ML 正在驅動整體算力需求與異質運算發展」。
 - 總結<br>本頁投影片精準歸納了現代晶片設計的戰場——沒有單一架構能通吃所有市場。現代電腦架構師必須根據目標系統（Mobile、Cloud、Edge）的約束條件，靈活結合 ISA 選型、平行化設計與異質 AI 加速器，才能打造出具備競爭力的系統。
 
-#### slide：18 Today's Beyond Moore's Law
+#### slide：18 Beyond Moore's Law（超越摩爾定律？）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0018.jpg" width="50%">
 </div>
+
+本頁投影片（Slide 18）主題為 「Beyond Moore’s Law?」（超越摩爾定律？），引用了電腦圖靈獎（Turing Award）得主 John Hennessy 與 David Patterson 的著名觀點：「電腦架構的全新黃金時代」（A New Golden Age for Computer Architecture）。
+- 本教學頁面重點內容
+  - 微處理器歷史發展趨勢圖（Microprocessor Trend Data）：
+    - 電晶體數量（Transistors, 藍標）：持續呈指數成長（摩爾定律）。
+    - 單線程效能（Single-Thread Performance, 橘標）：約在 2005–2010 年間開始平緩，成長幅度極低。
+    - 時脈頻率（Frequency, 綠標） 與 典型功耗（Typical Power, 紅標）：受限於 Dennard Scaling（丹納德縮放定律）的終結，頻率與功耗在 2005 年左右即觸及天花板而無法繼續提升。
+    - 邏輯核心數（Number of Logical Cores, 紫標）：為彌補單核效能停滯，核心數自 2005 年起開始急速上升（邁向多核/平行時代）。
+  - 後摩爾定律時代的關鍵疑問（右上角方框）：
+    - 加速器數量（Number of accelerators?）：未來的晶片該整合多少個專用加速器？
+    - 平行化與專業化（Parallelization and specialization?）：如何進一步推動平行處理與針對特定領域進行硬體客製化/專業化？
+- 對此頁面的看法與分析
+  - 從「軟體通用」轉向「硬體專業化（DSA）」
+    - 過去 40 年，軟體工程師享有「免費午餐」——只要等新 CPU 出來，程式就會自動變快。
+    - 如今單核效能成長幾乎歸零，唯有透過 領域特定架構（Domain-Specific Architecture, DSA）、特定領域加速器（如 NPU/TPU/GPU） 以及 軟硬體協同設計（Hardware/Software Co-Design），才能在功耗受限的情況下持續拉高效能。
+  - 為什麼是「電腦架構的黃金時代」？
+    - 當最底層的物理製程（Moore's Law）無法再獨立解決效能問題時，責任便轉移到了架構師（Architects）身上。
+    - 如今開放指令集（如 RISC-V）普及與敏捷晶片開發（Agile Chip Development）抬頭，讓學者與工程師能以更低的門檻創新設計專用晶片，造就了電腦架構研究最活躍的新時代。
+- 總結：<br>本頁投影片給出了電腦架構發展的終極解答：「摩爾定律的放緩並非危機，而是轉機」。未來的算力提升將不再依賴單一微處理器頻率的提升，而是取決於如何靈活結合平行運算、專用加速器與開放 ISA，以回應 AI 與新世代應用的龐大算力需求。
 
 #### slide：19 Trends in Machine Learning Hardware
 <div align="left" >
