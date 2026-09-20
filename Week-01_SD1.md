@@ -278,12 +278,27 @@ AND Gate ↓ ALU ↓ CPU
   - 為什麼是「電腦架構的黃金時代」？
     - 當最底層的物理製程（Moore's Law）無法再獨立解決效能問題時，責任便轉移到了架構師（Architects）身上。
     - 如今開放指令集（如 RISC-V）普及與敏捷晶片開發（Agile Chip Development）抬頭，讓學者與工程師能以更低的門檻創新設計專用晶片，造就了電腦架構研究最活躍的新時代。
-- 總結：<br>本頁投影片給出了電腦架構發展的終極解答：「摩爾定律的放緩並非危機，而是轉機」。未來的算力提升將不再依賴單一微處理器頻率的提升，而是取決於如何靈活結合平行運算、專用加速器與開放 ISA，以回應 AI 與新世代應用的龐大算力需求。
+- 總結：<br>本頁投影片給出了電腦架構發展的終極解答：「摩爾定律的放緩並非危機，而是轉機」。未來的算力提升將不再依賴單一微處理器頻率的提升，而是取決於如何靈活結合**平行運算(Parallelization)**、**專用加速器(Specialization)**與開放 ISA，以回應 AI 與新世代應用的龐大算力需求。
 
-#### slide：19 Trends in Machine Learning Hardware
+#### slide：19 Trends in Machine Learning Hardware（機器學習硬體發展趨勢）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0019.jpg" width="50%">
 </div>
+
+本教學頁面（Slide 19）主題為 「Trends in Machine Learning Hardware?」（機器學習硬體發展趨勢），引用了研究機構 Epoch AI 的資料庫圖表，展現深度學習時代各類 AI 晶片（如 GPU、TPU 等）運算效能的爆發性成長趨勢。
+- 本教學頁面重點內容
+  - AI 晶片效能（TOP/s）的時間軸演進：
+    - 圖表縱軸為 Machine Learning Performance (TOP/s, Tera Operations Per Second，對數尺度)，橫軸為晶片發布時間（2008 年至 2026 年）。
+    - 早期的 GPU 階段（2008–2015）：如 NVIDIA GeForce GTX 580、GTX TITAN 等傳統繪圖卡，算力約在 1 ～ 10 TOP/s 範圍。
+    - 專用加速器與 Tensor Core 的引進（2016 年起）：Google TPU v1/v2/v3/v4i 以及 NVIDIA Volta 核心（P100, V100）上市後，算力成長曲線大幅陡峭化，達到每年約 1.6 的成長斜率。
+    - 現代巨型 AI 晶片（2020 至今）：如 NVIDIA H100 SXM5、AMD Instinct MI300X/MI355X、Intel Habana Gaudi2 等，算力已突破數千 TOP/s（甚至達到 2,000 ～ 5,000 TOP/s）。
+- 對此頁面的看法與分析：
+  - 呼應前頁的「黃金時代」與「專用化（Specialization）」：
+    - 前一頁（Slide 18）提到單核 CPU 效能成長停滯，而本頁則直接展示了解決方案——針對機器學習矩陣運算進行硬體優化與專用化。
+    - 圖表中算力陡升的拐點（約 2016–2017 年），正對應了業界開始導入 Tensor Core（張量核心） 與 低精度算術格式（如 FP16, BF16, INT8, FP8） 的時間點。
+  - 低精度運算帶來的「偽摩爾定律」續航：
+    - 傳統 CPU 著重 32-bit 或 64-bit 高精度浮點運算；但 AI 模型對精度容忍度高，AI 晶片改以 16-bit 甚至 8-bit/4-bit 進行大量平行矩陣乘法，讓算力（TOP/s）能以遠超傳統單核 CPU 的速度持續翻倍。
+- 總結：<br>本頁投影片證明了「應用需求（AI/ML）正以驚人的速度重塑硬體架構」。**未來的電腦架構師不僅要懂傳統的流水線與快取設計，更必須具備軟硬體協同優化（Co-Design）的能力**，以設計出能支撐大語言模型（LLM）與生成式 AI 的新世代專用硬體。
 
 #### slide：20 The Verticalization of Silicon
 <div align="left" >
