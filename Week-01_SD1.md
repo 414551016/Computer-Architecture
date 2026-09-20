@@ -516,17 +516,31 @@ AND Gate ↓ ALU ↓ CPU
   - 貫穿本課程核心主題：<br>本頁所列出的技術，完全涵蓋了 Hennessy & Patterson 的經典教科書《Computer Architecture: A Quantitative Approach》的核心章節，也是學生在後續 Lab 中需要實作的關鍵技術（如 Lab 3 的 Superscalar 與 Lab 4 的 Cache Design）。
 - 總結：<br>本頁說明了現代電腦架構的核心就是「透過不同層級的平行（ILP, DLP, TLP）與記憶體階層來榨取極致效能」。從單核管線邁向多核、巨型快取與向量/GPU 運算，是現代高算力系統不可或缺的基石。
 
-#### slide：32 Course Logistics
+#### slide：32 Course Logistics（課程行政與宣導事項）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0032.jpg" width="50%">
 </div>
 
-#### slide：33 Course Logistics
+- 本教學頁面重點內容
+  - 今天的核心目標（Your goal today）：<br>決定是否繼續修讀本課程（decide if you're coming back）。提醒學生綜合考量評分機制、作業難度（如 Superscalar 與 Cache 等 RTL 實驗）與個人時間規劃後做出決定。
+  - 重要公告（Notices）：
+    - 所有教學資源皆已上架至 e3 平台（all materials available on e3）。
+    - Lab 0 已開放（Lab 0 released）：供學生建立與熟悉 Verilog 開發環境。
+    - 提供 Verilog Tips 補充教材（Verilog tips as supplementary material）：協助學生複習硬體描述語言寫作技巧，為後續高難度的硬體實驗打下基礎。
+
+#### slide：33 Acknowledgements（致謝與教材來源聲明）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0033.jpg" width="50%">
 </div>
 
-
+本頁投影片（Slide 33）主題為 「Acknowledgements」（致謝與教材來源聲明），列出了本課程簡報所採用的頂尖名校與產業專家之教學教材與著作權歸屬：
+- 本教學頁面重點內容
+  - 學者與專家致謝名單（Material & Copyright）：
+  - 引用之名校課程（Derived Courses）：
+    - MIT（麻省理工學院）：衍生自 6.823 課程。
+    - UCB（加州大學柏克萊分校）：衍生自 CS252 課程。
+    - Cornell（康奈爾大學）：衍生自 ECE 4750 課程。
+    - Princeton（普林斯頓大學）：衍生自 ECE 475 課程。
 
 
 
