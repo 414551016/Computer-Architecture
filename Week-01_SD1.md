@@ -300,10 +300,23 @@ AND Gate ↓ ALU ↓ CPU
     - 傳統 CPU 著重 32-bit 或 64-bit 高精度浮點運算；但 AI 模型對精度容忍度高，AI 晶片改以 16-bit 甚至 8-bit/4-bit 進行大量平行矩陣乘法，讓算力（TOP/s）能以遠超傳統單核 CPU 的速度持續翻倍。
 - 總結：<br>本頁投影片證明了「應用需求（AI/ML）正以驚人的速度重塑硬體架構」。**未來的電腦架構師不僅要懂傳統的流水線與快取設計，更必須具備軟硬體協同優化（Co-Design）的能力**，以設計出能支撐大語言模型（LLM）與生成式 AI 的新世代專用硬體。
 
-#### slide：20 The Verticalization of Silicon
+#### slide：20 The Verticalization of Silicon（晶片垂直整合趨勢）
 <div align="left" >
   <img src="./Lecture/SD1/SD1_page-0020.jpg" width="50%">
 </div>
+
+這張簡報探討的是「晶片垂直整合趨勢（The Verticalization of Silicon）」，核心傳達了科技巨頭與 AI 頂尖實驗室從「外購晶片」轉向「自研客製化晶片」的產業大趨勢。
+- 產業轉變：從外購晶片到自研差異化晶片<br>傳統上，企業多向輝達（Nvidia）、英特爾（Intel）或 AMD 等廠商採購通用晶片。如今，各大科技巨頭皆投入自研晶片：
+  - Apple：開發 M 系列整合晶片（SoCs），應用於 Mac、iPad 等終端設備。
+  - AWS、Google、Microsoft：開發客製化 CPU 與 AI 加速器（例如 Google 的 TPU、AWS 的 Trainium/Inferentia、Microsoft 的 Azure Maia/Cobalt）。
+  - Meta：開發專屬的客製化 AI 加速器（如 MTIA）。
+  - OpenAI：開發客製化推理晶片（Custom Inference Silicon，例如與 Broadcom 合作推出的 Jalapeño 晶片）。
+  - 右側新聞插圖（Anthropic）：報導指出 Anthropic 亦成立專屬團隊，為其 Claude 模型自研客製化晶片。
+- 為何要自研晶片？（Why?）<br>簡報列出了四大關鍵驅動力：
+  - 每瓦效能（Performance / watt）：客製化架構能剔除不必要的**通用算力單元**，大幅提高**能源利用效率**與**單位功耗下的算力**表現。
+  - 大規模下的系統成本降低（Lower system cost at scale）：隨著 AI 模型的部署規模達到吉瓦（GW）等級，擺脫高昂的第三方晶片溢價可大幅降低營運與硬體成本。
+  - 降低對外部供應商的依賴（Less dependence on external vendors）：減輕對市場主導者（如 Nvidia）的晶片配額限制與供應鏈風險。
+  - 實現硬體/軟體協同設計（Enables HW/SW co-design）：針對特定演算法（如 LLM 的 Transformer 推理與 KV Cache 機制）客製化晶片設計，讓軟體與硬體相輔相成，發揮極限效能。
 
 #### slide：21-22 Course Logistics（課程行政與基本資訊）
 <div align="left" >
