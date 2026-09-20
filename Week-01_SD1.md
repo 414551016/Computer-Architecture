@@ -232,15 +232,24 @@ AND Gate ↓ ALU ↓ CPU
   <img src="./Lecture/SD1/SD1_page-0020.jpg" width="50%">
 </div>
 
-#### slide：21 Course Logistics
+#### slide：21-22 Course Logistics（課程行政與基本資訊）
 <div align="left" >
-  <img src="./Lecture/SD1/SD1_page-0021.jpg" width="50%">
+  <img src="./Lecture/SD1/SD1_page-0021.jpg" width="48%">
+  <img src="./Lecture/SD1/SD1_page-0022.jpg" width="48%">
 </div>
 
-#### slide：22 Course Logistics
-<div align="left" >
-  <img src="./Lecture/SD1/SD1_page-0022.jpg" width="50%">
-</div>
+詳細說明了國立陽明交通大學（NYCU）資訊工程學系「電腦架構（Computer Architecture）」課程的授課資訊、參考教材與先修要求。
+- 本教學頁面重點內容
+  - 授課教師（Instructor）：張庭綜教授（Ting-Jung Chang，E-mail: tingchang@cs.nycu.edu.tw）。
+    <br>Office Hours：每週二 16:00–17:00 於工程三館 EC707（採預約制）。
+  - 上課時間與地點（Lectures）：每週二 13:20–15:10 於工程二館 EDB27。
+  - 指定教科書（Text）：Computer Architecture: A Quantitative Approach, 6th Edition（由 John L. Hennessy 與 David A. Patterson 所著的電腦架構經典權威教材）。
+  - 先修課程（Prerequisite）：電腦組織（Computer Organization）或同等課程。
+  - 課程網頁（Course Webpage）：校內 e3 教學平台。
+- 對此頁面的看法與總結
+  - 定位高階且注重定量分析：採用被譽為電腦架構「聖經」的 Quantitative Approach（量化研究法）第 6 版作為教材，代表本課程並非停留在基礎的概念介紹（如大學部初階的 Computer Organization），而是著重於效能量化、複雜的微架構設計（如 Superscalar、Cache 記憶體階層與 Out-of-Order 執行）與效能優化分析。
+  - 紮實的先修要求：門檻要求具備「電腦組織」的基礎知識，這是為了確保學生已掌握基本的組合語言（RISC-V/MIPS）、單週期/多週期 CPU 與基礎管線化（Pipeline）的概念，方能順利接軌後續的 4 個 Verilog 設計實驗與高階架構探討。
+<br>總體而言，這是一門針對資工系中高年級或研究所設計的深度電腦架構核心課程，建議修課學生預先複習電腦組織的內容，並熟悉 Verilog 語法以因應後續的實作挑戰。
 
 #### slide：23 Course Logistics
 <div align="left" >
