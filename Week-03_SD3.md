@@ -743,26 +743,26 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   - 指令執行與 Exception 觸發過程（上圖：Time View）：
     - 指令序列：
       - $I_1$ (096: lw)：在 $t_3$（M 階段）發生 overflow!（或數據存取例外）。
-      - $I_2$ (100: xor)、$I_3$ (104: sub)、$I_4$ (108: add)：為跟在 $I_1$ 後面已經發射進入管線的指令。
+      - $I_2$ (100: xor)、 $I_3$ (104: sub)、 $I_4$ (108: add)：為跟在 $I_1$ 後面已經發射進入管線的指令。
       - $I_5$：Trap Handler 的第一條指令。
     - 時序變化（Time $t_0 \rightarrow t_7$）：
-      - $t_0 \sim t_3$：$I_1 \sim I_4$ 正常推推進管線。
-      - $t_3$ 關鍵點：$I_1$ 在 M 階段（Commit Point）確定觸發 Overflow Exception。
-      - $t_4$ 管線清空（Flush/Kill）：$I_1$ 的 Exception 觸發，硬體將 $I_1$ 在 WB 階段以及後續所有指令（$I_2, I_3, I_4$）全部轉化為 nop（No-Operation）。同時，硬體將 Trap Handler 的起始位址（$I_5$）注入 Fetch 階段（$F_5$）。
-      - $t_5 \sim t_7$：$I_5$ (Trap Handler) 開始順利在管線中執行（$F_5 \rightarrow D_5 \rightarrow X_5 \rightarrow M_5 \rightarrow W_5$）。
+      - $t_0 \sim t_3$： $I_1 \sim I_4$ 正常推推進管線。
+      - $t_3$ 關鍵點： $I_1$ 在 M 階段（Commit Point）確定觸發 Overflow Exception。
+      - $t_4$ 管線清空（Flush/Kill）： $I_1$ 的 Exception 觸發，硬體將 $I_1$ 在 WB 階段以及後續所有指令（ $I_2, I_3, I_4$ ）全部轉化為 nop（No-Operation）。同時，硬體將 Trap Handler 的起始位址（ $I_5$ ）注入 Fetch 階段（ $F_5$ ）。
+      - $t_5 \sim t_7$： $I_5$ (Trap Handler) 開始順利在管線中執行（ $F_5 \rightarrow D_5 \rightarrow X_5 \rightarrow M_5 \rightarrow W_5$ ）。
   - 硬體資源使用情況（下圖：Resource Usage View）：
-    - 呈現每個時間點（$t_0 \sim t_7$）各管線階段（F, D, X, M, W）所佔用的指令。
+    - 呈現每個時間點（ $t_0 \sim t_7$ ）各管線階段（F, D, X, M, W）所佔用的指令。
     - 清楚看到在 $t_4$ 週期，D、X、M、W 四個階段同時變成 nop，展現了 Atomic Flush（原子性清空） 的過程。
 - 個人看法：
   <br>這張時序圖是將前面講述的「Commit Point 檢查」與「Pipeline Flush」理論圖像化的最經典範例：
   - 精確例外（Precise Exception）的具體落實：
-    - 注意觀察 $I_1$ 發生 Overflow 時，$I_1$ 本身有沒有寫入暫存器？沒有（在 $t_4$ 被轉為 nop，取消了 Writeback）。
-    - 晚於 $I_1$ 的指令（$I_2, I_3, I_4$）有沒有修改架構狀態？完全沒有，它們在 $t_4$ 一舉被抹成 nop。
+    - 注意觀察  $I_1$ 發生 Overflow 時， $I_1$ 本身有沒有寫入暫存器？沒有（在 $t_4$ 被轉為 nop，取消了 Writeback）。
+    - 晚於 $I_1$ 的指令（ $I_2, I_3, I_4$ ）有沒有修改架構狀態？完全沒有，它們在 $t_4$ 一舉被抹成 nop。
     - 這保證了當 $I_5$ (Trap Handler) 開始執行時，CPU 的暫存器狀態完全停留在 $I_1$ 執行前的精確狀態！
   - Penalty（效能代價）的視覺化：
     - 圖中可以清晰看到，從 $t_3$ 發現例外到 $t_5$ 第一條 Handler 指令進到 Decode 階段，中間形成了連續的 nop 泡泡（Pipeline Bubbles）。這正是 Exception 帶來的心智與效能開銷（Flush Overhead）。
 - 總結：
-  <br>本投影片透過 Pipeline Diagram 完整示範了精確例外發生的過程：當 $I_1$ 在 M 階段（$t_3$）確定觸發 Exception 時，管線於下一週期（$t_4$）立即發送清空訊號將 $I_1 \sim I_4$ 抹為 nop，並於 $t_4$ 將控制權無縫切換至 Trap Handler 的第一條指令 $I_5$（$F_5$）開始執行。
+  <br>本投影片透過 Pipeline Diagram 完整示範了精確例外發生的過程：當 $I_1$ 在 M 階段（ $t_3$ ）確定觸發 Exception 時，管線於下一週期（ $t_4$ ）立即發送清空訊號將 $I_1 \sim I_4$ 抹為 nop，並於 $t_4$ 將控制權無縫切換至 Trap Handler 的第一條指令 $I_5$（ $F_5$ ）開始執行。
 
 ## slide：34
 <div align="left" >
