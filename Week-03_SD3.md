@@ -340,18 +340,47 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0018.jpg" width="50%">
 </div>
 
+這張投影片持續聚焦於 「Bypassing in Superscalar Pipelines（超純量流水線中的旁路/前遞機制）」，並簡化了前端結構，將焦點放在 執行階段（Execution Stages）與寫回階段（Writeback）之間的旁路路徑細節。
 - 本教學重點內容：
+  - 執行單元輸入端的旁路選擇器（Bypass Muxes）：
+    - 在 ALU A 與 ALU B 的兩側輸入端（前級暫存器前），均配備了多路復用器（Muxes）。
+    - 這些 Mux 用於在每一個時脈週期決定操作數（Operands）是來自上一階段的解碼暫存器，還是來自其他流水線階段前遞（Forwarded）過來的最新運算結果。
+  - 跨管線與跨階段的資料前遞（Cross-Pipeline Data Forwarding）：
+    - ALU A / ALU B 輸出：運算完的結果會立刻拉出旁路連線，前遞給下一週期需要該結果的 ALU A 或 ALU B。
+    - Data Cache / Writeback 輸出：記憶體讀取的資料（rdata）或準備寫回暫存器檔（RF Write）的資料，也會拉回前端 Mux。
 - 個人看法：
+  <br>這張簡化圖更清楚地展現了 2-Way Superscalar 處理器中 前遞路徑（Forwarding Paths）爆發性成長 的物理難題。
+  - 交叉連結的開銷（Crossbar Complexity）：
+    - 在單發射（Single-Issue）管線中，ALU 前只需要接收來自 EX/MEM 或 MEM/WB 的資料前遞。
+    - 在雙發射（2-Way Superscalar）中，因為有 2 個 ALU（共 4 個輸入端），每個輸入端都必須能夠接收來自 Pipe A 的 EX、Pipe B 的 EX、Pipe B 的 Data Cache，以及 Writeback 階段的資料。這使得旁路連線的總數量呈平方級成長（$O(N^2)$，其中 $N$ 為 Issue Width）。
+  - 時脈頻率（Clock Frequency）瓶頸：
+    - 這些龐大的金屬佈線（Routing Wires）會帶來顯著的寄生電容與訊號延遲，多輸入 Mux 也會拉長組合邏輯時間。這正是為什麼隨著發射寬度（Issue Width）增加（如 4-Way 或 8-Way），處理器非常容易面臨極限時脈下降的硬體瓶頸。
 - 總結：
+  <br>本投影片聚焦於雙管線超純量處理器的 **Bypass Muxes 與前遞路徑**，說明了為了在 Pipe A 與 Pipe B 之間無縫傳遞最新數據以消除 RAW 衝突，硬體必須建置高度交叉連結的旁路網路，這點出了 Issue Width 擴展時硬體複雜度與時脈延遲大幅增加的核心挑戰。
 
 ## slide：19
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0019.jpg" width="50%">
 </div>
 
+這張投影片進一步將前端的細節完全抽象化，將重點集中在 **執行階段（Execution Stage）前的巨大多工選擇器矩陣（Mux Crossbar Matrix）** 上。
 - 本教學重點內容：
+  - 旁路多工器矩陣（Bypass Mux Matrix）的整合：
+    - 圖中左側將所有 ALU A 與 ALU B 輸入端的 Mux 串接繪製成一個大型的多工陣列（Crossbar Network）。
+    - 這代表來自 ALU A 輸出、ALU B 輸出、Data Cache 讀取資料以及 Writeback 暫存器寫入的所有潛在資料源，都必須能隨時切換接入 2 個 ALU 的 4 個輸入端（每個 ALU 各有 2 個 Operand 輸入）。
+  - Superscalar 硬體複雜度的核心根源：
+    - 當發射寬度（Issue Width, $N$）從 1（Single Issue）增加到 2（2-Way Superscalar）時，前遞路徑的組合數量呈現次方級暴增。
+    - 每個 Mux 的控制邏輯（Control Logic）與輸入埠數大幅增加，使得解碼與前遞控制電路變得極為龐大。
 - 個人看法：
+  <br>這張圖以極具視覺衝擊力的方式，展現了 **超純量處理器（Superscalar Processor）中最可怕的「Physical Layout / Scaling Problem（實體佈局與擴展瓶頸）」**。
+  - 面積與功耗的代價（Area & Power Overhead）：
+    - 左側這一整排巨大的 Mux Crossbar，實體上代表著大量的 Multiplexers 與跨線（Crossbar Wires）。
+    - 這些線路不僅佔據了巨大的晶片面積（Silicon Area），其充放電過程更帶來了極大的動態功耗（Dynamic Power Consumption）。
+  - 發射寬度（Issue Width）的極限：
+    - 這正是為什麼業界處理器很難無限制加寬 Superscalar 發射寬度（例如從 2-Way 擴展到 8-Way 或 12-Way）。
+    - 當 $N$ 增加時，Bypass Mux 的輸入數量會以 $O(N^2)$ 的速度成長，產生的邏輯延遲很快就會拉低整顆 CPU 的最高運作時脈（Frequency），反而削弱了發射寬度增加所帶來的 IPC 效益。
 - 總結：
+  <br>本投影片透過抽象化的 Mux 矩陣圖，極致突顯了 2-Way 超純量處理器為了支援完整資料前遞（Full Bypassing）所付出的硬體代價，點出了前遞網路（Forwarding Network）複雜度隨發射寬度暴增是限制硬體時脈與面積擴展的最核心瓶頸。
 
 ## slide：20
 <div align="left" >
