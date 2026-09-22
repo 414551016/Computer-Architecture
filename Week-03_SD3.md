@@ -769,18 +769,65 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0034.jpg" width="50%">
 </div>
 
+這張投影片為課程章節的 Agenda（課程大綱 / 內容目錄），標示了本單元的三大核心主題：
 - 本教學重點內容：
+  - Superscalar（超純量架構）：
+    <br>探討如何在單一時鐘週期內同時發射（Issue）與執行多條指令（如 2-way 或 4-way Superscalar），以突破 $CPI < 1$ 的限制。
+  - Traps（陷阱與例外處理機制）：
+    <br>介紹同步例外（Synchronous Exceptions）與異步中斷（Asynchronous Interrupts）的分類、中斷處理程式（Handler）的運作，以及如何在流水線中實現精確例外（Precise Exceptions）。
+  - Out-of-Order Processors（亂序執行處理器）：
+    <br>本章節即將進入的新主題，探討如何透過動態排程（Dynamic Scheduling）、保留站（Reservation Stations）、重排序緩衝區（Reorder Buffer, ROB）與暫存器重命名（Register Renaming）技術，允許指令不按程式順序（Out-of-Order）執行以解開 Data Hazards，同時依然維持按序提交（In-Order Commit）來保證 Precise Exception。
 - 個人看法：
+  <br>這張 Agenda 展現了現代高效能 CPU 設計演進的三部曲：
+  - 從 Superscalar 到 Out-of-Order 的必然性：
+    - 單純的 In-Order Superscalar 雖然能同時發射多條指令，但只要遇到一次 Data Hazard 或 Cache Miss，整條管線就會陷入 Stalling（停頓）。
+    - 為了真正發揮 Superscalar 的多發射能力，微架構必須轉向 Out-of-Order Execution（OoO），讓不互相依賴的後續指令「繞過」被阻塞的指令先執行。
+  - Traps 是 OoO 架構的最大挑戰：
+    - 將 Traps 放在 Superscalar 與 Out-of-Order 之間講授非常合理。在 OoO 處理器中，指令執行的順序已經完全打亂，要如何在發生 Trap 時恢復到「邏輯上精確」的程式狀態（Precise Exception），是 OoO 設計中最核心也最複雜的課題（例如依靠 ROB 來實現 In-Order Commit）。
 - 總結：
+  <br>本投影片標誌著課程即將從「Traps 與精確例外處理」邁入下一個重頭戲——Out-of-Order Processors（亂序執行處理器）。接下來將深入學習現代高效能 CPU 如何在亂序執行的極致效能與精確例外的正確性之間取得平衡。
 
 ## slide：35
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0035.jpg" width="50%">
 </div>
 
+這張投影片為 「Out-Of-Order (OOO) Introduction（亂序執行處理器導論）」，透過一張分類表格整理了微架構在指令發射與執行的不同發展階段，以及各階段所需的硬體控制元件。
+- 表格欄位說明：
+  - Name（名稱代號）：以 $I$ (In-Order) 與 $O$ (Out-of-Order) 的組合命名各管線階段。
+  - Frontend（前段 / 取指與解碼）：皆為 IO (In-Order)，即按程式順序取指與解碼。
+  - Issue（發射）：分為按序發射 (IO) 與亂序發射 (OOO)。
+  - Writeback（寫回暫存器）：分為按序寫回 (IO) 與亂序寫回 (OOO)。
+  - Commit（提交 / 架構狀態更新）：分為按序提交 (IO) 與亂序提交 (OOO)。
 - 本教學重點內容：
+  - $I_4$ 架構 (In-Order Everything)：
+    - 機制：Frontend, Issue, Writeback, Commit 全為 In-Order。
+    - 硬體需求：固定長度流水線（Fixed Length Pipelines）與 Scoreboard（計分板機制）。
+    - 特性：最基礎的古典流水線，簡單但容易因為 Data Hazard 造成停頓。
+  - $I_2 O_2$ 架構 (In-Order Issue / Out-of-Order WB & Commit)：
+    - 機制：按序發射，但允許不同執行時間的指令亂序完成（OOO Writeback & Commit）。
+    - 硬體需求：Scoreboard。
+    - 缺點：無法支援精確例外（Imprecise Exceptions）。
+  - $I_2 OI$ 架構 (In-Order Issue & Commit / Out-of-Order WB)：
+    - 機制：按序發射（IO Issue），允許執行過程中亂序寫回（OOO Writeback），但最終按序提交（IO Commit）。
+    - 硬體需求：Scoreboard、Reorder Buffer (ROB)、Store Buffer。
+    - 特性：導入 ROB 解決了 $I_2 O_2$ 的缺陷，成功實現 Precise Exceptions（精確例外）。
+  - $IO_3$ 架構 (In-Order Frontend / Out-of-Order Execution & Commit)：
+    - 機制：Frontend 按序，但進入 Issue Queue 後允許亂序發射（OOO Issue）與亂序執行/提交。
+    - 硬體需求：Scoreboard 與 Issue Queue（發射佇列 / 保留站 Reservation Station）。
+  - $IO_2 I$ 架構 (Full Out-of-Order Core with In-Order Commit)：
+    - 機制：前端按序，進入 Issue Queue 後亂序發射與執行（OOO Issue & WB），最後在 Commit 階段強制按序提交（IO Commit）。
+    - 硬體需求：Scoreboard、Issue Queue、Reorder Buffer (ROB) 與 Store Buffer。
+    - 地位：現代所有高效能 CPU（Intel, AMD, Apple, ARM Cortex-A/X）的核心標準架構！
 - 個人看法：
+  <br>這張表格是計算機結構中極度經典且清楚的架構演進分類表：
+  - ROB（Reorder Buffer）的關鍵價值：
+    - 觀察表格可以發現，只要 Commit 欄位是 IO（In-Order）（如 $I_2 OI$ 和 $IO_2 I$），硬體需求就必定出現 Reorder Buffer (ROB)。
+    - 這印證了前幾張投影片所學：要在亂序發射/執行的極致效能下維護 Precise Exceptions，ROB 就是將「亂序結果」重新拉回「按序提交」的核心安檢閘門。
+  - Store Buffer 的必要性：
+    - 當 Commit 被要求必須按序（IO）時，記憶體寫入（Store 指令）絕對不能在 OOO 階段就直接寫進 L1 Data Cache，否則無法撤銷。因此必須先暫存在 Store Buffer，等到 Commit Point 確定沒有 Exception 後才正式寫入 Cache。
 - 總結：
+  <br>本投影片總結了處理器從純按序（ $I_4$ ）邁向現代高效能亂序執行（ $IO_2 I$ ）的演進圖譜：透過 Issue Queue 實現亂序發射以提升效能，並結合 Reorder Buffer (ROB) 與 Store Buffer 實現按序提交（In-Order Commit），完美達成高效能與精確例外的兼顧。
 
 ## slide：36
 <div align="left" >
