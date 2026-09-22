@@ -1154,7 +1154,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
     |$I_4$  |IO  |IO  |IO  |IO  |固定長度流水線，搭配 Scoreboard。全按序執行。|
     |$I_2O_2$  |IO  |IO  |OOO  |OOO  |Scoreboard。按序發射，但因執行時間不同而亂序寫回與提交，無法支援精確例外（Imprecise Exceptions）。|
     |$I_2OI$  |IO|IO|OOO|IO|Scoreboard, Reorder Buffer (ROB), Store Buffer。按序發射、亂序寫回至 ROB、按序提交（In-Order Commit），成功解決精確例外問題。|
-    |$IO_3$|  |IO  |OOO  |OOO|OOO|Scoreboard, Issue Queue。允許亂序發射與執行，但缺乏按序提交機制。|
+    |$IO_3$  |IO  |OOO  |OOO|OOO|Scoreboard, Issue Queue。允許亂序發射與執行，但缺乏按序提交機制。|
       |$IO_2I$  |IO  |OOO  |OOO|IO  |Scoreboard, Issue Queue, Reorder Buffer, Store Buffer。現代高效能 CPU（如 Core i7, Zen）的標準架構，實現完全動態亂序執行，同時維持按序提交以確保精確例外。|
   - 命名邏輯（Naming Scheme）：
     - $I$ 代表 In-Order（按序）；$O$ 代表 Out-Of-Order（亂序）。
