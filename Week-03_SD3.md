@@ -410,9 +410,24 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0021.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Breaking Decode and Issue Stage（拆分解碼與發射階段）」，提出了將 Decode (D) 與 Issue (I) 拆分為兩個獨立流水線階段的架構設計，並拋出思考題「Good decision?（這是一個好決定嗎？）」。
 - 本教學重點內容：
+  - 拆分 Decode (D) 與 Issue (I) 的動機：
+    - 前幾頁展示的 Bypass Network 龐大且極度複雜（如 4 個 6-to-1 Muxes），若將解碼、Hazard 檢測、RF Read 與 Bypass Mux 的選擇全部擠在單一週期，會使得關鍵路徑（Critical Path）過長，進而拉低時脈頻率。
+    - 拆分後的管線分工：
+      - D（Decode）：負責指令解碼（Decode），並處理/解決結構衝突（Structural Hazards）。
+      - I（Issue / RF Read）：負責暫存器檔讀取（Register File Read）、資料前遞（Bypassing），以及將指令發射/分流（Steer Instructions）至對應的執行單元。
+  - 流水線深度增加（Pipeline Deepening）：
+    - 時脈圖變更為 6 階段：F -> D -> I -> A0/B0 -> A1/B1 -> W。
 - 個人看法：
+  <br>評估「Good decision?」的 Trade-offs 將 D/I 拆分為兩階段是一把 「雙面刃（Trade-off）」：
+  - 優點（Pros）
+    - 提高時脈頻率（Higher Clock Frequency, $f_{clk}$）：將複雜的 Decode Logic、Hazard Checking 與 Bypassing Mux 分開在兩個週期內完成，顯著縮短了每個週期的關鍵路徑（Critical Path Timing），讓 CPU 能跑在更高的主頻上。
+  - 缺點（Cons）
+    - Branch Penalty（分支懲罰）增加：流水線加長 1 階，代表分支指令（Branch）確定結果並更新 PC 的時間延後了 1 個週期，若發生 Branch Misprediction（分支預測錯誤），需要 Flush（沖刷）的流水線 Bubbles 也會增加 1 個週期。
+    - Load Hazard / Data Dependency Stalls 增加：當發生 RAW Hazard 或 Load-To-Use Hazard 時，因為從 Execute 階段拉回 I 階段的 Bypass 距離拉長，資料相依所造成的 Stall 週期可能會增加。
 - 總結：
+  <br>本投影片展示了為了減輕旁路網路與控制邏輯對時脈頻率的壓力，微架構設計選擇將解碼與發射拆分為 D（Decode）與 I（Issue）兩個階段。此設計雖然能提升 CPU 的運算時脈，但也同時拉長了流水線深度，增加了分支錯誤與資料相依時的停頓懲罰（Stall Penalty）。
 
 ## slide：22
 <div align="left" >
