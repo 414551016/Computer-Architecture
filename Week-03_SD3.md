@@ -7,6 +7,10 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0002.jpg" width="49%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：3
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0003.jpg" width="50%">
@@ -199,70 +203,128 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0037.jpg" width="50%">
 </div>
 
+這張投影片主題為 「I4: In-Order Front-End, Issue, Writeback, Commit」，展示了一個經典的 5 階段順序處理管線（In-Order Pipeline）架構。
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
+
 ## slide：38
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0038.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：39
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0039.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：40
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0040.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：41
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0041.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：42
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0042.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：43
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0043.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：44
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0044.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：45
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0045.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：46
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0046.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：47
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0047.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：48
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0048.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：49
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0049.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：50
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0050.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 
 
