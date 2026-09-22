@@ -647,27 +647,91 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0030.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Exception Handling in a 5-Stage Pipeline（5 階流水線中的例外處理控制機制）」，詳細呈現了硬體如何在古典 5 階流水線（IF, ID, EX, MEM, WB）中維護 精確例外（Precise Exception） 的控制訊號與資料路徑。
 - 本教學重點內容：
+  - 例外狀態的沿線傳遞（Exception Status Propagation）：
+    - 例外暫存器（Exc D, Exc E, Exc M）：當指令在前端（如 IF 階段）發生例外時，硬體不會立刻跳轉，而是將 Exception 狀態記錄下來，隨著指令像流水線暫存器一樣往後傳遞（Hold status until Commit）。
+    - PC 暫存器傳遞（PC D, PC E, PC M）：與 Exception 狀態同步，該指令所在的 Program Counter (PC) 也會一路隨管線往後傳遞，以確保發生例外時能精確抓到正確的 PC。
+  - 提交點（Commit Point）與暫存器寫入（mepc / mcause）：
+    - Commit Point（提交點）：位於 MEM 與 WB 階段之間的虛擬紅線。
+    - 狀態寫入：只有當「邏輯上最老」的指令到達 Commit Point 且確定觸發例外時，硬體才會正式將該指令的 PC 寫入 mepc，並將例外原因寫入 mcause。
+    - 異步中斷注入（Asynchronous Interrupts）：外部中斷請求同樣在 Commit Point / MEM 階段進行評估與注入。
+  - 流水線撤銷機制（Pipeline Flushing / Kills）：
+    - 一旦在 Commit Point 確定要處理例外，硬體會向前端所有階段發送清空訊號：
+      - Kill F Stage（清空 IF 階段指令）
+      - Kill D Stage（清空 ID 階段指令）
+      - Kill E Stage（清空 EX 階段指令）
+      - Kill Writeback（禁止當前出錯指令寫回暫存器）
+    - 選擇 Handler 起始位址（Select Handler PC）：將 PC 多工器（MUX）強制切換至 Trap Handler 的入口位址，控制流正式轉移至 OS 處理程式。
 - 個人看法：
+  <br>這張架構圖是理解 「Precise Exception 在微架構中如何實作」 的經典範例：
+  - 解決 Out-of-Order Exception 的核心關鍵：
+    - 解決上一張投影片提到的「後進管線的指令先報錯」問題，答案就在於 「將 Exception 狀態延遲到 Commit Point 才處理」。
+    - 如果一條較早的指令在 MEM 階段出錯，而較晚的指令在 IF 階段也出錯；當 MEM 階段到達 Commit Point 觸發 Trap 並發出 Kill F Stage 時，IF 階段那條較晚指令的 Exception 就會被直接抹除（Flushed），完全不會破壞程式的執行順序與架構狀態。
+  - 原子性清空（Atomic Flush）：
+    - 下方的 Kill F/D/E/WB 展現了硬體如何在單一週期內將管線中的未完成指令全部轉換為 NOP（No-Operation）。這保證了在進入 Trap Handler 時，處理器狀態絕對是乾淨且一致的。
 - 總結：
+  <br>本投影片展示了 5 階流水線實現精確例外的硬體控制迴路：透過將 Exception 狀態與 PC 隨管線向後傳遞至 Commit Point，並在確定觸發時一舉撤銷（Kill）所有後續階段的指令，將 PC 設定為 Handler 入口，從而在微架構層面完美維護了 Precise Exception。
 
 ## slide：31
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0031.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Exception Handling in a 5-Stage Pipeline（5 階流水線中例外處理的四核心原則）」，總結了在古典 5 階流水線中實現 精確例外（Precise Exception） 的微架構控制規則。
 - 本教學重點內容：
+  - 例外旗標保留至提交點（Hold Exception Flags Until Commit Point）：
+    - 當某條指令在管線前端（如 IF, ID, EX）引發 Exception 時，硬體不會立即切換控制流，而是將 Exception 狀態旗標（Flags）暫存起來，隨著指令一路向後傳遞，直到該指令到達 Commit Point（即 M/MEM 階段）。
+  - 前端例外覆蓋機制（Earlier Pipe Stage Exceptions Override Later Ones）：
+    - 對於同一條指令而言，如果在流水線較早階段（如 IF 階段的 Instruction Page Fault）與較晚階段（如 MEM 階段的 Data Access Exception）皆偵測到 Exception，較早階段（IF）的例外優先權較高，會覆蓋較晚階段的例外。
+  - 異步中斷的注入點（Inject External Interrupts at Commit Point）：
+    - 來自外部硬體（如 I/O 裝置、Timer）的 Asynchronous Interrupt，統一選擇在 Commit Point 進行捕捉與注入。
+  - 提交點例外的原子處置（Actions at Commit Point）：
+    - 當到達 Commit Point 的指令確定引發例外時，硬體會同步完成以下處置：
+      - 更新暫存器：將原因寫入 mcause，並將該指令的 PC 寫入 mepc。
+      - 清空管線（Kill All Stages）：發送清空訊號（Flush），取消所有在管線中未完成的指令（IF, ID, EX, WB）。
+      - 載入 Handler PC：將 Trap Handler 的起始位址注入到 IF (Fetch) 階段，開始執行 OS 的例外處理程式。
 - 個人看法：
+  <br>這張投影片把複雜的精確例外控制邏輯高度精煉成 4 條金科玉律，對於理解 Processor Core 的 Exception HW 邏輯非常有幫助：
+  - 單一指令的多重例外衝突解決（Single-Instruction Multi-Exception Conflict）：
+    - 第二點提到「同一條指令較早階段的例外會覆蓋較晚階段」。舉例來說：如果一條 Load 指令在 Fetch 階段就被發現 PC 位址非法（IF Exception），但隨後管線暫存器帶入無效資料導致 MEM 階段也跳出 Data Access Fault。
+    - 邏輯上，這條指令根本不應該被成功 Fetch 並執行到 MEM 階段，因此 IF 階段的例外才是根本原因。硬體透過階段覆蓋機制，確保寫入 mcause 的永遠是第一個觸發的錯誤類型。
+  - Commit Point 扮演管線的「安檢閘門」：
+    - 將異步中斷與同步例外的生效點統一集中在 M 階段（Commit Point），極大地簡化了流水線的控制邏輯。
+    - 只要指令過得了 Commit Point，就能順利進入 WB 階段寫回暫存器；一旦在 Commit Point 被攔截，前方所有指令一律 Kill，徹底避免了「部分狀態已寫回、部分狀態被中斷」的混沌狀態。
 - 總結：
+  <br>本投影片提煉了 5 階流水線處理例外的四大核心法則：將例外旗標傳遞至 M 階段 Commit Point 生效、以指令執行順序中的較早階段例外優先、於 Commit Point 注入外部中斷，並在確定觸發時原子性地更新 mepc/mcause 並 Flush 管線，確保完全符合 Precise Exception 的要求。
 
 ## slide：32
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0032.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Speculating on Exceptions（例外處理中的推測執行機制）」，說明在現代管線（Pipeline）處理器中，如何將「推測執行（Speculation）」的概念套用至 Exception 的處理上，以同時兼顧效能與精確例外（Precise Exception）。
 - 本教學重點內容：
+  - 預測機制（Prediction Mechanism）：
+    - 預測策略：在絕大多數程式執行過程中，Exception 發生的機率極低（Exceptions are rare）。
+    - 簡單極致：因此處理器採用簡單且極為準確的預測策略——**預測完全不會發生 Exception**（Simply predicting no exceptions is very accurate）。
+  - 檢查預測機制（Check Prediction Mechanism）：
+    - Exception 會在流水線的不同階段（如 IF, ID, EX, MEM）被偵測到。
+    - 延遲觸發（Deferred Trap）：偵測到 Exception 時，硬體**不會立刻中斷**，而是將 Trap 的觸發延遲到指令到達「精確的架構邊界（Precise Architectural Boundary）」（即 Commit Point / M stage）才進行檢查與確認。
+  - 恢復機制（Recovery Mechanism）：
+    - 僅在 Commit Point 寫入狀態：只有當指令順利抵達 Commit Point 且未發生例外時，才會正式修改架構暫存器狀態（Architectural State）。
+    - 拋棄未完成指令：若在 Commit Point 確定發生 Exception，預測失敗，硬體可以直接丟棄（Throw away / Flush）該 Exception 之後所有已部分執行的指令。
+    - 啟動 Handler：清空流水線後，將控制權轉移至 OS 的 Exception Handler。
+  - 前瞻旁路/前饋（Bypassing / Forwarding 的安全運作）：
+    - 允許後續指令直接使用「尚未提交（Uncommitted）」的指令執行結果（透過 Bypassing / Data Forwarding）。
+    - 如果前方指令最終被證實發生 Exception 並遭到 Flush，這些使用了未提交結果的後續指令也會一併被清空（Killed），因此不會破壞系統狀態。
 - 個人看法：
+  <br>這張投影片展現了微架構設計中極為精妙的哲學——「將 Exception 處理納入一般 Branch Prediction / Speculation 的統一框架中」：
+  - 「例外也是一種分支預測失誤（Misprediction）」：
+    - 在 CPU 眼裡，執行指令時「預測不會出錯」就跟「預測分支會跳轉」是一樣的推測執行（Speculative Execution）。
+    - 當 Exception 真的發生時，微架構只需將其視為一次「預測失誤（Misprediction）」，觸發相同的 Flush 與 Recovery 邏輯即可。這種設計極大地簡化了控制邏輯的複雜度。
+  - 效能與正確性的平衡（Performance via Bypassing）：
+    - 最後一點提到 Bypassing。如果為了等待 Exception 檢查而禁止 Data Bypassing，流水線將充斥著 Data Hazard 導致的 Stall（停頓）。
+    - 允許推測性的資料前饋（Bypassing uncommitted results），同時將寫回暫存器（Architectural State Write）嚴格限制在 Commit Point，既保證了管線的高吞吐量（Throughput），又捍衛了 Precise Exception 的底線。
 - 總結：
+  <br>本投影片總結了例外處理的推測架構： CPU 預設「不會發生例外」以維持最高執行效率，並透過將 Exception 檢查延遲至 Commit Point 生效；一旦推測失敗，則藉由清空管線（Flush）來復原架構狀態，達到效能與精確性的完美平衡。
 
 ## slide：33
 <div align="left" >
