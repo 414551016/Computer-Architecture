@@ -487,7 +487,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
       - 同步例外（Synchronous Exception）：由指令執行直接引發（如未定義指令、系統呼叫 ecall、記憶體存取違規 Page Fault、算術除零等）。
       - 異步中斷（Asynchronous Interrupt）：由外部硬體裝置觸發，與當前執行的指令無直接時間關聯（如 I/O 裝置完成、Timer 定時器中斷等）。
   - 控制流轉向與返回機制（Control Flow & Return）：
-    - 程式執行至 $I_i$ 時觸發 Trap，控制權跳轉至 Trap Handler 的指令序列（$HI_1 \rightarrow HI_2 \rightarrow \dots \rightarrow HI_n$）。
+    - 程式執行至 $I_i$ 時觸發 Trap，控制權跳轉至 Trap Handler 的指令序列（ $HI_1 \rightarrow HI_2 \rightarrow \dots \rightarrow HI_n$ ）。
     - 返回位址的決定（Return Location）：
       - 完成 Handler 處理後，返回位址取決於 Trap 的類型：
         - 返回至 $I_i$：適用於可修復的 Fault（例如 Page Fault，需重新執行該指令）。
@@ -501,7 +501,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   - 軟硬體協同（Hardware-Software Interface）：
     - 硬體負責捕捉 Exception 並自動將 PC 設為 Trap Vector 位址，而軟體（OS Handler）則負責拯救與還原上下文（Context Switch）。這種分工是現代多工作業系統（Multitasking OS）與虛擬記憶體（Virtual Memory）能夠穩定運作的基石。
 - 總結：
-  <br>本投影片建立了 Traps 的核心觀念，說明無論是同步引發的 Exception 還是異步的 Interrupt，處理器都會暫停正常的控制流程並轉移至 Trap Handler 執行，處置完畢後再根據 Trap 類型決定是否返回至原指令（$I_i$）或下一條指令（$I_{i+1}$）繼續執行。  
+  <br>本投影片建立了 Traps 的核心觀念，說明無論是同步引發的 Exception 還是異步的 Interrupt，處理器都會暫停正常的控制流程並轉移至 Trap Handler 執行，處置完畢後再根據 Trap 類型決定是否返回至原指令（ $I_i$ ）或下一條指令（ $I_{i+1}$ ）繼續執行。  
 
 ## slide：25
 <div align="left" >
