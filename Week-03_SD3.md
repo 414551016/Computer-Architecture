@@ -331,7 +331,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 - 個人看法：
   <br>這張投影片點出了 Superscalar 硬體設計中另一個關鍵的「物理瓶頸」—— Bypass Network 複雜度。
   - 關鍵路徑（Critical Path）延遲：旁路連線不僅佔用大量的金屬佈線面積（Routing Area），更多輸入的 Mux 也會拉長 ALU 輸入端的組合邏輯延遲，這往往會成為限制處理器最高時脈頻率（Clock Frequency）的主因之一。
-  - 設計權衡（Trade-off）：為了提升 IPC，硬體必須加寬 Bypass 網路；但若 Bypass 網路過於庞大導致時脈下降，總體執行時間（$\text{Time} = \text{Instructions} \times \text{CPI} \times \text{Clock Cycle Time}$）反而可能變差。因此部分現代 CPU 會選擇性省去不常用的 Bypass 路徑，改以 1-cycle stall 來換取更高的時脈。  
+  - 設計權衡（Trade-off）：為了提升 IPC，硬體必須加寬 Bypass 網路；但若 Bypass 網路過於庞大導致時脈下降，總體執行時間（Time = Instructions * CPI * Clock Cycle Time）反而可能變差。因此部分現代 CPU 會選擇性省去不常用的 Bypass 路徑，改以 1-cycle stall 來換取更高的時脈。  
 - 總結：
   <br>本投影片展示了超純量處理器中 Bypass 網路的架構，突顯了為了防止 RAW 衝突造成流水線停頓，雙管線間必須建立複雜的多路復用旁路（Cross-Pipeline Forwarding Paths），這在提升吞吐量的同時也大幅增加了硬體面積與關鍵路徑延遲。
 
