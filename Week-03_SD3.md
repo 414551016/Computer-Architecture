@@ -8,138 +8,248 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 </div>
 
 - 本教學重點內容：
+  - 課程影片上傳（Course video uploaded）：提示學生本週或最新的課程教學影片已經上傳至平台，可供學生觀看與複習。
+  - Lab 1 作業繳交期限（Lab1 due next week）：公告實驗作業 Lab 1 將於下週截止繳交（Due next week）。
 - 個人看法：
+  - 這是一張典型且標準的課程開場與行政宣導投影片。
+  - 教學目的：在正式進入複雜的微架構（如 Scoreboard、管線控制）等硬體技術主題前，先明確告知學生課務進度與實驗作業的時間節點，能幫助學生規劃時間與完成實務實作。
 - 總結：
+  <br>本投影片為課務行政公告，提醒學生課程影片已上傳，並通知 Lab 1 實驗作業將於下週截止繳交，提醒學生規劃時間完成學習與作業。
 
 ## slide：3
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0003.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Types of Data Hazards（資料冒險/資料相依性的類型）」。
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：4
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0004.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：5
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0005.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：6
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0006.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：7
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0007.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：8
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0008.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：9
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0009.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：10
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0010.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：11
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0011.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：12
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0012.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：13
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0013.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：14
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0014.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：15
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0015.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：16
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0016.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：17
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0017.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：18
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0018.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：19
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0019.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：20
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0020.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：21
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0021.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：22
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0022.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：23
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0023.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：24
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0024.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：25
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0025.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：26
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0026.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：27
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0027.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：28
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0028.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：29 五階段管線（5-Stage Pipeline）中的異常處理（Exception Handling）機制
 <div align="left" >
@@ -168,35 +278,63 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0030.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：31
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0031.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：32
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0032.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：33
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0033.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：34
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0034.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：35
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0035.jpg" width="50%">
 </div>
 
+- 本教學重點內容：
+- 個人看法：
+- 總結：
+
 ## slide：36
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0036.jpg" width="50%">
 </div>
+
+- 本教學重點內容：
+- 個人看法：
+- 總結：
 
 ## slide：37
 <div align="left" >
