@@ -1162,16 +1162,38 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
       - $I_2OI$：前 2 階段為 IO，第 3 階段為 OOO，第 4 階段為 IO。
       - $IO_2I$：第 1 階段為 IO，中間 2 階段為 OOO，最後 1 階段為 IO。
 - 個人看法：
+  <br>這張表格是計算機結構中亂序執行演進史的最精華整理：
+  - $I_2O_2$ 到 $I_2OI$ 的關鍵轉折：
+    - 早期的 CDC 6600（Scoreboard）採用 $I_2O_2$，雖然獲得了指令平行的好處，卻犧牲了精確例外。
+    - 引入 ROB (Reorder Buffer) 轉變為 $I_2OI$ 是關鍵的一步，它奠定了「亂序執行、按序提交（Execute Out-of-Order, Commit In-Order）」的基本原則。
+  - 終極型態 $IO_2I$：
+    <br>加入 Issue Queue（或 Reservation Station） 後升級為 $IO_2I$，真正釋放了指令級平行度（ILP），讓管線擺脫了前端因單一指令停頓而造成的阻塞（Head-of-Line Blocking）。
 - 總結：
+  <br>本投影片統整了微架構演進的五種模式，說明現代高效能處理器之所以能兼具極致效能與穩定例外處理，關鍵就在於採用 $IO_2I$ 架構：利用 Issue Queue 實現動態亂序發射與執行，並透過 Reorder Buffer (ROB) 強制執行按序提交（In-Order Commit）。 
 
 ## slide：50
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0050.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Acknowledgements（致謝與教材來源）」，列出了本課程投影片所引用或改編的各大名校教材來源與學者名單。
 - 本教學重點內容：
-- 個人看法：
+  - 版權與教材開發者名單（Material Developed and Copyright by）：
+    - Arvind (MIT)
+    - Krste Asanovic (MIT/UCB)
+    - Joel Emer (Intel/MIT)
+    - James Hoe (CMU)
+    - John Kubiatowicz (UCB)
+    - David Patterson (UCB) —— 圖靈獎得主、RISC 架構與 $Hennessy \& Patterson$ 經典教科書作者之一。
+    - Christopher Batten (Cornell)
+    - David Wentzlaff (Princeton)
+  - 引用的頂尖大學課程（Derived Course Materials）：
+    - MIT 6.823：麻省理工學院的高級計算機結構課程（Computer System Architecture）。
+    - UCB CS252：加州大學柏克萊分校的研究生級計算機結構課程（Graduate Computer Architecture）。
+    - Cornell ECE 4750：康奈爾大學的計算機架構課程（Computer Architecture）。
+    - Princeton ECE 475：普林斯頓大學的計算機系統架構課程。
 - 總結：
+  <br>本張投影片為本章節（Traps, Pipeline Flush & Out-of-Order Execution）的完結頁面，說明了這套課程講義融合了 MIT、UC Berkeley、Cornell 與 Princeton 等頂尖學府在計算機結構領域的精華教材與學術成果。
 
 
 
