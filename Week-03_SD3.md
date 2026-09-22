@@ -183,63 +183,157 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0011.jpg" width="50%">
 </div>
 
+這張投影片討論了 「Dual Issue Data Hazards（雙發射資料相依衝突）」 在不同旁路（Bypassing / Forwarding）機制下的流水線行為，以及其對效能與正確性的影響。
 - 本教學重點內容：
+  - 無旁路機制（No Bypassing）：
+    - 情境：addi x5, x6, 1 需要寫入 x5，而下一週期發射的 addi x7, x5, 1 需要讀取 x5（RAW Hazard）。
+    - 結果：在完全沒有 Bypassing 的情況下，x7 的指令必須在 Decode 階段停頓 4 個週期（D D D D D），直到前一條指令完成 WB（寫回暫存器）後才能繼續執行。
+  - 完整旁路機制（Full Bypassing）：
+    - 情境：透過 Forwarding 電路，將前一條指令在 ALU 階段（A0）算出的結果直接前遞（Forward）給下一個週期的 ALU 輸入端。
+    - 結果：即使有相依性，x7 指令也只需要在 D 階段多插入 1 個時脈週期的 Stall（D D）即可順利取得前遞資料並執行。
+  - 思考題：WAR Hazard Possible?（會產生 WAR 衝突嗎？）：
+    - 投影片右下角提出了關於 WAR（Write-After-Read，反相依）衝突在雙發射架構中是否可能發生的疑問。
 - 個人看法：
+  <br>這展現了雙發射順序超純量（In-Order Dual-Issue）在處理資料相依性時的挑戰。
+  - 關於 WAR Hazard 的疑問：
+    - 在 In-Order 管道中：因為指令是嚴格按順序發射與寫回（In-Order Fetch/Issue/Writeback），後面的指令不可能比前面的指令更早寫回暫存器，因此在標準的 In-Order 雙發射架構中是不會發生真正的 WAR Hazard 的。
+    - 同一週期的 Intra-pair WAR：如果同一週期同時發射的兩條指令（如 Pipe A 的 addi x1, x2, 1 與 Pipe B 的 addi x2, x3, 1），因為兩者同時讀取 RF（或 Pipe A 寫回時 Pipe B 正在讀取），硬體與控制邏輯必須確保 Pipe B 讀取到的是 x2 的舊值，這需要靠 Register Read / Forwarding 邏輯正確隔離。
 - 總結：
+  <br>本投影片對比了 2-Way Superscalar 在無旁路與有完整旁路機制下的 RAW 衝突處置（Stall 週期從 4 次大幅縮減至 1 次），並引導思考在順序執行管線下，WAR Hazard 是否會發生的微架構特性。
 
 ## slide：12
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0012.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Fetch Logic and Alignment（擷取邏輯與記憶體對齊）」，探討多發射（Multi-Issue）處理器在面對非對齊位址與分支指令時，前端擷取（Fetch Stage）所面臨的硬體挑戰與複雜度。
 - 本教學重點內容：
+  - 指令流水線執行過程（時脈週期對照表）：
+    - Cycle 0：PC 位址從 0x000 開始，同時擷取（Fetch）OpA（0x000）與 OpB（0x004）。
+    - Cycle 1：擷取 OpC（0x008）以及一條跳躍指令 J 0x100（0x00C）。
+    - Cycle 2：跳躍至 0x100，擷取 OpD（0x100）與下一個跳躍指令 J 0x204（0x104）。
+    - Cycle 3：跳躍至非對齊位址 0x204，擷取 OpE（0x204）與 J 0x30C（0x208）。
+    - Cycle 4 & 5（跨 Cache Line 擷取範例）：
+      - 跳躍至 0x30C 擷取 OpF（位於 Cache Line 0x300 的最後一個 Slot）。
+      - 下一條指令 OpG（0x310）與 OpH（0x314）則落在下一個 Cache Line（0x310）。
+      - 由於跨越了 Cache Line 邊界，造成 Cycle 4 只能擷取到 1 條指令（OpF），OpG 必須等到 Cycle 4/5 才能處理，無法在一週期內同時湊齊兩條指令。
+  - 核心微架構瓶頸：
+    - 「Fetching across cache lines is very hard. May need extra ports.」（跨快取行擷取極為困難，可能需要額外的 Memory Ports）。
 - 個人看法：
+  <br>這張投影片精準揭露了超純量（Superscalar）處理器前端最棘手的 「Alignment & Line-Crossing Hazards（對齊與跨行衝突）」。
+  - 吞吐量流失（IPC Penalty）：即便後端有雙發射能力，只要遇到分支目標位址沒有對齊 Cache Line 邊界（如跳轉到 Cache Line 尾端），或是兩條連續指令恰好跨越兩個不同的 Cache Lines，前端單一週期就無法提供 2 條有效指令給後端，導致 Issue Slot 浪費（IPC 下降）。
+  - 硬體成本高昂：若要解決跨 Cache Line 擷取的問題，必須使用多 Port 或 Banked Cache，並搭配額外的 Alignment Network / Shift Logic 來拼接兩個不同 Cache Line 的指令，這會顯著拉長 Fetch 階段的 Critical Path。
 - 總結：
+  <br>本投影片透過時脈分析範例展示了 2-Way Superscalar 在遇到分支跳躍與未對齊位址時的 Fetch 瓶頸，說明跨快取行（Cache Line）擷取指令會大幅增加前端控制邏輯與記憶體埠數的需求，是限制 Superscalar 效能發揮的主要原因之一。
 
 ## slide：13
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0013.jpg" width="50%">
 </div>
 
+這張投影片同樣主題為 「Fetch Logic and Alignment（擷取邏輯與記憶體對齊）」，但展示的是 理想、無對齊限制（Ideal, No Alignment Constraints） 下的流水線執行對照圖。
 - 本教學重點內容：
+  - 理想流水線排程（Ideal Timeline）：
+    - Cycle 0：OpA（0x000）與 OpB（0x004）同時 Fetch 並進入 Pipe A / Pipe B。
+    - Cycle 1：OpC（0x008）與分支/跳躍指令 J（0x00C）同時 Fetch。
+    - Cycle 2：理想狀態下無對齊懲罰，直接從跳轉目標位址 0x100 擷取 OpD 與下一個跳躍指令 J。
+    - Cycle 3：從非對齊目標位址 0x204 擷取 OpE 與 J。
+    - Cycle 4：跨快取行目標位址 0x30C 與 0x310 被理想地同時擷取，OpF 與 OpG 於同一週期進入流水線，完全沒有浪費任何 Issue Slot。
+  - 與前一頁的對比（無 Alignment 瓶頸）：
+    - 前一頁展示了真實硬體遇到跨 Cache Line 或未對齊時會被迫 Stall，導致 Cycle 4 只能 Fetch 到 1 條指令（OpF）。
+    - 本頁展示如果硬體具備理想的交叉與拼接能力（No Alignment Constraints），所有時脈週期都能滿載發射 2 條指令（$\text{IPC}=2$）。
 - 個人看法：
+  <br>這張投影片與上一張形成強烈對比，用來說明 理想微架構 vs. 實際硬體限制 的差距。
+  - 理想很豐滿，現實很骨感：要達到本頁所示的「無對齊限制」，硬體必須付出極高代價——包含需要配備雙 Port 或多 Bank 的 Instruction Cache、跨 Cache Line 的資料拼接電路（Crossbar / Alignment Network），以及能在 Fetch 階段就解開 Target Address 的複雜分支預測器（Branch Predictor）。
+  - 效能上限（Performance Upper Bound）：這張圖代表了 2-Way In-Order Superscalar 在 Fetch 端所能達到的理論效能極限。
 - 總結：
+  <br>本投影片展示了在假設沒有對齊限制（No Alignment Constraints）的理想情況下，雙發射超純量處理器能完美維持每週期兩條指令的擷取與執行，用以作為對照，突顯真實硬體處理非對齊位址與跨行擷取時的效能損耗。
 
 ## slide：14
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0014.jpg" width="50%">
 </div>
 
+這張投影片主題為 「With Alignment Constraints（存在對齊限制時）」，透過對映圖表具體展示了在真實硬體存在記憶體對齊限制（Alignment Constraints）時，前端擷取（Fetch）會發生的 Issue Slot 浪費（Waste）與時脈週期增加。
 - 本教學重點內容：
+  - 對齊限制下的擷取行為與廢棄槽（Wasted Slots）：
+    - 未對齊目標（Non-Aligned Target）：
+      - 指令 J 0x204 跳躍至位址 0x204（位於 Cache Line 0x200 的第 2 個 Word）。
+      - 由於硬體一次以 Cache Line 或對齊區塊讀取，位址 0x200 的第 1 個 Word 無法被使用，形成被浪費的 Slot（圖中以橘色 X 標示）。
+    - 跨行與零散擷取（Line Boundary Crossing）：
+      - 當跳轉目標位於 Cache Line 的尾端（如 0x30C），在對齊限制下，Cycle 5 只能擷取出位於 0x30C 的單一指令（OpF），而該 Cache Line 前後的無效 Slot 都會被廢棄（橘色 X）。
+      - 這導致後續指令 OpG 與 OpH 被延後到 Cycle 6 才能從下一個對齊區塊（0x310）開始擷取。
+  - 週期數與吞吐量變化（Cycle Comparison）：
+    - 理想狀況（前一頁 No Constraints）：執行完所有指令僅需 5 個 Cycles。
+    - 限制狀況（本頁 With Constraints）：由於對齊限制與跨行導致多個 Slot 被打叉廢棄，總執行週期被拉長至 6 個 Cycles（且 left-column 中的 Cycle 計數器以 ? 標示，代表時間會動態延後）。
 - 個人看法：
+  <br>這張圖非常直觀地解釋了為什麼 編譯器對齊（Compiler Code Alignment） 對 Superscalar 處理器的效能至關重要。
+  - Issue Slot 浪費（Bubble / NOP）：橘色 X 代表硬體明明有能力在單一週期 Fetch/Issue 兩條指令，卻因為記憶體邊界限制，不得不吐出空白 Slot（Bubble），這會直接降低實際的 IPC（Instructions Per Cycle）。
+  - 編譯器優化的必要性：為了避免這種硬體懲罰，現代編譯器（如 GCC / Clang）在生成組譯碼時，會在函式開頭或迴圈入口處（Loop Head）自動插入 NOP 或進行 .align 16 等對齊指令，確保關鍵的跳轉目標位址落在 Cache Line 的開頭，從而避免圖中的 X 發生。
 - 總結：
+  <br>本投影片展示了在真實記憶體對齊限制（Alignment Constraints）下，非對齊的分支跳轉與跨 Cache Line 擷取會導致大量的 Issue Slot 被浪費（橘色 X），使整體執行時間從理想的 5 個週期增加至 6 個週期，突顯了對齊問題對超純量處理器前端效能的負面影響。
 
 ## slide：15
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0015.jpg" width="50%">
 </div>
 
+這張投影片以 流水線時脈圖（Pipeline Timeline Diagram） 的形式，完整還原了在前一張投影片（Slide 14）中，處理器在 對齊限制（With Alignment Constraints） 下執行的具體細節與 Bubbles 生成過程。
 - 本教學重點內容：
+  - 無效位址擷取與 Bubbles（F - - - -）：
+    - Cycle 3：跳轉至 0x204（OpE）時，由於對齊限制，處理器同時抓取了位於 0x200 的區塊。0x200 處無有效指令（或非跳轉目標），雖然發起了 F（Fetch），但隨後被丟棄，形成無效指令（圖中標示為 ? 與 F - - - -）。
+    - Cycle 4：0x208 為跳躍指令 J 0x30C，而同區塊對齊位址 0x20C 抓取的內容為無效 Slot（標示為 ? 與 F - - - -）。
+    - Cycle 5：跳轉至 0x30C 擷取 OpF，但同區塊的前半段位址 0x308 抓取的為無效 Slot（標示為 ? 與 F - - - -）。
+  - 吞吐量懲罰與效能影響：
+    - 單發射退化：在 Cycle 3、4、5 中，每個週期原本可處理 2 條指令的管道，都只剩 1 條有效指令（OpE、J、OpF）在執行，另一個 Issue Slot 則完全浪費。
+    - 週期拉長：所有指令（OpA ~ OpH）執行完畢總共耗費了 6 個 Cycles（Cycle 0 到 Cycle 6），相較於理想無限制狀況下的 5 個 Cycles，效能受到了明顯折損。
 - 個人看法：
+  <br>這張時脈圖完美演示了 Alignment Constraints（對齊限制）對流水線效率的致命打擊。
+  - Issue Slot 浪費的硬體實態：圖中的 F - - - - 即為硬體層面的 Bubble/NOP。雖然後端雙管線（Pipe A / Pipe B）有能力同時運算兩條指令，但前端因為記憶體對齊邊界問題，無法提供第 2 條有效指令，直接導致 IPC（Instructions Per Cycle）大幅下降。
+  - 軟硬體協同優化：要解決這個問題，硬體上需要更複雜的 Align Logic 與 Branch Target Buffer (BTB)；而在軟體層面，則需要編譯器進行 Branch Target Alignment（分支目標對齊），在編譯時將跳轉目標對齊至 Cache Line 的開頭，確保 Fetch 階段能隨時吃滿 2-Way 的吞吐量。
 - 總結：
+  <br>本投影片透過流水線時脈圖，具體呈現了記憶體對齊限制如何導致 Fetch 階段產生無效擷取（F - - - -），進而浪費發射槽（Issue Slots）並將總執行週期拉長至 6 個 Cycles，直觀地展示了對齊瓶頸對超純量處理器整體 IPC 的削弱。
 
 ## slide：16
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0016.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Precise Exceptions and Superscalars（精確異常與超純量處理器）」，探討在超純量架構下維持 精確中斷/異常（Precise Exceptions） 所面臨的順序控制挑戰。
 - 本教學重點內容：
+  - 例外順序追蹤需求（Order Tracking for Exceptions）：
+    - 類似於追蹤資料相依性（Data Dependencies）需要維持程式順序（Program Order），處理器在處理例外與系統呼叫時，也必須嚴格按照程式的邏輯順序（Logical Order）來引發與提交。
+  - 雙發射管線中的順序衝突範例：
+    - 情境：在同一週期同時發射 lw（記憶體載入，位於 Pipe B）與 Syscall / ecall（系統呼叫，位於 Pipe A）。
+    - 關鍵問題（lw is in B pipeline but commits first in logical order!）：
+      - 在程式邏輯上，lw 是先執行的指令，Syscall 是後執行的指令。
+      - 雖然兩者在同一週期發射並平行推進，但若 Syscall 在 Pipe A 發生 Trap/Exception，或是兩者準備寫回（Commit/Writeback）時，硬體必須保證 lw 的狀態變更（如暫存器寫入或 Page Fault 檢查）優先於 Syscall 完成提交。
 - 個人看法：
+  <br>這張投影片切中了多發射（Superscalar）處理器在設計 control logic 時最核心的難題之一：如何兼顧「平行執行」與「精確語意（Precise Semantics）」。
+  - In-Order Issue 不等於 Precise State：即便是在順序發射（In-Order Issue）的超純量處理器中，因為指令被分流到不同的執行管線（Pipe A / Pipe B），若兩條指令在相同的 Pipe Stage 產生 Trap 或 Exception，硬體必須有能力依據 Program Order 決定哪一個 Exception 先發生，並將後續指令的狀態撤銷（Flush）。
+  - 邁向 ROB（Reorder Buffer）的契機：當處理器變得更複雜（例如引入多週期浮點數、記憶體延遲或亂序執行 Out-of-Order）時，依靠單純的硬體 Stall 來維持 Precise Exceptions 會大幅降低效能。這也是為什麼現代 Superscalar 處理器幾乎都會導入 ROB（Reorder Buffer） 與 In-Order Commit 機制，將「執行（Execute）」與「提交（Commit）」解耦，從根本上解決 Precise Exceptions 的問題。
 - 總結：
+  <br>本投影片展示了超純量處理器在維持精確中斷（Precise Exceptions）時的挑戰：當同時發射的多條指令分屬不同 Pipe 時，硬體必須嚴格確保較早邏輯順序的指令（如 lw）比較晚的指令（如 Syscall）優先提交狀態與處理例外，防止處理器狀態陷入不一致。
 
 ## slide：17
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0017.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Bypassing in Superscalar Pipelines（超純量流水線中的旁路/前遞機制）」，再次呈現了 2-Way Superscalar 的微架構硬體圖，重點放在 ALU 階段與暫存器讀取間的數據前遞需求。
 - 本教學重點內容：
+  - 跨管線與跨階段旁路（Cross-Pipeline Bypassing）：
+    - 在超純量架構中，資料前遞比單發射流水線複雜得多。
+    - Pipe A 與 Pipe B 產生的運算結果（例如 ALU A、ALU B 或 Data Cache 的輸出），必須能夠同時前遞至下一個週期的 Pipe A 或 Pipe B 的輸入端。
+  - 旁路網路（Bypassing Network / Forwarding Muxes）的硬體開銷：
+    - 為了支援完整的旁路（Full Bypassing），每個執行單元輸入端的 Mux 需要接收來自多條管線不同階段（如 Execute、Memory/Cache、Writeback）的結果。
+    - 這意味著 Mux 的輸入數量與旁路連線（Bypass Paths）會呈指數級增長。
 - 個人看法：
+  <br>這張投影片點出了 Superscalar 硬體設計中另一個關鍵的「物理瓶頸」—— Bypass Network 複雜度。
+  - 關鍵路徑（Critical Path）延遲：旁路連線不僅佔用大量的金屬佈線面積（Routing Area），更多輸入的 Mux 也會拉長 ALU 輸入端的組合邏輯延遲，這往往會成為限制處理器最高時脈頻率（Clock Frequency）的主因之一。
+  - 設計權衡（Trade-off）：為了提升 IPC，硬體必須加寬 Bypass 網路；但若 Bypass 網路過於庞大導致時脈下降，總體執行時間（$\text{Time} = \text{Instructions} \times \text{CPI} \times \text{Clock Cycle Time}$）反而可能變差。因此部分現代 CPU 會選擇性省去不常用的 Bypass 路徑，改以 1-cycle stall 來換取更高的時脈。  
 - 總結：
+  <br>本投影片展示了超純量處理器中 Bypass 網路的架構，突顯了為了防止 RAW 衝突造成流水線停頓，雙管線間必須建立複雜的多路復用旁路（Cross-Pipeline Forwarding Paths），這在提升吞吐量的同時也大幅增加了硬體面積與關鍵路徑延遲。
 
 ## slide：18
 <div align="left" >
