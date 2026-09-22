@@ -23,8 +23,16 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 
 這張投影片主題為 「Types of Data Hazards（資料冒險/資料相依性的類型）」。
 - 本教學重點內容：
+  - 資料相依性（Data-dependence）與 Hazards 類型：<br>對於指令序列 $r_k \leftarrow r_i \text{ op } r_j$，依據資料讀寫順序可分為三類： 
+    - RAW (Read-after-Write) / 真資料相依（Data-dependence）：後續指令需要讀取前指令尚未寫入的暫存器（例如 $r_3 \leftarrow r_1 \text{ op } r_2$ 後接 $r_5 \leftarrow r_3 \text{ op } r_4$）。這是真正的資料相依。
+    - WAR (Write-after-Read) / 反相依（Anti-dependence）：後續指令試圖寫入前指令正在讀取的暫存器（例如 $r_3 \leftarrow r_1 \text{ op } r_2$ 後接 $r_1 \leftarrow r_4 \text{ op } r_5$）。
+    - WAW (Write-after-Write) / 輸出相依（Output-dependence）：兩條指令試圖寫入同一個暫存器（例如 $r_3 \leftarrow r_1 \text{ op } r_2$ 後接 $r_3 \leftarrow r_6 \text{ op } r_7$）。
 - 個人看法：
+  <br>這張投影片是理解動態排程（如 Scoreboard 或 Tomasulo 演算法）的基礎核心。
+  - RAW vs. WAR/WAW 的本質差異：RAW 代表真正的資料傳遞（真相依），無法憑空消除，必須透過 Forwarding/Bypassing 或 Stall 來解決；而 WAR 與 WAW 屬於「名字相依（Name Dependence）」，僅是因為暫存器數量有限而重複使用相同暫存器名稱所致。
+  - 設計延伸：傳統的 Scoreboard 透過在 Issue 階段停頓指令來處理解決 WAW hazard；而更進階的處理器（如 Tomasulo 架構）則透過「暫存器重命名（Register Renaming）」完全消除 WAR 與 WAW，極大地解放了指令平行度（ILP）。
 - 總結：
+  <br>本投影片介紹了三種資料冒險：RAW（讀後寫）、WAR（寫後讀，反相依）與 WAW（寫後寫，輸出相依）。RAW 為真實資料相依，需透過轉發或停頓解決；WAR 與 WAW 則為暫存器名稱重複使用造成的假性相依，是後續管線設計與動態排程（如暫存器重命名）必須識別與克服的核心問題。
 
 ## slide：4
 <div align="left" >
