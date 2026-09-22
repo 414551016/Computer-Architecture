@@ -434,27 +434,74 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0022.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Superscalars Multiply Branch Cost（超純量加倍了分支懲罰成本）」，直接呼應並解答了前一張投影片（Slide 21）拆分 D/I 階段後的「Good decision?」質疑。
 - 本教學重點內容：
+  - 分支懲罰在超純量下的乘數效應（Multiplying Effect）：
+    - 管線深度（Depth）的影響：分支指令 beq 在 A0 階段（Cycle 3）計算出跳轉條件與目標位址。由於增加了 I 階段，導致分支結果確認的時間延後，產生了 3 個週期的時間延遲（Cycles 1, 2, 3）。
+    - 發射寬度（Width）的倍增效應：因為是 2-Way Superscalar，每個時脈週期原本能處理 2 條指令。這意味著 3 個週期的延遲會導致 $3 \times 2 = 6$ 個 Issue Slots（發射槽）完全浪費（圖中的 OpA ~ OpF 全部被 Flush 丟棄，標示為 -）。
+  - 時脈圖細節解構：
+    - Cycle 0：發射 beq（Pipe A）與 OpA（Pipe B）。
+    - Cycle 1~2：流水線持續投機擷取/發射 OpB ~ OpG。
+    - Cycle 3：beq 於 A0 階段確認跳轉成立，發動 Flush，將已進入管線的 OpA ~ OpG 全部撤銷。
+    - Cycle 3：正確的目標指令 OpH 與 OpI 才重新於 Fetch 階段抓取（F）。
 - 個人看法：
+  <br>這張投影片點出了 Superscalar Architecture 最核心的致命傷——分支懲罰（Branch Misprediction Penalty）爆發。
+  - 浪費的 Slot 呈 $N \times D$ 成長：
+    <br>在傳統單發射流水線中，3 個週期的 Branch Penalty 只會損失 3 條指令；但在 2-Way 超純量下直接翻倍成 6 條；若是 4-Way 超純量，一次預測錯誤就會浪費高達 12 條指令的吞吐量！
+  - 分支預測器（Branch Predictor）的迫切性：
+    <br>這完美解釋了為什麼超純量處理器 絕對無法承受簡單的 Static Branch Prediction（如 Always Not-Taken）。沒有高準確率（>95%）的 Dynamic Branch Predictor（動態分支預測器） 與 Branch Target Buffer (BTB)，超純量架構所帶來的多發射優勢會被龐大的 Flush Bubbles 完全吃掉。
 - 總結：
+  <br>本投影片透過時脈圖視覺化展示了超純量架構下分支錯誤的代價：當管線加深且發射寬度拓寬時，分支預測錯誤所浪費的指令 Slot 會呈現「深度 $\times$ 寬度（$N \times D$）」的乘數級激增（此範例浪費了 6 個 Slots）。這說明了高準確率的分支預測機制是超純量處理器得以發揮效能的絕對前提。
 
 ## slide：23
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0023.jpg" width="50%">
 </div>
 
+這張投影片為課程章節進度頁（Agenda），標示著我們已完成了第一階段的 Superscalar（超純量） 探討，並正式進入第二階段的主題：Traps（陷阱與異常處理）。
 - 本教學重點內容：
+  - 章節轉折與焦點（Agenda Transition）：
+    - 已完成 (Superscalar)：解析了 2-Way In-Order Superscalar 的結構衝突、對齊瓶頸、Bypass Network 的 $O(N^2)$ 佈線開銷，以及管線加深帶來的分支懲罰倍增。
+    - 當前主題 (Traps)：接續前面提到的 Precise Exceptions（精確異常）挑戰，深入探討處理器如何在中斷、系統呼叫（Syscall/ecall）或 Page Fault 發生時，安全且精確地保存與恢復狀態。
+    - 下一階段 (Out-of-Order Processors)：為邁向 Tomasulo演算法、ROB（Reorder Buffer）與亂序執行架構鋪路。
+  - 為什麼需要專章討論 Traps / Precise Exceptions？
+    - 硬體一致性要求：當異常發生時，程式必須看起來像是嚴格按照順序執行到該指令前一條為止，所有較晚的指令狀態變更都必須被乾淨地撤銷（Flush）。
+    - 多發射的挑戰：在超純量架構下，同一個週期發射的多條指令可能同時在不同管線（如 Pipe A 與 Pipe B）觸發 Exception，處理器必須建立一套仲裁與優先權機制來維持邏輯上的正確性。
 - 個人看法：
+  <br>從 Superscalar 銜接到 Traps，是微架構設計中從「追求效能」跨入「確保正確性與作業系統支援」的關鍵轉折。
+  - 控制邏輯的真正試金石：設計一個能跑很快的 CPU 固然困難，但設計一個在任何突發 Exception（如記憶體存取違規、除以零、除錯斷點）下都不會丟失狀態或破壞架構暫存器（Architectural State）的 CPU 更加困難。
+  - 通往 Out-of-Order 的橋樑：了解 Traps 與 Precise Exceptions 如何在流水線中被追蹤與提交，是理解現代亂序執行處理器（OoO Processors）如何透過 Reorder Buffer (ROB) 實現 In-Order Commit / Precise Exception 的基礎。
 - 總結：
+  <br>本投影片標誌著課程進入 Traps（陷阱/異常處理） 核心單元，準備詳細探討超純量與複雜流水線處理器如何在發生 Trap 或 Interrupt 時，精確追蹤程式順序並維持精確異常（Precise Exceptions）狀態。
 
 ## slide：24
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0024.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Traps: altering the normal flow of control（陷阱：改變正常的控制流程）」，定義了 Trap 的微架構與作業系統控制權轉移機制。
 - 本教學重點內容：
+  - Trap 的基本定義：
+    - 控制權轉移：Trap 是指將控制流程從一般使用者程式（User Program）轉移至作業系統的 Trap Handler（陷阱處理程式） 執行的過程。
+    - 兩種觸發來源：
+      - 同步例外（Synchronous Exception）：由指令執行直接引發（如未定義指令、系統呼叫 ecall、記憶體存取違規 Page Fault、算術除零等）。
+      - 異步中斷（Asynchronous Interrupt）：由外部硬體裝置觸發，與當前執行的指令無直接時間關聯（如 I/O 裝置完成、Timer 定時器中斷等）。
+  - 控制流轉向與返回機制（Control Flow & Return）：
+    - 程式執行至 $I_i$ 時觸發 Trap，控制權跳轉至 Trap Handler 的指令序列（$HI_1 \rightarrow HI_2 \rightarrow \dots \rightarrow HI_n$）。
+    - 返回位址的決定（Return Location）：
+      - 完成 Handler 處理後，返回位址取決於 Trap 的類型：
+        - 返回至 $I_i$：適用於可修復的 Fault（例如 Page Fault，需重新執行該指令）。
+        - 返回至 $I_{i+1}$：適用於 Syscall / Traps 或已完成的 Trap（例如處理完系統呼叫後執行下一條指令）。
+        - 不返回或終止程式：適用於不可恢復的 Fatal Abort（如 Segment Fault 崩潰）。
 - 個人看法：
+  <br>這張圖標誌著微架構設計從「單純的流水線執行」進階到「與作業系統（OS）互動」的核心機制。
+  - 精確狀態保存（Architectural State Preservation）：
+    - 當控制流跳轉至 Trap Handler 時，處理器必須精確地保存當下的 PC 與架構暫存器狀態。
+    - 在前面討論的 Superscalar 架構中，若 $I_i$ 觸發 Trap，所有在邏輯上晚於 $I_i$（如 $I_{i+1}, I_{i+2}$）且已經被發射或執行的指令，其結果絕對不能寫入暫存器或記憶體，否則 OS 將無法獲得 Precise Exception 狀態。
+  - 軟硬體協同（Hardware-Software Interface）：
+    - 硬體負責捕捉 Exception 並自動將 PC 設為 Trap Vector 位址，而軟體（OS Handler）則負責拯救與還原上下文（Context Switch）。這種分工是現代多工作業系統（Multitasking OS）與虛擬記憶體（Virtual Memory）能夠穩定運作的基石。
 - 總結：
+  <br>本投影片建立了 Traps 的核心觀念，說明無論是同步引發的 Exception 還是異步的 Interrupt，處理器都會暫停正常的控制流程並轉移至 Trap Handler 執行，處置完畢後再根據 Trap 類型決定是否返回至原指令（$I_i$）或下一條指令（$I_{i+1}$）繼續執行。  
 
 ## slide：25
 <div align="left" >
