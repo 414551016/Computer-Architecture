@@ -39,18 +39,42 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0004.jpg" width="50%">
 </div>
 
+這張投影片為 Agenda（課程大綱/主題目錄）。
 - 本教學重點內容：
+  - Superscalar Processors（超純量處理器）：
+    - 本單元的核心主題，探討如何在每個時脈週期發射與執行多條指令（ILP, Instruction-Level Parallelism）以提升效能。
+  - 未來的延伸主題（目前灰底預告）：
+    - Traps（中斷與異常處理）：探討精確中斷（Precise Interrupts）機制與例外處理。
+    - Out-of-Order Processors（亂序執行處理器）：介紹動態排程與 Tomasulo 演算法等進階微架構。
 - 個人看法：
+  <br>這是一張典型的章節切換與大綱導覽頁面。
+  - 教學脈絡：在前面討論完單發射（Single-Issue）的流水線與 Scoreboard 機制後，課程正式邁入 Superscalar（超純量） 領域。
+  - 核心挑戰： Superscalar 架構需要同時發射多條指令，這意味著 Scoreboard 或 Hazard Detection 的複雜度會呈平方級成長（需要同時檢查多個 Source/Destination 暫存器衝突）。
 - 總結：
+  <br>本投影片標示了當前的學習主題為「Superscalar Processors」，並預告後續將探討 Traps 與亂序執行處理器（Out-of-Order Processors），為接下來的微架構進階概念揭開序幕。
 
 ## slide：5
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0005.jpg" width="50%">
 </div>
 
+這張投影片介紹了 Superscalar Processor（超純量處理器） 的基本概念與效能指標。
 - 本教學重點內容：
+  - 突破傳統效能瓶頸（CPI < 1）：
+    - 傳統單發射（Single-Issue）處理器的效能極限為 $\text{CPI} \ge 1$（每個週期最多執行一條指令）。
+    - Superscalar 架構 透過平行執行多條指令（Instruction-Level Parallelism, ILP），實現 $\text{CPI} < 1$（即 $\text{IPC} > 1$）。
+  - 分類與執行模式：
+    - Superscalar 可分為 In-order（順序執行） 與 Out-of-order（亂序執行） 超純量處理器。
+    - 本單元將從 In-order superscalar 開始介紹。
+  - CPU 效能公式（Iron Law of Processor Performance）：
+    - $\text{CPU 時間} = \frac{\text{指令數}}{\text{程式}} \times \frac{\text{時脈週期數}}{\text{指令}} \times \frac{\text{時間}}{\text{時脈週期}}$。
+    - Superscalar 主要透過降低 $\frac{\text{Cycles}}{\text{Instruction}}$（即 CPI）來縮短程式執行總時間。
 - 個人看法：
+  <br>Superscalar 是現代高效能 CPU（如 Apple M 系列、Intel Core、AMD Ryzen）不可或缺的核心技術。
+  - 硬體代價與挑戰：為了在同一週期內 Issue 多條指令，硬體必須具備多套 Fetch/Decode 邏輯與多個執行單元，並且 Hazard Detection（如 Scoreboard 或 Register Renaming）的檢查對數會成倍增加。
+  - In-order 的侷限：In-order superscalar 雖然簡單，但只要前面有一條指令發生 Dependency Stall（如 RAW），後方原本無相依關係的指令也會跟著被卡住，這也是為何進階處理器會轉向 Out-of-order（如 Tomasulo 演算法）來最大化挖掘 ILP。
 - 總結：
+  <br>本投影片標示了處理器設計由單發射邁向超純量（Superscalar）的轉折點。超純量技術利用平行執行多條指令（ILP）成功將 CPI 降低至 1 以下（IPC > 1），藉此大幅提升 CPU 執行效率。
 
 ## slide：6
 <div align="left" >
