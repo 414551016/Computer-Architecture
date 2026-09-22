@@ -508,27 +508,83 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0025.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Causes of Traps（陷阱與中斷的引發原因）」，詳細分類並列舉了觸發 Traps 的兩大類來源：異步中斷（Asynchronous Interrupts） 與 同步例外（Synchronous Exceptions）。
 - 本教學重點內容：
+  - 異步中斷（Asynchronous: External Events / Interrupts）：
+    - 指由處理器核心外部的事件所引發，與當前指令流水線正在執行的指令無關。
+    - 常見類型：
+      - I/O 裝置服務請求（Input/Output device service request）：例如鍵盤按鍵、網路封包到達、硬碟讀寫完成等。
+      - 定時器到期（Timer expiration）：用於作業系統的時間分片（Time-Slicing）與多工作業排程。
+      - 硬體錯誤通知（Hardware error notifications）：例如記憶體 ECC 錯誤、電源異常等。
+  - 同步例外（Synchronous: Internal Exceptions / Exceptions）：
+    - 指由處理器內部正在執行的特定指令所直接觸發，具repo預測性與重現性（重複執行同一指令必定觸發）。
+    - 常見類型：
+      - 未定義指令或權限不足（Undefined opcode, execution without sufficient privilege）：例如嘗試執行不支援的指令或在 User Mode 下執行 Kernel 特權指令。
+      - 未對齊記憶體存取（Misaligned memory access）：依據執行環境（ISA / Hardware Support），可能觸發 Trap 交由 OS 軟體模擬。
+      - 虛擬記憶體例外（Virtual memory exceptions）：包含 Page Faults（缺頁中斷）與 Protection Violations（記憶體保護違規）。
+      - 環境呼叫（Environment call / ecall）：例如 RISC-V 的 ecall 指令，用於從 User Space 主動跳轉至 Kernel Space 執行系統呼叫（Syscall）。
 - 個人看法：
+  <br>這張投影片在微架構與流水線控制（Pipeline Control）上具有非常重要的分類意義：
+  - 流水線處置方式的根本差異：
+    - Synchronous Exceptions（同步例外）：必須在特定指令到達管線特定階段（如 EX 或 MEM）時被精確捕捉。為了維持 Precise Exceptions，硬體必須等待該指令成為「邏輯上最老」的指令時才能觸發 Trap，並撤銷（Flush）其後方的所有指令。
+    - Asynchronous Interrupts（異步中斷）：由於與當前執行的指令無關，流水線不需要立刻中斷當前指令，而是可以選擇在完成當前正在發射/執行的指令區塊後，於乾淨的指令邊界（Instruction Boundary）暫停並跳轉至 Handler，處理彈性較高。
+  - 作業系統（OS）與微架構的交會點：
+    <br>無論是 Virtual Memory 的 Page Fault（需要載入硬碟資料後返回重新執行原指令），還是 ecall 系統呼叫（處理完後執行下一條指令），這些分類直接決定了硬體需要向 OS 提供哪一種 EPC (Exception Program Counter) 與 Cause Register。
 - 總結：
+  <br>本投影片清楚劃分了 Traps 的兩大根源：外部硬體事件引發的 異步中斷（Interrupts） 與內部指令執行錯誤或請求引發的 同步例外（Exceptions）。理解這兩者的差異是設計流水線精確中斷（Precise Exceptions）機制與 OS 核心服務呼叫的核心關鍵。
 
 ## slide：26
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0026.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Asynchronous Interrupts: invoking the interrupt handler（異步中斷：呼叫中斷處理程式）」，說明處理器在接獲外部硬體中斷請求時，如何觸發並切換至 Interrupt Handler 的微架構處理流程。
 - 本教學重點內容：
+  - 中斷請求觸發（Interrupt Request）：
+    - 外部 I/O 裝置（如網卡、鍵盤、Timer）透過發送中斷請求訊號（Interrupt Request Line），要求處理器暫停當前工作並進行服務。
+  - 處理器回應與精確中斷（Precise Interrupt）處理：
+    - 停止於指令 $I_i$：處理器決定處理該中斷時，會選擇在指令 $I_i$ 處暫停當前程式。
+    - 精確中斷保證（Precise Interrupt）：所有早於 $I_i$ 的指令（$I_0$ 至 $I_{i-1}$）皆已完全執行完畢並寫入架構狀態；而指令 $I_i$ 以及更晚的指令則完全尚未修改任何架構暫存器狀態。
+    - 保存返回點：將指令 $I_i$ 的 Program Counter (PC) 儲存在專用的硬體暫存器中（如 RISC-V 架構中的 mepc - Machine Exception Program Counter）。
+    - 禁用中斷與控制權轉移：暫時關閉/禁用中斷（Disable Interrupts，防止中斷巢狀引發混亂），並將 PC 強制設定為指定 Interrupt Handler 的起始位址以轉移控制權。
 - 個人看法：
+  <br>這張投影片點出了 Asynchronous Interrupts（異步中斷）與 Precise Exceptions（精確例外）的完美結合：
+  - 彈性的選擇權（Timing Flexibility）：
+    - 與必須「立即且精確在特定指令」觸發的 Synchronous Exception 不同，異步中斷是由外部發起，與流水線中的特定指令無關。
+    - 這給了處理器設計極大的彈性——硬體可以在接收到中斷訊號後，選擇在流水線「最方便、最乾淨」的指令邊界（Instruction Boundary）切斷，將 $I_i$ 作為精確分割點，從而大幅降低控制邏輯的設計難度。
+  - 硬體暫存器的設計細節（以 RISC-V 為例）：
+    - 投影片特別提到的 mepc（Machine Exception Program Counter）是硬體自動寫入的。當中斷處理程式（Handler）執行完畢並呼叫返回指令（如 mret）時，硬體會自動將 mepc 的值複製回 PC，讓被中斷的程式從 $I_i$ 無縫接續執行，對使用者程式來說完全無感（Transparent）。
 - 總結：
+  <br>本投影片詳細說明了處理器如何處置外部異步中斷：透過選擇一條指令 $I_i$ 作為界線，實現「精確中斷（Precise Interrupt）」，將 $I_i$ 的 PC 儲存至 mepc 等特殊暫存器，並在關閉後續中斷後跳轉至指定的 Handler 進行處置，確保中斷處理完畢後能完美還原程式原來的執行狀態。  
 
 ## slide：27
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0027.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Interrupt Handler（中斷處理程式）」，從作業系統（OS）與系統軟體的層面，詳細說明進入中斷處理程式後的執行流程以及返回原程式的機制。
 - 本教學重點內容：
+  - 保存狀態與支援巢狀中斷（Saving State & Nested Interrupts）：
+    - 保存 Context（上下文）：在重新開啟中斷（Re-enable Interrupts）前，Handler 必須先執行指令將 mepc（機器例外程式計數器）以及其他的通用暫存器狀態，儲存至記憶體的堆疊（Stack）中。
+    - 中斷遮罩（Interrupt Masking）：在關鍵狀態保存完成前，必須將後續中斷保持遮罩（Masked / Disabled），避免新的中斷蓋掉暫存器中尚未儲存的 mepc 或其他關鍵資訊，導致狀態遺失。
+  - 辨識中斷原因（Identifying Interruption Cause）：
+    - 讀取原因暫存器 mcause（Machine Cause Register），辨識觸發中斷的具體類型（例如是 Timer 中斷、網卡封包到來還是鍵盤輸入），並跳轉至相應的子服務程式處理。
+  - 還原上下文與返回指令（mret - Machine Return）：
+    - 處理完中斷後，Handler 從堆疊還原先前保存的暫存器與 mepc。
+    - 執行 mret（Machine Return from Trap）指令返回被中斷的程式。mret 硬體指令會同時自動完成三件事：
+      - 恢復 PC：將 PC 設定為 mepc 中儲存的位址，使程式恢復執行。
+      - 恢復中斷狀態：還原中斷前的「中斷啟用/禁用（Interrupt-Enable）」設定。
+        - 恢復特權模式：將處理器狀態還原至發生中斷前的特權等級（Privilege Mode，例如從 Kernel Mode 切換回 User Mode）。
 - 個人看法：
+  <br>這張投影片完美解構了 **軟硬體協同（Hardware-Software Co-Design）處理中斷的黃金工作流程**：
+  - 硬體與軟體的分工界線：
+    - 硬體負責「臨門一腳」：在中斷發生的瞬時，自動將 PC 存入 mepc、記錄原因至 mcause、關閉中斷並跳轉至 Handler 入口。
+    - 軟體（OS Handler）負責「保存現場」：因為通用暫存器（x1~x31）數量眾多，硬體全部自動儲存會消耗極大的晶片面積與週期；因此交給軟體 Handler 透過幾條儲存指令（Store Instructions）存入 Stack，是效能與硬體複雜度之間最佳的折衷。
+  - 原子性（Atomicity）與 mret 指令的巧妙設計：
+    - 當中斷處理完畢要返回原程式時，「恢復 PC」、「開啟中斷」以及「降級特權模式（User Mode）」這三件事必須在同一個週期內原子性（Atomically）完成。
+    - 當中斷處理完畢要返回原程式時，「恢復 PC」、「開啟中斷」以及「降級特權模式（User Mode）」這三件事必須在同一個週期內原子性（Atomically）完成。
 - 總結：
+  <br>本投影片完整說明了 Interrupt Handler 的運作邏輯：軟體 Handler 負責在遮罩狀態下保存 mepc 與暫存器上下文，讀取 mcause 處理對應事件；最後透過硬體原子指令 mret 一口氣恢復 PC、中斷狀態與特權模式，精確且安全地接續原程式的執行。
 
 ## slide：28
 <div align="left" >
