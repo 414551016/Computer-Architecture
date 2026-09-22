@@ -846,8 +846,8 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
     - 指令 6：addi x14, x12, 2（相依於指令 4 的 x12）
   - 獨立的指令鏈（Two Independent Sequences）：
     - 右方圖表顯示這 7 條指令可拆解為兩條完全獨立、互不影響的相依鏈（Dependency Chains）：
-      - 鏈一（乘法鏈）：$0 \rightarrow 2 \rightarrow 3$
-      - 鏈二（加法鏈）：$1 \rightarrow 4 \rightarrow (5, 6)$
+      - 鏈一（乘法鏈）： $0 \rightarrow 2 \rightarrow 3$
+      - 鏈二（加法鏈）： $1 \rightarrow 4 \rightarrow (5, 6)$
   - 全序排程的彈性（Flexibility in Total Order Scheduling）：
     - 由於兩條鏈彼此獨立，硬體或編譯器在安排指令執行順序（Total Order）時擁有極高的彈性。
     - 例如：若鏈一的乘法需要較多週期（Latency 長），處理器可以先執行鏈二的加法指令（如在指令 0 執行時同時執行指令 1 與 4），而不需停頓（Stall）等待乘法完成。
@@ -1078,25 +1078,89 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0047.jpg" width="50%">
 </div>
 
+這張投影片呈現了一張詳細的 Scoreboard（計分板）時序追蹤圖，展示多條指令在帶有分數板（Scoreboard）與 Data Forwarding/Bypassing 的流水線中動態排程與執行的狀況。
 - 本教學重點內容：
+  - 指令序列與執行階段時序圖（頂部表格）：
+    - 指令序列與延遲：
+      - 0 mul x1, x2, x3：需要多週期（Y0, Y1, Y2, Y3）
+      - 1 addi x11, x10, 1：單週期（X0）
+      - 2 mul x5, x1, x4：因相依於 x1，需停頓等待 x1 資料就緒（RAW Hazard）
+      - 3 mul x7, x5, x6：因相依於 x5，需停頓等待 x5 資料就緒
+      - 4 addi x12, x11, 1 / 5 addi x13, x12, 1 / 6 addi x14, x12, 2：後續相依的加法指令
+    - 時序欄位意義：
+      - F：Fetch（取指）
+      - D：Decode / Issue（解碼與發射）
+      - I：Wait for Read Operands（等待運算元就緒/停頓）
+      - X0 / Y0~Y3：Execute（執行階段，Y0~Y3 代表長延遲的乘法運算）
+      - W：Writeback（寫回暫存器）
+  - Scoreboard 狀態變革（底部週期表格：Cyc 1~18）：
+    - 欄位：Cyc（週期）、D（當前 Decode 階段指令）、I（當前 Issue/Ready 指令）、Dest Regs（目前有 Pending Write 的目標暫存器）。
+    - 紅色數字（RED）：代表若觀察 F 欄位（Forwarding），該週期可以透過 Bypassing / Data Forwarding 直接將結果傳遞給後續指令，無需停頓寫回。
+    - 關鍵問題：What does the scoreboard look like at cycle 7?（在週期 7 時，Scoreboard 的狀態為何？）
+      - 在週期 7，指令 0 (mul x1) 正好完成 Y3 階段並在寫回，x1 準備寫回，而指令 2 (mul x5) 正在等待 x1 釋放。
+  - 結構衝突（Structural Hazard）：
+    - 下方標註 Writes with two cycle latency. Structural Hazard：當多條不同延遲的指令同時試圖在同一個週期寫回暫存器，或存取同一個 Write Port 時，會引發結構衝突（Structural Hazard）。
 - 個人看法：
+  <br>這張投影片是理解 Scoreboard 與 Data Forwarding 如何交錯運作 的深度範例：
+  - Data Forwarding 解開 RAW Hazard：
+    <br>紅色數字標示了 Bypassing 成立的時間點。如果沒有 Data Forwarding，指令必須等到 W（Writeback）階段完全結束才能讀取暫存器；但透過 Bypassing，在 EX 階段結束（如 Y3 或 X0）的下一週期，運算結果就能直接拉線送到下一個 ALUs 的輸入端。
+  - Scoreboard 的核心任務：
+    <br>Scoreboard 必須精確記錄哪些暫存器目前「被佔用（Pending Write）」（如圖中的 Dest Regs: X1, X11, X5...），並控制何時解除 Stall，確保指令只在運算元真正就緒時才進入 Execute 階段。
 - 總結：
+  <br>本投影片透過逐週期的 Scoreboard 追蹤圖，展現了 Scoreboard 硬體如何動態鎖定目標暫存器（Dest Regs）、處置 RAW 資料相依，並結合 Bypassing（紅色標記）盡可能縮短管道停頓週期，同時處理因不同指令延遲產生的 Structural Hazard。
 
 ## slide：48
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0048.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Early Commit Point?（過早提交點的隱患）」，探討如果在管線設計中讓指令在尚未徹底完成檢查時就過早進行提交（Early Commit），將對系統引發的嚴重後果。
 - 本教學重點內容：
+  - 時序範例與執行過程（Pipeline Schedule）：
+    - 指令 0：0 mul x1, x2, x3 $\rightarrow$ 在發射與執行時經歷多個週期（Y0 ~ Y3）。
+    - 指令 1：1 addi x11, x10, 1 $\rightarrow$ 執行時間短（X0），很快就完成了運算並到達寫回（W）階段。
+    - 指令 2：2 mul x5, x1, x4 $\rightarrow$ 正在停頓（I）等待 x1。
+  - 核心問題（Early Commit Point）：
+    - 在此排程中，較晚進管線的指令 1 (addi) 比較早進管線的指令 0 (mul) 更快執行完畢並寫回（W）。
+    - 如果微架構在指令 1 執行完（X0）時就直接允許其 Commit（寫回暫存器/更新架構狀態），這就是所謂的 Early Commit。
+  - 引發的限制與後果（Limits Certain Types of Exceptions）：
+    - 破壞精確例外（Precise Exceptions）：如果在週期 $t$，指令 1 (addi) 已經 Commit 寫入暫存器，但指令 0 (mul) 隨後在 Y3 階段發生了 Arithmetic Overflow 或 Data Exception，硬體將無法復原指令 1 已經造成的狀態改變！
+    - 限制例外類型：這種「早提交」的架構會限制 CPU 支援精確例外的能力，迫使系統只能支援特定非精確（Imprecise）的 Exception 類型，或者嚴重限制管線的動態排程能力。
 - 個人看法：
+  <br>這張投影片用最直觀的時序反例，完美解釋了為什麼現代處理器需要 In-Order Commit（按序提交） 機制：
+  - 亂序執行（OOO）與按序提交（In-Order Commit）的必然性：
+    - 指令可以亂序執行（指令 1 比指令 0 先算完），但絕不能亂序提交！
+    - 如果允許 Early Commit，處理器就會倒退回前幾張投影片提到的 $I_2 O_2$ 障礙（無法維持 Precise Exceptions）。
+  - Reorder Buffer (ROB) 的誕生動機：
+    <br>為了阻止指令 1 這種「跑得快就想先 Commit」的行為，硬體必須引入 ROB。指令 1 算完後只能先把結果存在 ROB 緩衝區裡「排隊」，一定要等到前面的指令 0 順利 Commit 且確定沒有 Exception 後，指令 1 才能正式 Commit 寫回暫存器。
 - 總結：
+  <br>本投影片強調了「過早提交（Early Commit）」對精確例外的破壞性：當長延遲指令（如乘法）後方的短延遲指令（如加法）過早 Commit 時，一旦長延遲指令後續發生 Exception，將無法撤銷已 Commit 的狀態。這也是為什麼現代微架構必須採用 Reorder Buffer (ROB) 來強制實現 In-Order Commit 的核心原因。
 
 ## slide：49
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0049.jpg" width="50%">
 </div>
 
+這張投影片為亂序執行微架構（Out-Of-Order Architectures）的分類總結表（Recap Table），透過將指令週期的四個核心階段分為「按序（In-Order, IO）」或「亂序（Out-Of-Order, OOO）」，歸納出不同硬體架構的演進與特性。
 - 本教學重點內容：
+  - 表格欄位與階段定義：
+    - Frontend：取指與初步處置
+    - Issue：發射與檢查運算元
+    - Writeback：運算完成並將結果寫回暫存器/內部緩衝區
+    - Commit：正式更新架構狀態（Architectural State）
+  - 五種典型微架構分類：
+    |架構名稱  |Frontend  |Issue  |Writeback  |Commit  |典型硬體元件與特徵   |
+    |--|--|--|--|--|--|
+    |$I_4$  |IO  |IO  |IO  |IO  |固定長度流水線，搭配 Scoreboard。全按序執行。|
+    |$I_2O_2$  |IO  |IO  |OOO  |OOO  |Scoreboard。按序發射，但因執行時間不同而亂序寫回與提交，無法支援精確例外（Imprecise Exceptions）。|
+    |$I_2OI$  |IO|IO|OOO|IO|Scoreboard, Reorder Buffer (ROB), Store Buffer。按序發射、亂序寫回至 ROB、按序提交（In-Order Commit），成功解決精確例外問題。|
+    |$IO_3$|  |IO  |OOO  |OOO|OOO|Scoreboard, Issue Queue。允許亂序發射與執行，但缺乏按序提交機制。|
+      |$IO_2I$  |IO  |OOO  |OOO|IO  |Scoreboard, Issue Queue, Reorder Buffer, Store Buffer。現代高效能 CPU（如 Core i7, Zen）的標準架構，實現完全動態亂序執行，同時維持按序提交以確保精確例外。|
+  - 命名邏輯（Naming Scheme）：
+    - $I$ 代表 In-Order（按序）；$O$ 代表 Out-Of-Order（亂序）。
+    - 字母數字交替代表各階段的開關狀態，例如：
+      - $I_2OI$：前 2 階段為 IO，第 3 階段為 OOO，第 4 階段為 IO。
+      - $IO_2I$：第 1 階段為 IO，中間 2 階段為 OOO，最後 1 階段為 IO。
 - 個人看法：
 - 總結：
 
