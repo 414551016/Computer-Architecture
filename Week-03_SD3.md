@@ -582,7 +582,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
     - 軟體（OS Handler）負責「保存現場」：因為通用暫存器（x1~x31）數量眾多，硬體全部自動儲存會消耗極大的晶片面積與週期；因此交給軟體 Handler 透過幾條儲存指令（Store Instructions）存入 Stack，是效能與硬體複雜度之間最佳的折衷。
   - 原子性（Atomicity）與 mret 指令的巧妙設計：
     - 當中斷處理完畢要返回原程式時，「恢復 PC」、「開啟中斷」以及「降級特權模式（User Mode）」這三件事必須在同一個週期內原子性（Atomically）完成。
-    - 當中斷處理完畢要返回原程式時，「恢復 PC」、「開啟中斷」以及「降級特權模式（User Mode）」這三件事必須在同一個週期內原子性（Atomically）完成。
+    - 如果用多條普通指令分開做，可能會產生安全性漏洞（Security Hole）或再度被中斷打斷；而專用的 mret 特權指令正是為了確保這三者同步生效而設計的硬體利器。
 - 總結：
   <br>本投影片完整說明了 Interrupt Handler 的運作邏輯：軟體 Handler 負責在遮罩狀態下保存 mepc 與暫存器上下文，讀取 mcause 處理對應事件；最後透過硬體原子指令 mret 一口氣恢復 PC、中斷狀態與特權模式，精確且安全地接續原程式的執行。
 
@@ -591,9 +591,25 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0028.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Synchronous Exceptions（同步例外）」，對同步例外的特性、處置方式以及系統呼叫（System Call / ecall）的運算行為進行了深入說明。
 - 本教學重點內容：
+  - 同步例外的核心特性（Specific Instruction Association）：
+    - 同步例外是由特定的一條指令在執行過程中直接觸發的。
+    - 需要重新執行（Restartable）：一般情況下，觸發例外的指令無法順利完成。在作業系統（OS）排解原因後，該指令需要重新被啟動並執行（Restarted）。
+      - 範例：處理完 Page Fault（缺頁中斷）後，CPU 會重新執行原本讀取失敗的 load 指令。
+    - 精確處理（Precise Handling）：要求必須撤銷或阻止（Undo/Prevent）該出錯指令本身及其後續（較晚）所有指令對架構狀態的修改。
+  - 系統呼叫（System Calls / ecall）的特例：
+    - 執行接續（Resume After Instruction）：與一般錯誤例外不同，當程式執行 ecall 指令引發系統呼叫向作業系統請求服務時，處理器在 Handler 完成服務後，通常會返回並接續執行 ecall 的下一條指令。
 - 個人看法：
+  <br>這張投影片非常清楚地對比了 「錯誤型例外（Faults）」與「陷阱/服務請求型例外（Traps / Syscalls）」 在硬體控制流程上的關鍵差異：
+  - 返回 PC 位址的硬體選擇（mepc vs mepc + 4）：
+    - Page Fault / Execution Fault：硬體自動存入 mepc 的是出錯指令本身的 PC。當 OS 補完 Page 之後執行 mret，CPU 會回到原本那條指令重試。
+    - ecall (Syscall)：硬體存入 mepc 的雖然也是 ecall 本身的 PC，但 OS Handler 在處理完請求後，軟體會手動將儲存在 Stack 中的 mepc 值加上 4（指令長度），使得 mret 時能夠跳過 ecall，順利執行下一條指令。
+  - In-Order Commit 對 Precise Exception 的重要性：
+    - 這正是為什麼流水線（特別是超純量或亂序執行處理器）必須保證指令按照程式順序提交（In-Order Commit）。
+    - 只要 $I_i$ 觸發了 Synchronous Exception，管線必須有能力將 $I_{i+1}$ 及其後續指令的所有結果「乾淨地抹去」，否則將破壞 Precise Exception 的語意。
 - 總結：
+  <br>本投影片解析了同步例外的處理原則：對於 Page Fault 等錯誤，OS 排解後須重新執行該指令；而對 ecall 等系統呼叫，則於處理完成後接續執行下一條指令。不論何種情況，硬體都必須滿足精確例外（Precise Exception）的要求，嚴格撤銷所有未完成指令的副作用。
 
 ## slide：29 五階段管線（5-Stage Pipeline）中的異常處理（Exception Handling）機制
 <div align="left" >
@@ -611,11 +627,20 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   - 核心核心探討議題：
     - 當多個異常同時在不同管線階段觸發時，系統該如何進行優先順序處理與協調？
     - 外部非同步中斷應該在何時、何處（哪一個階段）被妥善處理？
-- 個人看法：<br>在 CPU 設計中，異常處理是確保系統穩定運作與實現「精確中斷（Precise Interrupt）」的關鍵技術。
+  - 微架構面臨的兩大核心挑戰（Key Questions）：
+    - 多重同時例外處理（Multiple Simultaneous Exceptions）：當不同指令在同一週期、不同的管線階段（例如指令 A 在 MEM 發生 Data Fault，而較晚發射的指令 B 在 IF 發生 PC Address Exception）同時觸發 Exception 時，處理器應如何判斷優先權並維護程式順序？
+    - 異步中斷的注入點（Handling Asynchronous Interrupts）：外部異步中斷應該在何時、流水線的哪一個階段被捕捉與介入？
+- 個人看法：
+  <br>這張圖直接揭示了流水線（Pipeline）與精確例外（Precise Exceptions）衝突的核心來源：
   - 挑戰點：管線化的優勢在於指令交錯執行，但這也代表「後進去的指令（較早階段）」可能會比「先進去的指令（較晚階段）」更早觸發異常。如果沒有妥善管理，會導致指令狀態混亂。
   - 解決方向：通常設計上會將各階段產生的異常標記在流水線暫存器（Pipeline Register）中，隨指令一路傳遞，直到 WB（寫回）階段前統一按指令順序處理，以確保程式執行狀態的正確性與可預測性。
-- 總結：<br>本教學聚焦於五階段 CPU 管線中的異常處理機制，說明 PC 位址錯誤、非法指令、位址未對齊及資料異常會分別發生於不同階段。核心課題在於如何協調多個階段同時發生的異常，以及如何妥善處理解析外部非同步中斷，以維持系統執行的精確性與穩定性。
-
+  - 時間與空間的倒錯（Out-of-Order Exception Detection）：
+    - 在流水線中，較早進管線（較老）的指令在 MEM 階段才發現 Data Page Fault，而較晚進管線（較新）的指令在 IF 階段就發現了 Instruction Page Fault。
+    - 時間上，IF 階段的 Exception 會先被硬體邏輯偵測到；但邏輯上，MEM 階段才是程式順序較優先的指令！
+    - 處置原則：硬體絕對不能直接觸發先偵測到的 IF Exception，否則會破壞 Precise Exception。硬體必須將 Exception 狀態沿著管線暫存器（Pipeline Registers）「往後傳遞（Hold status until Commit/WB Stage）」，確保永遠只處理程式順序中最老（Oldest）的 Exception。
+- 總結：
+  <br>本教學聚焦於五階段 CPU 管線中的異常處理機制，說明 PC 位址錯誤、非法指令、位址未對齊及資料異常會分別發生於不同階段。核心課題在於如何協調多個階段同時發生的異常，以及如何妥善處理解析外部非同步中斷，以維持系統執行的精確性與穩定性。
+  <br>本投影片透過 5 階流水線圖示，點出 Exception 可能散布於 IF, ID, EX, MEM 等各個階段。為了滿足精確例外（Precise Exception），處理器必須建立一套優先權與狀態傳遞機制，確保在多個 Exception 同時發生時，能嚴格按照程式的邏輯順序（Program Order）進行處理。
 
 ## slide：30
 <div align="left" >
