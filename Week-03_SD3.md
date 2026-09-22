@@ -81,9 +81,22 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0006.jpg" width="50%">
 </div>
 
+這張投影片展示了 基線 2 管道順序超純量處理器（Baseline 2-Way In-Order Superscalar Processor） 的微架構硬體區塊圖。
 - 本教學重點內容：
+  - 2-Way（雙發射）前端架構：
+    - Instruction Cache（指令快取）：每個週期可同時讀取（Fetch）兩條指令。
+    - IR0 / IR1（指令暫存器）：將兩條擷取的指令分別鎖存，並送入 RF Read（暫存器檔讀取） 階段。
+  - 雙管線（Dual Execution Pipelines）分工：
+    - Pipe A：負責整數運算（Integer Ops）與分支指令（Branches），包含 ALU A。
+    - Pipe B：負責整數運算（Integer Ops）與記憶體存取（Memory），包含 ALU B 與 Data Cache。
+  - 順序寫回（In-Order Writeback）：
+    - 兩條管線算完後，最終將結果寫回暫存器檔（RF Write）。
 - 個人看法：
+  <br>這是在介紹 Superscalar 時最標準且經典的入門架構設計（例如早期 Intel Pentium 的 $U/V$ pipeline）。
+  - 硬體開銷：暫存器檔（RF）必須支援更多 Read/Write Ports（雙發射需要至少 4 個 Read Ports 與 2 個 Write Ports），這會顯著增加晶片面積與功耗。
+  - 結構限制（Structural Hazard）：Pipe A 與 Pipe B 功能不完全對稱（只有 Pipe B 能存取 Data Cache，只有 Pipe A 能處理 Branch）。若兩條同時抓進來的指令都是 Memory 存取指令，第二條指令就無法發射，必須延後到下一個週期，這稱之為發射限制（Issue Restrictions）。
 - 總結：
+  <br>本投影片展示了 2-Way 順序超純量處理器的硬體架構，透過雙路管線（Pipe A 負責整數/分支，Pipe B 負責整數/記憶體）實現單一週期平行發射與執行兩條指令。此設計揭示了 Superscalar 對暫存器埠數量的需求增加，以及功能單元不對稱所產生的 Issue 限制。
 
 ## slide：7
 <div align="left" >
