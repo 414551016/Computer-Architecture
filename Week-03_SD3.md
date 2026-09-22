@@ -103,36 +103,80 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0007.jpg" width="50%">
 </div>
 
+這張投影片補充說明了  Baseline 2-Way In-Order Superscalar Processor  在硬體埠數（Ports）與前端擷取（Fetch）上的具體規格。
 - 本教學重點內容：
+  - 同週期雙指令擷取（Fetch 2 Instructions at the same time）：
+    - Instruction Cache 支援單週期讀取兩條指令，分別鎖存至 IR0 與 IR1 兩個指令暫存器。
+  - 暫存器檔埠數需求（Register File Ports）：
+    - 4 Read Ports（4 個讀取埠）：因為雙發射最多需要同時讀取兩條指令的操作數（每條指令最多 2 個來源暫存器），故 RF Read 需要 4 個讀取埠。
+    - 2 Write Ports（2 個寫入埠）： Pipe A 與 Pipe B 可能在同一週期同時執行完畢並寫回，故 RF Write 需要 2 個寫入埠。
 - 個人看法：
+  <br>這展現了 Superscalar 帶來顯著硬體開銷（Hardware Overhead）的經典案例。
+  - 暫存器檔的面積與功耗：暫存器檔（Register File）的晶片面積大約與埠數的平方成正比（$\text{Area} \propto (\text{Read Ports} + \text{Write Ports})^2$）。從 Single-Issue（2R/1W）升級到 2-Way Superscalar（4R/2W），RF 的電路複雜度與存取延遲均大幅增加。
+  - 效能與成本平衡：增加 Ports 雖然是實現 IPC > 1 的硬性門檻，但硬體設計師必須仔細評估增加的面積與功耗成本是否能帶來相應的 IPC 提升。
 - 總結：
+  <br>本投影片著重於 2-Way 順序超純量處理器的硬體規格細節，特別指出其需配備 4 個讀取埠與 2 個寫入埠的暫存器檔，以支援同一週期內雙指令的同時擷取、讀取與寫回。
 
 ## slide：8
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0008.jpg" width="50%">
 </div>
 
+這張投影片說明了  Baseline 2-Way In-Order Superscalar Processor（基線 2 管道順序超純量處理器） 中的 Issue Logic / Instruction Steering（發射邏輯與指令分流/轉向）。
 - 本教學重點內容：
+  - 指令分流與轉向（Instruction Steering）：
+    - 前端同時從 Instruction Cache 擷取兩條指令，鎖存於 IR0 與 IR1。
+    - 多路複用器（Multiplexers, Mux）與 Issue Logic 負責根據指令類型，將指令操作數動態分流至對應的執行管線（Pipe A 或 Pipe B）。
+  - 管線分工與限制：
+    - Pipe A：僅能執行整數運算（Integer Ops）與分支指令（Branches）。
+    - Pipe B：僅能執行整數運算（Integer Ops）與記憶體存取指令（Memory）。
 - 個人看法：
+  <br>這展現了多發射（Multi-Issue）硬體設計中 Instruction Steering（指令分流邏輯） 的重要性與挑戰。
+  - 硬體複雜度升級：除了上一頁提到的 4R/2W 多埠暫存器檔以外，Mux 與 Steering 邏輯使得 ID/Issue 階段的關鍵路徑（Critical Path）變長，可能會影響 CPU 的時脈頻率（Clock Frequency）。
+  - 不對稱管線的碰撞限制：如果 IR0 是分支指令，而 IR1 也是分支指令，由於只有 Pipe A 支援分支，IR1 就無法在同一週期發射（Structural Hazard）。這種情況下，Issue Logic 必須進行硬體 Stalling，僅發射 IR0，並將 IR1 留到下一個週期。
 - 總結：
+  <br>本投影片展示了雙發射順序超純量處理器的 Issue Logic / Instruction Steering 運作機制，透過多路複用器將兩條擷取的指令分流至 Pipe A（整數/分支）與 Pipe B（整數/記憶體），突顯了硬體控制邏輯在處理非對稱執行管線時的角色與限制。
 
 ## slide：9
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0009.jpg" width="50%">
 </div>
 
+這張投影片展示了  Baseline 2-Way In-Order Superscalar Processor（基線 2 管道順序超純量處理器） 的完整控制邏輯與 Duplicate Control（重複的控制邏輯） 架構。
 - 本教學重點內容：
+  - 重複的控制邏輯（Duplicate Control）：
+    - Decode A & Decode B ：為了能在同一個時脈週期內同時解碼（Decode）從 IR0 與 IR1 擷取進來的兩條指令，處理器必須配備兩套獨立且並行的解碼電路（Decode A 與 Decode B）。
+    - 控制訊號管道（Control Pipelines）：解碼後的控制訊號（Control Signals）會沿著各自對應的管線暫存器向下傳遞，控制後續 Pipeline 階段的運算與路徑選擇。
+  - 雙管線硬體結構全貌：
+    - 前端：雙路解碼與多埠暫存器檔（4 Read Ports / 2 Write Ports）。
+    - 發射與轉向： Issue Logic / Instruction Steering 負責將指令分流至 Pipe A（整數/分支）與 Pipe B（整數/記憶體）。
 - 個人看法：
+  <br>這展現了 Superscalar 為了實現 $\text{IPC} > 1$ 所支付的硬體代價（Hardware Overhead）。
+  - 面積與功耗雙重增加：不僅資料路徑（Datapath）需要雙份（如 2 個 ALU、多 Port RF），控制路徑（Control Logic）也需要 Duplicate Decode 電路，這會直接增加晶片面積與靜態/動態功耗。
+  - 控制邏輯互相干擾：Decode A 與 Decode B 並非完全獨立運作，它們之間還需要額外的 Hazard Detection 邏輯來檢查 IR0 與 IR1 之間是否存在 RAW、WAR 或 WAW 衝突，這使得 Issue 階段的控制訊號產生變得更加複雜。
 - 總結：
+  <br>本投影片展示了雙發射順序超純量處理器的全貌，說明其除了資料路徑需擴增外，更需要重複建置控制邏輯（Duplicate Control：Decode A/B），以便同時處理兩條指令的解碼與控制訊號傳遞，進一步突顯了超純量設計在效能提升與硬體複雜度之間的權衡。
 
 ## slide：10
 <div align="left" >
   <img src="./Lecture/SD3/SD3_page-0010.jpg" width="50%">
 </div>
 
+這張投影片主題為 「Issue Logic Pipeline Diagrams（發射邏輯流水線圖）」，透過流水線時脈圖展示 2-Way Superscalar 的執行情況與遇到衝突時的處理機制。
 - 本教學重點內容：
+  - 理想狀況：雙發射（Double Issue Pipeline）：
+    - IPC = 2 ($\text{CPI} = 0.5$)：在沒有資料相依（Hazard）且指令類型不衝突的情況下，同一個週期可以同時執行兩條指令（例如 $OpA$ 與 $OpB$ 同時 Fetch/Decode/Execute）。
+  - 指令交換與轉向（Instruction Issue Logic Swaps）：
+    - 動態路由：圖中紫框部分（lw 與 addi），發射邏輯（Issue Logic）會自動將指令從自然順序（Natural Position）調整/交換轉向至對應的執行路徑（Pipe A 處理 addi，Pipe B 處理 lw）。
+  - 結構衝突（Structural Hazard）導致的 Stall：
+    - 硬體資源限制：當連續出現兩條 lw 指令時，由於只有 Pipe B 支援記憶體存取（Memory Operations），第二條 lw 指令無法在同一個週期發射至 Pipe B。
+    - 結果：第二條 lw 指令必須在 Decode/Issue 階段多停頓一個週期（D Stage Stall），延後進入 Pipe B 執行。 
 - 個人看法：
+  <br>這張圖非常直觀地展現了 順序超純量（In-Order Superscalar） 的瓶頸與複雜之處。
+  - 非對稱管線的致命傷：雖然理論最高吞吐量是 $\text{IPC} = 2$，但一旦遭遇 Structural Hazard（如連續兩條 Load 指令）或 RAW Hazard，Pipeline 就會產生 Bubble，使得實際 IPC 遠低於 2。
+  - 編譯器排程（Compiler Scheduling）的重要性：在 In-Order Superscalar 下，編譯器如果能在編譯階段調整指令順序（例如將 addi 填入兩條 lw 之間），就能避免 Structural Hazard 並填滿發射槽（Issue Slots），最大化流水線效率。
 - 總結：
+  <br>本投影片展示了 2-Way Superscalar 的時脈圖，說明理想下可實現 $\text{IPC}=2$ 的雙發射；然而當遇到功能單元不對稱（如多條 lw 同時競爭 Pipe B）時，發射邏輯會因結構衝突（Structural Hazard）而被迫產生流水線停頓（Stall）。
 
 ## slide：11
 <div align="left" >
