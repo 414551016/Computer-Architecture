@@ -1184,7 +1184,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
     - Joel Emer (Intel/MIT)
     - James Hoe (CMU)
     - John Kubiatowicz (UCB)
-    - David Patterson (UCB) —— 圖靈獎得主、RISC 架構與 $Hennessy \& Patterson$ 經典教科書作者之一。
+    - David Patterson (UCB) —— 圖靈獎得主、RISC 架構與 Hennessy & Patterson 經典教科書作者之一。
     - Christopher Batten (Cornell)
     - David Wentzlaff (Princeton)
   - 引用的頂尖大學課程（Derived Course Materials）：
