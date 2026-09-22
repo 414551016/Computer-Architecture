@@ -387,9 +387,23 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0020.jpg" width="50%">
 </div>
 
+這張投影片將前幾頁討論的 Bypassing / Forwarding（旁路/前遞機制） 正式以完整的電路連接細節繪製出來，徹底解構了 2-Way Superscalar 處理器中旁路網路（Bypass Network）的龐大規模與物理連線。
 - 本教學重點內容：
+  - 6條前遞數據匯流排（Forwarding Busses 1–6）：
+    - 圖下方標示的 1 2 3 4 5 6 代表來自管線各階段（Pipe A 的 EX、Pipe B 的 EX、Data Cache 讀出資料、 Writeback 階段等）的 6 條獨立數據匯流排（Bypassing Busses）。
+  - 交叉連線矩陣（Full Bypass Crossbar）：
+    - 4 個 6-to-1 Muxes：因為 2-Way Superscalar 包含 2 個 ALU（ALU A 與 ALU B），共需要 4 個 Operand 輸入端（src1_A, src2_A, src1_B, src2_B）。
+    - 每個輸入端前方的 Mux 均需要拉出 6 條分支線路，分別連接至匯流排 1 到 6。這代表執行階段前方共設置了 $4 \times 6 = 24$ 條多工器輸入接線！
 - 個人看法：
+  <br>這張圖可謂是 In-Order Superscalar 走向瓶頸的「終極具象化」！
+  - $O(N^2)$ 的規模暴增效應：
+    - 在單發射（Single-Issue）處理器中，Bypass 匯流排通常只需 2–3 條。
+    - 當發射寬度（Issue Width, $N$）增加到 2 時，Bypass Paths 的數量直接暴增至 6 條，產生了 $4 \times 6 = 24$ 條交叉佈線。若進一步擴增至 4-Way Superscalar，匯流排與 Mux 輸入數量將呈幾何級數激增，形成極為恐怖的金屬佈線叢林（Routing Jungle）。
+  - 物理極限與時脈衝擊：
+    - 這些大量的 Bypass 匯流排與大型多工器（Mux）會帶來嚴重的寄生電容（Parasitic Capacitance）與訊號延遲，直接延長了 Execution 階段的 Critical Path。
+    - 這解釋了為什麼單純依靠「加寬 In-Order 發射寬度」無法持續提升 Performance——因為硬體時脈頻率（$f_{clk}$）很快就會被龐大的 Bypass Network 拖垮。這也是微架構演進最終走向 Out-of-Order（亂序執行） 與 Reservations Stations（保留站/動態排程） 的重要驅動力之一。  
 - 總結：
+  <br>本投影片透過詳細的電路連線圖，展示了 2-Way 超純量處理器為了支援完整數據前遞（Full Bypassing），需要在 4 個 ALU 輸入端前配置 6 條前遞匯流排（共 24 條多工器輸入連線）。這直觀地揭示了旁路網路複雜度隨發射寬度擴展而呈平方級成長（$O(N^2)$）的物理瓶頸，是限制超純量時脈與面積擴展的最核心問題。
 
 ## slide：21
 <div align="left" >
