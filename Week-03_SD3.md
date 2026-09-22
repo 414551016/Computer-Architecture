@@ -834,9 +834,36 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD3/SD3_page-0036.jpg" width="50%">
 </div>
 
+這張投影片主題為 「OOO Motivating Code Sequence（亂序執行的程式碼範例動機）」，透過一組簡單的指令序列與其資料相依圖（Data Dependency Graph），說明亂序執行（Out-of-Order Execution）在排程上的靈活性與優勢。
 - 本教學重點內容：
+  - 程式碼序列（Code Sequence）與資料相依性：
+    - 指令 0：mul x1, x2, x3
+    - 指令 1：addi x11, x10, 1
+    - 指令 2：mul x5, x1, x4（相依於指令 0 的 x1）
+    - 指令 3：mul x7, x5, x6（相依於指令 2 的 x5）
+    - 指令 4：addi x12, x11, 1（相依於指令 1 的 x11）
+    - 指令 5：addi x13, x12, 1（相依於指令 4 的 x12）
+    - 指令 6：addi x14, x12, 2（相依於指令 4 的 x12）
+  - 獨立的指令鏈（Two Independent Sequences）：
+    - 右方圖表顯示這 7 條指令可拆解為兩條完全獨立、互不影響的相依鏈（Dependency Chains）：
+      - 鏈一（乘法鏈）：$0 \rightarrow 2 \rightarrow 3$
+      - 鏈二（加法鏈）：$1 \rightarrow 4 \rightarrow (5, 6)$
+  - 全序排程的彈性（Flexibility in Total Order Scheduling）：
+    - 由於兩條鏈彼此獨立，硬體或編譯器在安排指令執行順序（Total Order）時擁有極高的彈性。
+    - 例如：若鏈一的乘法需要較多週期（Latency 長），處理器可以先執行鏈二的加法指令（如在指令 0 執行時同時執行指令 1 與 4），而不需停頓（Stall）等待乘法完成。
+  - 靜態與動態排程（Static vs. Dynamic Scheduling）：
+    - 靜態排程（Static Scheduling）：在編譯時期由軟體（Compiler）重新排列指令順序。
+    - 動態排程（Dynamic Scheduling）：在執行時期由硬體（Hardware / Out-of-Order Core）根據運算單元與資料就緒狀態，動態調整執行順序。
 - 個人看法：
+  <br>這張圖以極簡的方式揭示了 「指令級平行（Instruction-Level Parallelism, ILP）」 的本質：
+  - 打破順序執行的魔咒：
+    - 在傳統按序（In-Order）處理器中，如果指令 0 (mul) 因為等待資料或運算時間較長而阻塞，後續的指令 1、4、5 都必須無奈跟著停頓。
+    - 但從資料相依圖可以清晰看到，指令 1, 4, 5, 6 跟指令 0, 2, 3 根本沒有半點關係！
+  - 為什麼硬體需要動態排程（OOO）？
+    - 編譯器靜態排程雖然有幫助，但無法應對「執行時期才確定的停頓」（例如 Cache Miss 或動態 Branch Misprediction）。
+    - 透過 OOO 微架構，硬體能即時觀察這張 DAG（有向無環圖），只要運算資源空閒且資料已就緒（Ready），就能「亂序」發射並執行，大幅提升 Pipeline 的利用率！
 - 總結：
+  <br>本投影片展示了動態亂序執行的核心動機：程式碼中常包含多條獨立的相依鏈，透過動態排程（Dynamic Scheduling），處理器能靈活交錯執行無關的指令，避免傳統按序流水線因單一長延遲指令而陷入停頓，進而極大化指令級平行度（ILP）。
 
 ## slide：37
 <div align="left" >
