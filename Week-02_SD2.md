@@ -25,9 +25,24 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD2/SD2_page-0004.jpg" width="50%">
 </div>
 
+本投影片主題為 「Architecture vs. Microarchitecture」（架構與微架構的比較），明確劃分了電腦系統設計中兩個不同層次的範疇：
 - 本教學重點內容
+  - 架構 / 指令集架構（Architecture / Instruction Set Architecture, ISA）：指程式設計師可見的軟硬體介面與規範。內容包含：
+    - 程式員可見狀態（記憶體與暫存器）
+    - 運算指令及其運作方式（Operations）
+    - 執行語意與中斷機制（Execution Semantics / Interrupts）
+    - 輸入/輸出（Input/Output）
+    - 資料類型與大小（Data Types/Sizes）
+  - 微架構 / 組織（Microarchitecture / Organization）：指如何實現 ISA 的具體硬體設計與權衡。重點在於依據特定指標（速度、效能、成本、功耗）進行設計取捨。範例包括：
+    - 管線深度與管線數量（Pipeline depth / number of pipelines）
+    - 快取大小與矽晶圓面積（Cache size / silicon area）
+    - 峰值功耗、執行順序、匯流排寬度與 ALU 寬度（Peak power, execution ordering, bus/ALU widths）
 - 個人看法與分析：
+  <br>這頁投影片清楚表達了電腦架構中最核心的 抽象化（Abstraction）概念。
+  - 軟硬體的契約（Interface vs. Implementation）：ISA 扮演「契約」角色，確保軟體只需對應統一的規格撰寫，即可跨世代執行；而微架構則是硬體工程師在晶片實作層面的「內部藍圖」。
+  - 權衡的藝術（Tradeoffs）：相同的 ISA（例如 x86 或 RISC-V）可以透過不同的微架構來實現——例如低功耗的嵌入式核心或追求極致算力的伺服器晶片，其差異就在於管線、快取與功耗等微架構參數的取捨。
 - 總結：
+  <br>本投影片重點在於區分「架構（ISA）」與「微架構」的界線。架構是軟硬體之間的介面與規範，定義暫存器、指令集、資料型態與中斷語意；微架構則是實現該架構的硬體組織方式，透過調整管線深度、快取容量、匯流排寬度與功耗等參數，在速度、成本與能耗之間取得最佳平衡。兩者的分離確保了軟體相容性與硬體創新的彈性。
 
 ## slide：5
 <div align="left" >
