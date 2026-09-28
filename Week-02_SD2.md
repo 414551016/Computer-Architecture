@@ -76,7 +76,7 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 
 - 本教學重點內容
   <br>本頁投影片主題為 「Compatibility Problem at IBM」（IBM 的相容性問題），講述了 1960 年代初期 IBM 所面臨的產品線相容性危機，以及促成 IBM System/360 誕生的歷史背景：
-  - 1960 年代初期的碎片化危機：IBM 當時擁有多達 4 條互不相容的電腦產品線（例如 $701 \rightarrow 7094$、$650 \rightarrow 7074$、$702 \rightarrow 7080$、$1401 \rightarrow 7010$）。
+  - 1960 年代初期的碎片化危機：IBM 當時擁有多達 4 條互不相容的電腦產品線（例如 $701 \rightarrow 7094$、 $650 \rightarrow 7074$、 $702 \rightarrow 7080$、 $1401 \rightarrow 7010$）。
   - 各系統相互獨立且封閉：每個系統家族都有各自專屬的：
     - 指令集（Instruction set）
     - I/O 系統與次級儲存媒體（磁帶、磁鼓、磁碟）
