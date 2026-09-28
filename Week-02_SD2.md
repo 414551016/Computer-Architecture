@@ -6,3 +6,8 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
   <img src="./Lecture/SD2/SD2_page-0001.jpg" width="49%">
   <img src="./Lecture/SD2/SD2_page-0002.jpg" width="49%">
 </div>
+
+## slide：3
+<div align="left" >
+  <img src="./Lecture/SD2/SD2_page-0003.jpg" width="50%">
+</div>
