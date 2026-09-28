@@ -180,17 +180,46 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 </div>
 
 - 本教學重點內容
+  <br>本頁投影片主題為 「Instruction Set Architecture (ISA) 的功能抽象定義」，進一步闡明了 ISA 作為功能抽象（Functional Abstraction）與「心智模型（Mental Model）」的具體含義：
+  - ISA 所定義的範疇（What it is）：
+    - 系統能執行哪些運算操作（What operations can be performed）。
+    - 如何命名儲存空間位置（How to name storage locations，如暫存器與記憶體定址）。
+    - 指令的位元格式與編碼（The format / bit pattern of the instructions）。
+  - ISA 通常不定義的範疇（What it is NOT）：
+    - 運算執行的時序（Timing of the operations）。
+    - 運算所消耗的功耗（Power used by operations）。
+    - 運算與儲存元件在硬體上具體如何實現（How operations/storage are implemented）。
+  - 核心特點：同一個 ISA 可以有多種不同的硬體實作方式（Many implementations possible for a given ISA）。
 - 個人看法與分析：
+  <br>這頁投影片精準揭示了電腦工程中 「介面（Interface）與實作（Implementation）分離」 的核心哲學：
+  - 黑盒化（Black-box Design）的效益：ISA 提供了軟體設計者一個清晰的功能模型，使軟體無須關注電路延遲、時脈週期或功耗細節即可運作。
+  - 市場競爭與創新空間：正因為 ISA 不限制「時序」與「實現方式」，硬體廠商才能在相同的 ISA 規範下，透過管線化、亂序執行、多核架構等微架構創新來競爭效能與能效比（例如 Intel 與 AMD 在 x86 ISA 下的競爭）。
 - 總結：
+  <br>本頁強調 ISA 是處理器的功能抽象（心智模型）。它定義指令格式、操作類型與儲存命名，但不包含時序、功耗及硬體具體實現方式。這種設計使單一 ISA 能擁有高低效能、不同功耗等的多種硬體實作。總結來說，ISA 是軟硬體的介面契約，劃清了功能規範與硬體實作的界線，讓軟體生態得以延續，同時為硬體微架構的效能優化留出彈性空間。
 
 ## slide：12
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0012.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「Different Instruction Set Architecture」（三大主要指令集架構），對比了當今資訊產業中三大主流 ISA 的特點與應用領域：
+  - ARM：
+    - 由 ARM 公司開發的指令集家族。
+    - 廣泛應用於行動裝置與低功耗設備（Mobile & Low-power devices）。
+    - 現已積極擴展至桌面電腦、資料中心與雲端伺服器市場。
+  - x86：
+    - 由 Intel（與 AMD）開發的指令集家族。
+    - 主要用於通用計算系統（桌上型電腦與伺服器）。
+  - RISC-V：
+    - 源自加州大學柏克萊分校（UC-Berkeley）的開放標準指令集（Open standard ISA）。
+    - 主要應用於嵌入式系統，並在 AI 加速器與研究晶片中獲得早期採用。
 - 個人看法與分析：
+  <br>這頁投影片展示了現代指令集架構在 商業模式 與 技術場景 上的三足鼎立生態：
+  - 商業模式的差異：x86 代表傳統封閉且高度壟斷的架構；ARM 採用智慧財產權（IP）授權模式；而 RISC-V 則透過開放授權打破了授權費門檻，鼓勵廣大開源社群與客製化晶片的創新。
+  - 動態競爭與領域轉移：過去 ARM 守著低功耗行動市場、x86 獨霸高效能 PC/伺服器、RISC-V 用於嵌入式。然而隨著微架構進步與專用計算需求，ARM 已侵入伺服器與桌面領域，RISC-V 也迅速拓展至 AI 加速與領域特定架構（DSA），體現了 ISA 生態系的多元與活力。
 - 總結：
+  <br>本頁介紹 ARM、x86 與 RISC-V 三大指令集架構。x86 主導傳統 PC 及伺服器市場；ARM 在行動與低功耗領域佔據優勢並向桌面與雲端擴展；開放標準的 RISC-V 則在嵌入式與 AI 加速晶片中展露頭角。三大 ISA 代表了專有封閉、IP 授權及開源共享不同的商業模式。這證明了只要符合軟軟體介面規範，相同的計算需求能透過多元的指令集生態系來達成。
 
 ## slide：13
 <div align="left" >
