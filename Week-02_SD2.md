@@ -227,53 +227,144 @@ Prompt：請說明本教學重點內容及你的看法，最後以250字內總�
 </div>
 
 - 本教學重點內容
+  <br>本頁投影片主題為 「Same Architecture/Different Microarchitecture」（相同架構，不同微架構），對比了 Intel 旗下的兩款產品（Intel Xeon 與 Intel Atom），展現如何在同一指令集架構（x86 ISA）下，透過完全不同的微架構設計來滿足截然不同的市場需求：
+  - Intel Xeon（針對高效能伺服器/工作站）：
+    - 指令集：x86 instruction set。
+    - 核心數與功耗：32+ 個核心、功耗達 200W+。
+    - 執行機制：每週期/每核心可解碼 6 個指令（Decode 6 instructions/cycle/core），採用亂序執行（Out-of-order）。
+  - Intel Atom（針對低功耗嵌入式/行動設備）：
+    - 指令集：x86 instruction set。
+    - 核心數與功耗：僅 1–8 個核心、功耗僅約 2W。
+    - 執行機制：每週期/每核心僅解碼 2 個指令，採用簡單的順序執行（In-order）。
+    - 快取與時脈：僅配有數十 KB L1 及 < 2 MB L2 快取，時脈為 1.6 GHz。
 - 個人看法與分析：
+  <br>這頁投影片為本系列教學的核心概念（ISA vs. Microarchitecture）提供了極具說服力的實證：
+  - 軟體生態的絕對保護：Xeon 與 Atom 兩者功耗相差百倍（200W+ vs. 2W）、微架構完全不同（亂序 vs. 順序執行），但因為共享相同的 x86 ISA，同一個可執行檔無需重新編譯即可在兩者上執行。
+  - 微架構取捨（Tradeoffs）的極致體現：這驗證了「ISA 決定功能，微架構決定效能與功耗」的原則。硬體設計師能根據極端不同的成本與能效預算，自由選擇流水線深度、解碼寬度與快取規模。
 - 總結：
+  <br>本頁以 Intel Xeon 與 Atom 為例，說明相同 ISA（x86）如何實作成截然不同的微架構。Xeon 採用 32+ 核、亂序執行與巨型快取，功耗達 200W+，追求極致算力；Atom 則以 1-8 核、順序執行與微型快取控制在 2W，主打低功耗。這證明了 ISA 劃清了軟體相容性與硬體實作的邊界，使同一套軟體能跨越伺服器與行動裝置，同時給予硬體設計極大的效能與能耗取捨彈性。
 
 ## slide：14
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0014.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「Different Architecture / Different Microarchitecture」（不同架構，不同微架構），將兩款分別代表不同 ISA 與微架構設計頂峰的現代旗艦處理器（Intel Xeon 與 Apple M2 Ultra）進行對比：
+  - Intel Xeon（x86 架構領域）：
+    - 指令集與核心數：採用 x86 指令集，擁有 32+ 個核心。
+    - 功耗與頻率：功耗達 200W+，時脈介於 2.0–3.5 GHz。
+    - 微架構設計：每週期/每核心解碼 6 個指令（Decode 6），採用亂序執行（Out-of-order），配有數十 MB 的共享 L3 快取。
+  - Apple M2 Ultra（ARM 架構領域）：
+    - 指令集與核心數：採用 ARM 指令集，最高達 24 個核心。
+    - 功耗與頻率：功耗控制在 ~90–100 W，峰值頻率約 3.5 GHz。
+    - 微架構設計：每週期/每核心可解碼高達 8+ 個指令（Decode 8+），採用超寬幅亂序執行，並跨集群配置大型共享快取。
 - 個人看法與分析：
+  <br>這頁投影片展現了現代高階 CPU 設計中 「指令集特性（RISC vs. CISC）」與「能效比（Efficiency）」 的深刻差異：
+  - ARM 指令集在超寬解碼（Wide Decode）的優勢：M2 Ultra 的每核心解碼寬度達到 8+ 指令/週期，高於 Xeon 的 6 指令/週期。這是因為 ARM 的定長指令格式相比於 x86 的變長指令格式，在硬體平行解碼（Parallel Decoding）上更具優勢。
+  - 能效比（Perf-per-Watt）的巨幅提升：M2 Ultra 在提供頂級算力的同時，功耗僅需 90–100W（約為 Xeon 的一半）。這說明了優秀的微架構設計配合簡化指令集，能在大幅降低熱設計功耗（TDP）的同時維持極高的執行效能。
 - 總結：
+  <br>本頁比較 Intel Xeon（x86）與 Apple M2 Ultra（ARM）兩款完全不同 ISA 與微架構的頂級晶片。Xeon 具 32+ 核心、Decode 6 及 200W+ 功耗；M2 Ultra 則以 24 核心、Decode 8+ 與 90-100W 功耗展現高能效。這證明微架構創新與不同的 ISA 特性相結合，能在極端不同的能耗預算下實現頂級計算效能。
 
 ## slide：15
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0015.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「Key ISA Decisions」（指令集架構設計的關鍵決策），探討架構師在制定 ISA 時必須確定的核心要素：
+  - 操作數（Operands）：
+    - 數量（How many?）：指令包含多少個運算元（例如單運算元、雙運算元或三運算元）。
+    - 位置（Location?）：運算元儲存在何處（如暫存器、記憶體或立即數）。
+    - 定址模式（Addressing mode?）：如何計算與存取記憶體位址。
+    - 資料類型（Types?）：支援哪些型態（如整數、浮點數、字元等）。
+  - 操作種類（Operations）：包含指令的類型（如算術、邏輯、控制流）與數量。
+  - 指令格式（Instruction format）：包含指令的位元長度與欄位編碼定義。
 - 個人看法與分析：
+  <br>這頁投影片揭示了 ISA 設計中 「軟硬體折衷（Hardware-Software Tradeoffs）」 的核心思考：
+  - 編譯器與硬體複雜度的平衡：操作數的選擇直接決定了編譯器產出程式碼的長度與硬體的解碼難度。例如，三運算元（RISC 常用）可保持暫存器獨立，簡化硬體，但可能增加指令數；雙運算元（x86 常用）則需覆蓋暫存器，增加編譯約束。
+  - 架構設計的長遠性：定址模式與資料類型的決策一旦確定，將深遠影響未來數十年的晶片升級與軟體生態（如前面提到的 24-bit 延伸至 64-bit 位址歷程）。
 - 總結：
+  <br>本頁強調 ISA 設計的三大關鍵決策：操作數（數量、位置、定址模式與類型）、操作種類及指令格式編碼。這些決策定義了編譯器與硬體之間的溝通語言。合適的 ISA 決策能兼顧編譯器產出效率與硬體解碼難度，在硬體複雜度與軟體彈性之間取得最佳平衡，是奠定整個電腦系統效能與相容性的基石。
 
 ## slide：16
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0016.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「ISA Classification: Operands」（指令集架構分類：操作數），介紹處理器如何根據操作數（Operands）的來源與儲存位置來對 ISA 進行分類：
+  - 操作數來源類型（Operands may be from）：
+    - 堆疊（Stack）：操作數隱式地位於堆疊頂端（Stack Architecture）。
+    - 累加器（Accumulator）：操作數隱式地使用專用的累加暫存器（Accumulator Architecture）。
+    - 暫存器（Register）：操作數顯式地位於通用暫存器中（Register-Register / Load-Store Architecture）。
+    - 暫存器與記憶體（Register and Memory）：操作數可混合來自暫存器與主記憶體（Register-Memory Architecture）。
+  - 核心問題：Where do operands come from and where do results go?（操作數來自何處？計算結果又將存往何處？）。
 - 個人看法與分析：
+  <br>這頁投影片探討了電腦架構演進史上的關鍵轉折點：
+  - 從隱式到顯式操作數的演進：早期的堆疊（Stack）與累加器（Accumulator）架構為了節省珍貴的硬體門陣列與指令長度，大量採用隱式（Implicit）操作數。然而，現代 CPU（如 x86 與 RISC 架構）幾乎全面轉向暫存器（Register）與記憶體（Memory）模型，以提供更高程度的指令平行度（ILP）與編譯器最佳化空間。
+  - 記憶體存取策略的劃分：
+    - Register-Memory（如 x86）：允許算術指令直接對記憶體進行操作，可減少指令數量，但增加了硬體解碼與流水線控制的複雜度。
+    - Register-Register / Load-Store（如 ARM, RISC-V）：強制所有算術指令僅能對暫存器操作，記憶體存取一律經由 Load/Store 指令，極大地簡化了硬體設計並提升運行時脈。
 - 總結：
+  <br>本頁強調 ISA 的分類核心在於定義運算元與結果的儲存位置（堆疊、累加器、暫存器或記憶體）。這一架構決策直接影響了指令集的編碼長度、編譯器生成程式碼的複雜度，以及硬體內部的資料流（Datapath）設計。
 
 ## slide：17
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0017.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「Machine Models of ISA」（指令集架構的機器模型分類），介紹了四種主要的 ISA 機器模型及其運算元（Operands）存取機制與顯式命名數量（Number Explicitly Named Operands）：
+  - Stack（堆疊模型）：
+    - 機制：運算元隱式地位於堆疊頂端（Top of Stack, TOS），運算結果寫回堆疊。
+    - 顯式命名運算元數：0 個（指令無需指定暫存器位址，如 ADD）。
+  - Accumulator（累加器模型）：
+    - 機制：一個運算元隱式來自專用的累加暫存器，另一個運算元可來自記憶體或暫存器，計算結果寫回累加器。
+    - 顯式命名運算元數：1 個（僅需指定另一個運算元位址，如 ADD mem）。
+  - Register-Memory（暫存器-記憶體模型）：
+    - 機制：算術與邏輯指令可以直接混合存取暫存器與記憶體運算元。
+    - 顯式命名運算元數：2 或 3 個（例如 x86 的 ADD EAX, [EBX]）。
+  - Register-Register / Load-Store（暫存器-暫存器 / 載入-儲存模型）：
+    - 機制：算術指令僅能存取通用暫存器，記憶體存取必須透過專用的 Load/Store 指令進行。
+    - 顯式命名運算元數：2 或 3 個（例如 RISC 架構的 ADD R1, R2, R3）。
 - 個人看法與分析：
+  <br>這頁投影片清楚呈現了電腦系統架構從早期至現代的演變脈絡：
+  - 程式碼密度（Code Density）與硬體複雜度的取捨：
+    - Stack 與 Accumulator：顯式運算元少（0 或 1），指令長度短、程式碼密度高，適合早期記憶體極度昂貴的時代，但執行時產生嚴重的資料依賴，難以進行流水線平行化（Pipelining）。
+    - Register-Register (Load-Store)：雖然指令需要 2 到 3 個顯式運算元位址，增加了程式碼長度，但讓編譯器能靈活調度大量的通用暫存器，極大地簡化了流水線控制與亂序執行（Out-of-Order Execution）硬體，成為現代 RISC 架構（如 ARM、RISC-V）的主流。
+  - x86 與 RISC 的實作分岐：Register-Memory 模型（如 x86）提供了靈活的記憶體直接運算，但硬體內部往往需要將其拆解為微指令（Micro-ops）再以類似 Load-Store 的流水線執行；而純粹的 Load-Store 模型（如 RISC-V）則維持了指令執行的單純性與高時脈潛能。
 - 總結：
+  <br>本頁對比了 Stack、Accumulator、Register-Memory 與 Register-Register（Load-Store）四種 ISA 機器模型。顯式運算元數量從 0 個演進至 2-3 個，反映了電腦架構從追求高程式碼密度，轉向追求高流水線平行度與編譯器最佳化彈性的歷史趨勢。
 
 ## slide：18
 <div align="left" >
   <img src="./Lecture/SD2/SD2_page-0018.jpg" width="50%">
 </div>
 
-- 本教學重點內容
+- 本教學重點內容：
+  <br>本頁投影片主題為 「Summary: Machine Model」（機器模型總結），透過計算等式 $C = A + B$ 在四種不同 ISA 機器模型下的程式碼實作，呈現運算元存取方式對指令序列與指令數量的影響：
+  - Stack（堆疊模型）：
+    - 程式碼序列：Push A $\rightarrow$ Push B $\rightarrow$ Add $\rightarrow$ Pop C。
+    - 特點：指令最長（4 條指令），但每條指令均不需要顯式指定運算元暫存器位址，程式碼密度極高。
+  - Accumulator（累加器模型）：
+    - 程式碼序列：Load A $\rightarrow$ Add [B] $\rightarrow$ Store C。
+    - 特點：需 3 條指令，隱式使用累加暫存器，指令中只需指定一個記憶體位址。
+  - Register-Memory（暫存器-記憶體模型）：
+    - 程式碼序列：Load R1, [A] $\rightarrow$ Add R3, R1, [B] $\rightarrow$ Store R3, [C]。
+    - 特點：需 3 條指令，允許算術指令直接操作記憶體（如 [B]），減少了獨立的載入指令。
+  - Register-Register / Load-Store（暫存器-暫存器 / 載入-儲存模型）：
+    - 程式碼序列：Load R1, [A] $\rightarrow$ Load R2, [B] $\rightarrow$ Add R3, R1, R2 $\rightarrow$ Store R3, [C]。
+    - 特點：需 4 條指令，將記憶體存取與 ALU 算術運算徹底解耦，算術指令只針對暫存器操作。
 - 個人看法與分析：
+  <br>這頁總結投影片清楚展示了電腦架構設計中 「指令數量（Instruction Count）」與「硬體設計複雜度（Hardware Complexity）」 的關鍵權衡（Tradeoff）：
+  - 指令數量 vs. 單指令複雜度：
+    - Register-Memory 雖然只需 3 條指令（指令數少），但 Add 指令內部需同時處理記憶體位址計算、記憶體讀取與算術運算，使得流水線（Pipeline）控制非常複雜。
+    - Load-Store 模型雖然需要 4 條指令（指令數較多），但每條指令的功能極其專一且定長，非常利於硬體實現高時脈的硬體流水線與多指令發射（Superscalar）。
+  - 現代處理器的主流趨勢：
+    - 雖然 Stack 與 Accumulator 在早期的記憶體受限環境下非常有優勢，但現代通用 CPU（如 ARM、RISC-V 及 x86 內部的微指令）幾乎全面採用 Load-Store 或微結構上的 Register-Register 模式，以爭取最高的執行平行度（ILP）與極致的時脈頻率。
 - 總結：
+  <br>本頁以 $C = A + B$ 為例，對比了 Stack、Accumulator、Register-Memory 與 Load-Store 四種模型在執行同一運算時的程式碼差異。Load-Store 模型雖然指令數較多，但因成功分離了記憶體存取與算術運算，降低了硬體設計難度，成為現代高效能微架構（如 ARM、RISC-V）的首選架構。
 
 ## slide：19
 <div align="left" >
