@@ -674,8 +674,24 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了 Intel 歷代超純量（Superscalar）處理器的微架構演進發展史（引用自 Hennessy & Patterson 所著《Computer Organization and Design RISC-V Edition》Figure 4.74）：
+  - Intel 歷代微處理器規格對照表：
+    - 微處理器 (Processor)
+    - 時脈 (Clock Rate)
+    - 流水線階數 (Pipeline Stages)
+    - 發射寬度 (Issue Width)
+    - 亂序執行/猜測 (OOO / Speculation)
+    - 核心數 (Cores/Chip)
+  - 核心微架構發展趨勢與結論：
+    - Pentium 4 時代的極限（Frequency Wall & Power Wall）：市場行銷強烈追求更高的時脈速度（Clock Rate），導致設計走向極端深層的流水線（Deeper Pipelines，如 Prescott 達 31 階），但也帶來了高昂的功耗代價（103W）與分支預測失敗時極高的懲罰代價。
+    - 後續走向多核心（Multi-core Processors）：在 Pentium 4 遇到「功耗牆（Power Wall）」後，Intel 放棄了盲目拉高時脈與加深流水線的策略，轉而回到 14 階左右的最佳流水線深度（Core 微架構），並開啟了透過增加核心數量（Multi-core）來提升整體算力的世代。
 - 個人看法與分析：
+  - 單核效能與功耗牆的歷史轉折：
+    - Pentium Pro (1997) 是 Intel 導入動態排程與亂序執行（OOO）的里程碑。但到了 Pentium 4 (Prescott)，為了將時脈衝上 3.6 GHz，流水線被切分成 31 階，使得每階邏輯過少、漏電流與功耗暴增，最終迫使晶片設計方向徹底轉變。
+  - 理想流水線深度的平衡：
+    - 從 2006 年的 Intel Core 開始，流水線階數穩定停留在 14 階左右。這證明了在考量分支預測懲罰、硬體複雜度與熱功耗限制下，14~16 階是亂序超純量處理器在效能與功耗之間的黃金平衡點。
 - 總結：
+  <br>本頁投影片透過 Intel 處理器近三十年的發展數據，呈現了超純量與亂序執行技術的演進過程。重點展示了 Pentium 4 時代盲目追求極高時脈與超深流水線所帶來的功耗瓶頸，以及後來轉向兼顧單核指令並行度（IPC）與多核心（Multi-core）並行的策略轉變。
 
 ## slide：29
 <div align="left" >
@@ -683,8 +699,31 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了 嵌入式行動端核心 ARM Cortex-A53 與 高性能伺服器/桌面端核心 Intel Core i7 920 在微架構規格與設計哲學上的詳細對比（引用自 Hennessy & Patterson 所著《Computer Organization and Design RISC-V Edition》Figure 4.71）：
+  - 核心規格與微架構對照表：
+    |特性 (Characteristic)  |ARM Cortex-A53  |Intel Core i7 920|
+    |--|--|--|
+    |目標市場 (Market)  |個人行動裝置 (Personal Mobile Device)   |伺服器、雲端 (Server, Cloud)|
+    |熱設計功耗 (TDP)   |100 mW (1 core @ 1 GHz)   |130 W|
+    |時脈 (Clock Rate)  |1.5 GHz   |2.66 GHz   |
+    |核心數 (Cores/Chip)  |4 核心（可配置）   |4 核心   |
+    |浮點運算 (Floating Point)  |支援 (Yes)   |支援 (Yes)   |
+    |多發射 (Multiple Issue)|動態多發射 (Dynamic)   |動態多發射 (Dynamic)   |
+    |最高 IPC (Peak Inst/Cycle)  |2 條指令 / 週期   |4 條指令 / 週期   |
+    |流水線階數 (Pipeline Stages)  |8 階   |14 階   |
+    |排程機制 (Pipeline Schedule)  |Static In-order (靜態順序)   |Dynamic Out-of-order with Speculation (動態亂序 + 猜測執行)   |
+    |分支預測 (Branch Prediction)  |混合式 (Hybrid)   |雙層 (2-level)   |
+    |L1 快取 (1st Level Cache)  |16–64 KiB I-Cache, 16–64 KiB D-Cache   |32 KiB I-Cache, 32 KiB D-Cache   |
+    |L2 快取 (2nd Level Cache)  |128–2048 KiB (共享)   |256 KiB (每核獨立)   |
+    |L3 快取 (3rd Level Cache)  |視平台而定 (Platform dependent)   |2–8 MiB (共享)   |
 - 個人看法與分析：
+  - 能耗比優先 vs. 極致效能優先的架構分歧：
+    - ARM Cortex-A53 採取 Static In-order 設計，避開了 Issue Queue、Reorder Buffer 與動態重命名等龐大硬體開銷，將功耗控制在僅 100 mW，非常適合對電池續航力極度敏感的行動裝置。
+    - Intel Core i7 920 則是經典的 Dynamic Out-of-order ($IO_2I$) 架構，配合 4-Wide 吞吐量與 14 階深流水線，傾全力抽取程式中的指令層級平行度（ILP），但功耗也高達 130 W。
+  - 靜態順序 vs. 動態亂序的效能代價：
+    - 雖然 Cortex-A53 也是雙發射（2-Wide）處理器，但因為它是 In-order，一旦遭遇記憶體未命中（Cache Miss）或資料相依（RAW Hazard），流水線就會立刻 Stall；反之，Core i7 920 的亂序執行（OOO）與猜測執行能力能有效隱藏延遲，維持更高的實際 IPC。
 - 總結：
+  <br>本頁投影片透過直觀的對照表，呈現了 ARM Cortex-A53（順序執行、低功耗）與 Intel Core i7（亂序執行、高效能）在架構哲學上的選擇與取捨（Trade-off），完美總結了本單元關於「順序（In-order）」與「亂序（Out-of-order）」執行機制的應用情境。
 
 ## slide：30
 <div align="left" >
