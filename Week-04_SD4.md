@@ -649,8 +649,24 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片整理並比較了 亂序執行（Out-of-Order, OOO）處理器微架構演進的全景總表，透過對比各架構在流水線四大階段（Frontend, Issue, Writeback, Commit）的執行特性與所需硬體元件，歸納出不同 OOO 設計的核心差異：
+  <br>各微架構特徵解析與演進脈絡
+  - 傳統順序執行架構 ( $I_4$)：
+    - 特徵：所有階段（Frontend, Issue, Writeback, Commit）皆嚴格遵守順序執行（In-Order）。
+    - 缺點：遇到長延遲指令（如記憶體存取或多週期乘法）時，後續無相依的指令會被強制卡住（Stall），降低流水線利用率。
+  - 早期亂序寫回架構 ( $I_2O_2$ / $I_2O_1$)：
+    - $I_2O_2$：允許 Writeback 與 Commit 亂序，硬體成本低，但無法處理精確例外（Precise Exceptions）與猜測執行。
+    - $I_2O_1$：導入 Reorder Buffer (ROB) 與 Store Buffer，將 Commit 鎖回 In-Order，解決了精確例外問題，但 Issue 階段仍為 In-Order，限制了指令動態排程的能力。
+  - 現代亂序執行架構 ( $IO_3$ / $IO_2I$)：
+    - $IO_3$（In-order Issue Queue, OOO Issue/WB/Commit）：加入 Issue Queue (IQ)，實現真正由數據驅動（Data-driven）的亂序發射與寫回，發揮極高 ILP。然而因亂序 Commit，仍缺乏精確例外保障。
+    - $IO_2I$（In-order Frontend, OOO Issue/WB, In-order Commit）：結合了 Issue Queue (IQ) 的亂序發射能力與 Reorder Buffer (ROB) 的順序提交機制。這是現代高效能 CPU（如 RISC-V 亂序核心、Intel/AMD 近代架構）最經典的微架構基石，既能極大化指令並行度，又能維持系統的精確例外與記憶體一致性。
 - 個人看法與分析：
+  - ROB（Reorder Buffer）是實現「安全亂序」的分水嶺：
+    - 從表格可看出，只要 Commit 階段標註為 IO（In-Order） 的架構（如 $I_2O_1$ 與 $IO_2I$），硬體組件必定包含 Reorder Buffer (ROB) 與 Store Buffer。這說明了 ROB 是現代處理器在追求亂序高效能時，用來保障「軟體語意正確性」與「精確例外狀態復原」不可或缺的防線。
+  - 軟硬體權衡（Trade-off）總結：
+    - $IO_3$ 雖然硬體較簡單（無需 ROB）且完成速度快，但無法處理分支預測失敗或中斷；$IO_2I$ 雖然需要額外的 ROB 與 Store Buffer 成本，但換來了完美的例外處理機制與完整的猜測執行（Speculative Execution）支援，成為現代商用通用處理器的標準選擇。
 - 總結：
+  <br>本頁投影片作為單元總結，全面梳理了從 $I_4$ 到 $IO_2I$ 各微架構的執行階段特性與硬體組件對應關係。透過這張對照表，可以清楚掌握動態排程（IQ）與順序提交（ROB）如何共同構築現代亂序處理器的核心設計。
 
 ## slide：28
 <div align="left" >
