@@ -479,8 +479,22 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片呈現了 IO3 架構（In-order Frontend, Out-of-order Issue/Writeback/Commit）下完整指令執行的時序解答與 Issue Queue (IQ) 狀態演變：
+  - 流水線時序解答（Pipeline Timing Diagram）：
+    - 指令 0 (mul x1, x2, x3)：週期 0 到 7 完成執行與寫回（ $F \to D \to I \to Y_0 \to Y_1 \to Y_2 \to Y_3 \to W$），在週期 7 完成 $W$ 時即直接更新 ARF（即 Commit 亦為亂序）。
+    - 指令 1 (addi x11, x10, 1)：週期 1 到 5 完成（ $F \to D \to I \to X_0 \to W$），於週期 5 在 $W$ 階段直接完成寫回與 Commit，無需等待指令 0 結束。
+    - Issue Queue 中的小寫 $i$（Pending / Waiting）：
+      - 小寫 $i$ 代表指令已進入 IQ，但因來源操作數尚未就緒（RAW 相依）而處於等待發射狀態。
+      - 例如 指令 2 (mul x5, x1, x4) 在週期 4 進入 IQ（以小寫 $i$ 標示），直到週期 7 指令 0 完成 $W$ 並提供 x1 後，才於週期 8 轉為大寫 $I$ 正式發射至 $Y_0$。
+  - Issue Queue (IQ) 狀態變化與標記圖解：
+    - 欄位結構：記錄 Dest / Src0 / Src1 的狀態。
+    - 畫圈（Circle）：圈選代表該暫存器的數值已經存在於 ARF 中（Present in ARF），例如週期 2 的 x2 與 x3。
+    - 無圈（No Circle）與 Bypass：當數值是由 Writeback 階段通過 Bypass 網路直接前饋傳遞時，Present bit 被置位但不會畫圈。如圖中註記所示：「Value set present by Instruction 1 in cycle 5, W Stage」（指令 1 於週期 5 在 W 階段將 x11 標記為 Present，解除指令 4 的等待）。
 - 個人看法與分析：
+  - 更直觀的動態排程視覺化：透過小寫 $i$（在 IQ 內等待）與大寫 $I$（成功發射）的區分，讓學生清晰看到動態排程（Dynamic Scheduling）中「指令佇列等待」與「實際管線發射」的時間落差。
+  - 無 ROB 架構的快速執行優勢與隱患：從時序圖可見，指令 1 在週期 5 就已經完全退休並釋放資源，沒有任何流水線停頓（Stall），展現了 IO3 極高的執行吞吐量。然而，若指令 0 在週期 6 或 7 發生例外，由於指令 1 的結果已不可逆地寫入 ARF，將導致系統無法還原至精確例外狀態。
 - 總結：
+  <br>本頁展示了 IO3 架構下指令執行的完整時序解答與 Issue Queue (IQ) 的 Entry 演變追蹤。時序圖利用小寫 $i$ 標記指令於 IQ 中等待來源操作數的週期，並詳細展示了 Bypass 前饋機制如何於 W 階段解除 IQ 中相依指令的等待狀態，充份演繹了動態排程與亂序執行的運作細節。
 
 ## slide：22
 <div align="left" >
@@ -488,8 +502,24 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0022.jpg）展示了一個假設情境下的流水線執行時序：假設所有指令皆已預先載入至 Issue Queue（Assume All Instructions in Issue Queue），並對比在前頁（Page 21）常態 Decode 進入條件下的效能差異：
+  - 理想化假設（All Instructions in IQ）：
+    - 在週期 0 時，假設所有指令（0 至 6）都已經通過 Fetch 與 Decode 階段，並已保存在 Issue Queue 中（如圖中在週期 0~2 時，各指令的 $i$ 狀態）。
+    - 由於沒有前段 Fetch/Decode 的發射瓶頸（Bandwidth Limit），每條指令只需要等其來源操作數（Data Hazards）解除即可立即發射（ $I$）。
+  - 時序變化分析（Pipeline Timing Diagram）：
+    - 指令 0 (mul) & 指令 1 (addi)：無前置 RAW 相依，雙雙在週期 2 正式發射（ $I$）進入 $Y_0$ 與 $X_0$。
+    - 指令 4 (addi x12, x11, 1)：由於指令 1 在週期 4 完成 $W$ 階段，指令 4 在週期 4 即可被喚醒並於週期 4 正式發射（ $I$），於週期 5 完成執行。
+    - 指令 5 & 6：受惠於指令 4 的提前完成，後續相依指令亦大幅提前發射（週期 7 與 8 完成）。
+  - 思考問題：效能是否真的更好？（Better performance than previous?）
+    - 答案是：是的（Total Execution Time 縮短）。
+    - 在前頁（Page 21）的常態流水線中，最後一條指令（指令 6）要在週期 13 才完成 $W$ 階段；而在本頁「預先在 IQ」的情境下，指令 6 於週期 9 即完成 $W$ 階段，總執行時間縮短了 4 個週期。
 - 個人看法與分析：
+  - 前段頻寬（Frontend Bottleneck）對動態排程的影響：
+    - 本頁範例清楚說明了：即使後段（Issue Queue / Execution Units）具備強大的亂序執行能力，如果前段（Fetch / Decode / Rename）傳送指令的速度太慢（如每週期僅 Decode 1 條指令），後段的 Issue Queue 就會發生「無指令可選（Undersupply）」的飢餓現象。
+  - 現代超純量（Superscalar）設計的啟示：
+    - 這也是為什麼現代 CPU 普遍採用 Wide Frontend（如 4-way 或 8-way Decode/Rename）以及大型 Instruction Buffer / Decoded Stream Buffer (DSB) 的原因，確保 Issue Queue 隨時有足夠多的指令可供喚醒與亂序發射，以最大化指令層級平行度（ILP）。
 - 總結：
+  <br>本頁透過「所有指令預先存於 Issue Queue」的理想化情境，展示了解除 Fetch/Decode 前段頻寬限制後的流水線時序。對比常態流程，此方法讓無相依與早解鎖的指令（如 addi 鏈）能大幅提前發射與完成，使整體指令序列完成時間從 13 週期縮短至 9 週期，突顯了強大前段吞吐量對動態排程效能的關鍵決定性。
 
 ## slide：23
 <div align="left" >
