@@ -339,9 +339,22 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   <img src="./Lecture/SD4/SD4_page-0016.jpg" width="50%">
 </div>
 
+本頁投影片介紹了在包含 Store 指令與快取缺快（Store Miss）的情境下，如何透過引入 Retire 階段（R Stage）與 Committed Store Buffer (CSB) 來避免 Commit 階段發生停頓（Avoid Stalling Commit）：
 - 本教學重點內容：
+  - 傳統架構的問題：Store Miss 導致 Commit 停頓
+    - 當 Store 指令（SW）到達 Commit 階段（C）時，必須將資料正式寫入 Cache/Memory。
+    - 若此時發生 Store Miss（快取缺快），需要花費許多週期等待記憶體載入資料，導致 SW 必須停留在 Commit 階段（圖中連續多個 C）。
+    - 由於 Commit 必須保持順序（In-order Commit），SW 被卡住會直接塞鎖後續所有無相依指令（如 OpB、OpC、OpD）的提交與寫回。
+  - 解決方案：引入 Retire 階段（R）與 CSB
+    - Committed Store Buffer (CSB)：在 Commit 階段（C）之後增加一個緩衝區 CSB。
+    - Retire 階段（R）：當 SW 確定沒有發生任何例外並到達 C 階段時，它就可以立刻完成 Commit（將權限從 ROB 移交並把資料寫入 CSB），將 ROB Entry 釋放出來。
+    - 下層非同步寫回（Retire to Memory）：SW 移至 Retire 階段（R），在背景非同步地將 CSB 中的資料寫回快取/記憶體。
+    - 結果：後續指令（OpB、OpC、OpD）不再被 Store Miss 阻塞，能順利且連續地在後續週期完成 Commit。
 - 個人看法與分析：
+  - 解開 Commit 階段的最後一道枷鎖：ROB 的 In-order Commit 機制雖然保證了精確例外，但也讓「長延遲的記憶體寫入操作」成為阻塞整體流水線（Pipeline Stall）的潛在瓶頸。CSB 的設計巧妙地將「解鎖架構暫存器/ROB（Commit）」與「實際寫入物理記憶體（Retire）」解耦（Decouple）。
+  - 確保記憶體一致性與安全性：進入 CSB 的 Store 指令已經過 C 階段確認無例外，因此將其放進背景慢慢寫入快取不會破壞精確例外的規則。這也是現代高效能 CPU（如 x86 的 Store Buffer / Write Buffer）普遍採用的關鍵優化技術。
 - 總結：
+  <br>本頁介紹了利用 Committed Store Buffer (CSB) 與 Retire 階段（R Stage）解決 Store Miss 阻塞提交的機制。當 Store 指令發生快取缺失時，傳統架構會卡住 Commit 階段並阻塞後續所有指令；而引入 CSB 後，Store 指令可在 C 階段直接將資料寫入 CSB 並釋放 ROB，隨後於 R 階段在背景完成快取寫回，從而讓後續指令免於停頓、顯著提升流水線吞吐量。
 
 ## slide：17
 <div align="left" >
@@ -349,8 +362,30 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片介紹了 IO3 架構（In-order Frontend, Out-of-order Issue, Out-of-order Writeback, Out-of-order Commit） 下，各主要硬體模組與暫存器結構的讀寫存取權限（R/W Ports）與資料流向：
+  - IO3 架構特徵與管道階段：
+    - In-order Frontend：Fetch（F）與 Decode（D）階段仍保持順序處理。
+    - Out-of-order Issue：指令經過 Decode 後進入 Issue Queue (IQ)，只要操作數（Operands）準備就緒且執行單元空閒，即可亂序發射（Out-of-order Issue） 至執行管道（X、M、Y）。
+    - Out-of-order Writeback & Commit：寫回（W）與提交（C）階段皆為亂序執行。
+  - 核心模組的讀寫存取權限分析（Bottom Table）：
+    - ARF（Architectural Register File）：
+      - Issue 階段 (I)：只讀（Read, R），指令發射時從 ARF 讀取來源操作數。
+      - Writeback 階段 (W)：只寫（Write, W），指令執行完畢後直接將結果寫回 ARF。
+    - SB（Scoreboard）：
+      - Issue 階段 (I)：可讀可寫（Read/Write, R/W），發射時查詢暫存器狀態並標記Busy。
+      - Writeback 階段 (W)：寫入（Write, W），清除 Busy 標記以解鎖相依指令。
+    - IQ（Issue Queue）：
+      - Decode/Enqueue 階段：寫入（Write, W），將解碼後的指令填入 IQ。
+      - Issue 階段 (I)：可讀可寫（Read/Write, R/W），監控並讀取就緒指令，發射後將 Entry 清空/釋放。
+      - Writeback 階段 (W)：寫入/廣播（Write, W），將寫回的 Tag/Data 廣播給 IQ 內等待的其他指令（Wakeup/Forwarding）。
 - 個人看法與分析：
+  - 無 ROB 架構的極致亂序（與 I2OI 的對比）：
+    - 在先前的 I2OI 架構中，雖然 Writeback 是亂序的，但透過 ROB 強制實現了 In-order Commit 以維護精確例外（Precise Exceptions）。
+    - IO3 架構取消了 ROB 的順序約束，指令一算完在 W 階段就直接把結果寫進 ARF（即 Commit 亦為亂序）。這種設計雖然硬體控制極度簡化、延遲極低，但無法支援精確例外（Precise Exceptions）與分支猜測恢復。
+  - Issue Queue (IQ) 的關鍵角色：
+    - IQ 是實現 Out-of-order Issue 的心臟。它需要複雜的 Wakeup（喚醒）與 Select（選擇）邏輯，當 W 階段廣播結果時，IQ 內的指令必須同時比對 Tag，並在下個週期爭奪執行管道。
 - 總結：
+  <br>本頁介紹了 IO3（In-order Frontend, Out-of-order Issue/Writeback/Commit）架構的硬體佈局與記憶體元件存取模式。此架構引入 Issue Queue (IQ) 來實現指令的亂序發射與執行，並詳細整理了 ARF、Scoreboard (SB) 與 IQ 在發射 (I) 與寫回 (W) 階段的讀寫 (R/W) 關係。雖然 IO3 能最大化指令平行度，但由於結果直接寫回 ARF 且缺乏順序提交機制，無法保證精確例外與猜測執行的安全恢復。
 
 ## slide：18
 <div align="left" >
@@ -358,8 +393,28 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片介紹了 Issue Queue (IQ) 的內部硬體結構欄位以及指令發射（Instruction Ready / Issue）的判斷邏輯：
+  - Issue Queue (IQ) 的 Entry 結構欄位：
+    - Op：操作碼（Opcode），標示指令類型。
+    - Imm / S：立即數（Immediate）與猜測位元（Speculative Bit, S）。
+    - V / Dest：目標暫存器（Destination Register）與有效位元（Valid Bit）。
+    - V / P / Src0 & Src1：來源暫存器（Source Registers）欄位：
+      - V（Valid）：該指令是否有對應的來源暫存器。
+      - P（Pending）：待產生狀態，標示來源資料是否還在等待前方指令計算產出（1 表示 Waiting，0 表示 Ready）。
+  - 指令就緒判斷邏輯（Instruction Ready Logic）：
+    - 判斷條件公式：
+      <br> $$\text{Instruction Ready} = ( !V_{\text{src0}} \mid\mid !P_{\text{src0}}) \ \&\&\  (!V_{\text{src1}} \mid\mid !P_{\text{src1}}) \ \&\&\ \text{no structural hazards}$$
+    - 邏輯解讀：一條指令若要被認定為就緒（Ready），必須同時滿足：
+      - Src0 就緒：不需要 Src0（ $!V_{\text{src0}}$），或者 Src0 已準備完畢不處於等待狀態（ $!P_{\text{src0}}$）。
+      - Src1 就緒：不需要 Src1（$!V_{\text{src1}}$），或者 Src1 已準備完畢不處於等待狀態（ $!P_{\text{src1}}$）。
+      - 無結構衝突：對應的執行管道/算術邏輯單元（ALU）目前空閒（No structural hazards）。
+    - 效能優化（For High Performance）：
+      - 為了追求高效能，發射邏輯需要結合 Bypassing / Forwarding（旁路/前饋） 機制。當前方指令在執行階段（如 $X_0$ 或 $W$）產出結果時，可直接透過 Bypass 網絡廣播給 IQ 內處於 Pending 狀態的指令，使其無需等資料寫入暫存器即可提前解鎖發射。
 - 個人看法與分析：
+  - 動態排程（Dynamic Scheduling）的核心心臟：Issue Queue 是實現 Out-of-order Issue（亂序發射）最關鍵的組合邏輯單元。透過保留區 Entry 中的 Pending ($P$) 位元，處理器能在硬體層級自動解決 RAW (Read-After-Write) 相依性。
+  - 喚醒與選擇（Wakeup and Select）的硬體挑戰：投影片呈現的 Ready 邏輯雖然看起來直觀，但在多發射超純量（Superscalar）處理器中，IQ 每個週期都需要同時比對數十個 Entry 的 Tag 並進行仲裁（Select），這構成了微架構設計中最關鍵的臨界路徑（Critical Path）與晶片面積/功耗來源之一。
 - 總結：
+  <br>本頁詳細解析了 Issue Queue (IQ) 的硬體結構欄位與動態發射邏輯。IQ 透過 Valid ($V$) 與 Pending ($P$) 位元精確追蹤來源操作數的就緒狀態，當指令的操作數皆已就緒且執行單元無結構衝突時即可發射。結合 Bypassing 機制，IQ 能夠將剛產出的資料即時前饋給等待中的指令，從而最大化指令層級平行度（ILP）與亂序執行效能。
 
 ## slide：19
 <div align="left" >
