@@ -527,8 +527,32 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0023.jpg）介紹了 IO2I 架構（In-order Frontend, Out-of-order Issue/Writeback, In-order Commit） 下，系統硬體元件的結構組成與各階段的存取權限（R/W Ports）關係：
+  - IO2I 架構特徵與管道階段：
+    - In-order Frontend：Fetch（F）與 Decode（D）階段保持順序發射。
+    - Out-of-order Issue / Writeback：進入 Issue Queue（IQ）後可亂序發射至執行單元（X、M、Y），計算結果亦為亂序寫回（W）至物理暫存器檔案（PRF）。
+    - In-order Commit：引入 Reorder Buffer（ROB）與 Future Status Buffer（FSB），確保指令按照原始程式順序（In-order）進行提交（C）至架構暫存器檔案（ARF），以保證精確例外（Precise Exceptions）與猜測執行的正確性。
+  - 核心模組存取權限矩陣（Bottom Table）：
+    - ARF（Architectural Register File）：
+      - Commit 階段 (C)：只寫（Write, W），僅在指令順序提交時更新架構狀態。
+    - SB（Scoreboard）：
+      - Issue 階段 (I)：可讀可寫（R/W）。
+      - Writeback 階段 (W)：寫入（W）。
+    - PRF（Physical Register File）：
+      - Issue 階段 (I)：只讀（Read, R），發射時讀取物理暫存器內的最新數據。
+      - Writeback 階段 (W)：寫入（Write, W），執行完畢後將結果寫回 PRF。
+    - ROB（Reorder Buffer）與 FSB（Future Status Buffer）：
+      - Decode/Enqueue 階段：可讀可寫（R/W），分配 ROB Entry 並維護指令狀態。
+      - Writeback 階段 (W)：寫入（Write, W），更新指令完成標記與結果數據。
+      - Commit 階段 (C)：可讀可寫（R/W），確認前方指令順序完成並釋放 Entry。
+    - IQ（Issue Queue）：
+      - Decode 階段：寫入（Write, W）。
+      - Issue 階段 (I)：可讀可寫（R/W）。
 - 個人看法與分析：
+  - 完整實現現代亂序執行的經典微架構：與前一頁（Page 17）的 IO3 架構相比，IO2I 最大的改良在於加入了 ROB 與 ARF/PRF 的解耦機制。雖然 Issue 與 Writeback 仍維持 Out-of-order 以極大化吞吐量，但由 ROB 強制執行的 In-order Commit 為處理器補足了精確例外與猜測恢復（Speculation Recovery）的核心防線。
+  - 暫存器分工明確化：ARF 只在 Commit 階段寫入，代表 ARF 隨時代表「已被百分之百確認（Committed）的正確程式狀態」；而中間過程的動態結果則暫存在 PRF 中，這也是現代亂序 CPU（如 RISC-V 亂序核心、Intel/AMD 近代架構）處理暫存器重命名（Register Renaming）與順序退休的標準做法。
 - 總結：
+  <br>本頁詳細拆解了 IO2I（In-order Frontend, Out-of-order Issue/Writeback, In-order Commit）架構的硬體佈局與核心組件存取埠。相較於無法保證精確例外的 IO3，IO2I 結合了 Issue Queue (IQ) 的亂序發射能力與 Reorder Buffer (ROB) 的順序提交機制，兼具高效能與系統安全性，為現代亂序處理器的經典微架構範例。
 
 ## slide：24
 <div align="left" >
@@ -536,8 +560,32 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 IO2I 架構（In-order Frontend, Out-of-order Issue/Writeback, In-order Commit） 下的微架構管道圖與時間軸練習預留表：
+  - 流水線結構（Pipeline Architecture）：
+    - 前段（Front-end）：保持順序處理，包含 F（Fetch）、D（Decode）、IQ（Issue Queue）與 I（Issue）。
+    - Scoreboard (SB)：於 I（Issue）階段進行狀態檢測與更新。   多執行管道（Execution Pipelines）：
+      - $X_0$ 管道：單週期的 ALU 算術邏輯執行單元。
+      - $M_0 \to M_1$ 管道：雙週期的 Memory 記憶體存取單元。
+      - $Y_0 \to Y_1 \to Y_2 \to Y_3$ 管道：四週期的 Multiply 乘法執行單元。
+        - 後段（Back-end）：
+          - W（Writeback）：亂序將計算結果寫回物理暫存器檔案（PRF），並同時廣播更新 ROB / FSB。
+          - C（Commit）：透過 Reorder Buffer (ROB) 與 Future Status Buffer (FSB) 強制執行順序提交（In-order Commit），順序將結果寫入架構暫存器檔案（ARF）。
+  - 待推導指令序列（Instruction Trace）：
+    - 0 mul  x1, x2, x3 (乘法，4 週期)
+    - 1 addi x11, x10, 1 (加法，1 週期)
+    - 2 mul  x5, x1, x4 (乘法，RAW 相依於指令 0 的 x1)
+    - 3 mul  x7, x5, x6 (乘法，RAW 相依於指令 2 的 x5)
+    - 4 addi x12, x11, 1 (加法，RAW 相依於指令 1 的 x11)
+    - 5 addi x13, x12, 1 (加法，RAW 相依於指令 4 的 x12)
+    - 6 addi x14, x12, 2 (加法，RAW 相依於指令 4 的 x12)
 - 個人看法與分析：
+  - IO2I 與 IO3 在時序推導上的關鍵差異（In-order Commit 效應）：
+    - 在上一單元 IO3 中，指令 1 (addi) 只要在週期 5 完成 Writeback ($W$) 就會立刻完成退休並離開系統（亂序 Commit）。
+    - 然而在 IO2I 中，雖然指令 1 在週期 5 就已經完成 $W$ 階段，但因為前面的指令 0 (mul) 需要執行到週期 7 才進入 $W$，指令 1 必須停留在 ROB 中等待指令 0 完成 Commit 後，才能在週期 8 進行 Commit ( $C$)。
+  - 確保精確例外與狀態恢復的硬體代價：
+    - 此頁練習旨在讓學生深刻體會到 ROB 的 In-order Commit 機制如何阻止早發射、早算完的指令「過早破壞 ARF 架構狀態」。這使得系統隨時具備精確例外能力，但同時也對 ROB 的 Entry 容量提出了更高要求。
 - 總結：
+  <br>本頁展示了 IO2I 微架構及其對應的指令時間軸推導練習表。相較於 IO3，本頁結構新增了 ROB、FSB 與 PRF/ARF 的雙層暫存器機制，旨在示範指令如何在保持亂序發射與寫回（Out-of-order Issue/Writeback）的效能優勢下，依然透過 ROB 達成順序提交（In-order Commit）以維護精確例外。
 
 ## slide：25
 <div align="left" >
@@ -545,8 +593,26 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 IO2I 架構（In-order Frontend, Out-of-order Issue/Writeback, In-order Commit） 下指令執行的完整時序解答，並提示讀者觀察與前頁/其他微架構（如 IO3）之間的關鍵差異：
+  - 流水線狀態標籤說明：
+    - i（小寫 i）：代表指令已完成 Decode，目前保存在 Issue Queue (IQ) 中等待操作數（Pending/Waiting）。
+    - I（大寫 I）：代表來源操作數已準備完畢，指令正式從 IQ 發射至執行管道（Issue）。
+    - r（小寫 r）：代表指令已完成計算與 Writeback（W 階段），但因為前面尚有未提交（Uncommitted）的指令，必須停留在 Reorder Buffer (ROB) 中等待順序提交（Reorder Buffer Waiting / Ready to Commit）。
+  - 指令時序與 In-order Commit 運作分析：
+    - 指令 0 (mul x1, x2, x3)：週期 2 發射，週期 7 完成 W，並於週期 8 完成 C（Commit）。
+    - 指令 1 (addi x11, x10, 1)：週期 3 發射，週期 5 完成 W。由於指令 0 尚未 Commit，指令 1 於週期 6、7 進入 r 狀態等待，直到週期 8 指令 0 提交後，才於週期 9 完成 C。
+    - 指令 2 (mul x5, x1, x4)：等待指令 0 的 x1，週期 8 發射（$I$），週期 12 完成 W，週期 13 完成 C。
+    - 指令 4~6 (addi 鏈)：指令 4 於週期 6 發射、週期 8 完成 W，但因指令 3 卡住提交，指令 4 在週期 9~15 持續處於 r 狀態，直到週期 16 才順利 C。
+  - 「Difference?（與 IO3 的差異）」思考解析：
+    - 執行總週期相同（Latency）：兩者的整體 Writeback（W）完成時間點幾乎一致（例如指令 6 皆在週期 12 完成 W）。
+    - 退休時機不同（Commit / Retirement）：
+      - 在 IO3 中，指令一完成 W 就立刻寫回 ARF 並離開系統（亂序 Commit）。
+      - 在 IO2I 中，指令必須透過 ROB 嚴格遵守 In-order Commit。完成 W 後會進入 r 階段暫存，直到前方所有指令依序完成 Commit 後，才能寫回 ARF。
 - 個人看法與分析：
+  - r 狀態（Waiting in ROB）的重要性：r 狀態非常直觀地展現了 ROB 如何在「允許亂序執行/寫回」與「維持精確例外（Precise Exceptions）」之間取得平衡。雖然指令 1、4、5、6 早就算好了答案，但它們被「鎖」在 ROB 中，避免了對架構狀態（ARF）的破壞。
+  - ROB 阻塞與效能影響：雖然 In-order Commit 保證了精確例外，但如果前方有一條超長延遲的指令（例如 Cache Miss 或長延遲除法/乘法），會導致後續大量算完的指令積壓在 ROB（出現連續的 r），若 ROB 容量不足（Full），就會倒灌導致前段 Decode 停頓（Stall）。
 - 總結：
+  <br>本頁展示了 IO2I 微架構下指令執行的完整時序與 ROB 狀態變化。透過引入 r 標籤，明確標示了早算完的指令在等待前方指令提交時於 ROB 中停留的時間點。對比 IO3 架構，IO2I 雖然執行階段時間相同，但透過 ROB 強制實現了順序提交（In-order Commit），成功確保了精確例外與猜測執行的安全恢復。
 
 ## slide：26
 <div align="left" >
