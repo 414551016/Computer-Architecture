@@ -68,25 +68,59 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   <img src="./Lecture/SD4/SD4_page-0004.jpg" width="50%">
 </div>
 
+這張投影片主題為 I2O2 架構的重點複習（Recap: I2O2），展示了「順序發射（In-Order Issue）、變長流水線（Variable Length Pipelines）、亂序寫回（Out-of-Order Writeback）」的處理器架構設計。
 - 本教學重點內容：
-- 個人看法與分析：
+  - 可變長度執行管道（Variable-Length Pipelines）：
+    - 前端階段：保持 F（Fetch 取指） $\rightarrow$ D（Decode 解碼） $\rightarrow$ I（Issue 發射） 順序執行。
+    - 不同延遲的執行管道：與 I4 的固定長度不同，I2O2 允許管道長度依指令需求優化：
+      - X 管道（簡單運算/ALU）：僅需 1 階（ $X_0$）。
+      - M 管道（記憶體存取/Memory）：需要 2 階（ $M_0 \rightarrow M_1$）。
+      - Y 管道（複雜/浮點運算 FP）：需要 4 階（ $Y_0 \rightarrow Y_1 \rightarrow Y_2 \rightarrow Y_3$）。
+  - 寫回（Writeback）與組件操作：
+    - 亂序寫回（OOO Writeback）：後發射但延遲短的指令（例如走 X 管道）會比先發射但延遲長的指令（例如走 Y 管道）更早完成並進入 W 階段，造成寫回順序與程式順序不同。
+    - ARF 與 SB 操作時機：
+      - ARF（架構暫存器檔案）：於 I 階段讀取（R），完成時於 W 階段直接寫回（W）。
+      - SB（Scoreboard，記分板）：於 I 階段讀取與更新（R/W），追蹤暫存器依賴性；於 W 階段清除狀態（W）。
+- 內容看法與分析：
+  - 效能提升的代價：I2O2 藉由取消「強迫所有管道等長」的限制，大幅降低了短延遲指令（如簡單算術 $X_0$）的等待時間，提高了執行效能與流水線利用率。
+  - 引發 Writeback 衝突與亂序難題：
+    - Structural Hazard & WAW Hazard：不同管道長度會導致多條指令可能在同一個週期同時爭搶 W 階段（ Write Port 衝突），或者後發射的指令比先發射的指令先寫回同一個暫存器。因此需仰賴 Scoreboard (SB) 進行嚴格檢查與發射阻擋。
+    - 缺少精確例外處理（Lack of Precise Exceptions）：由於沒有 Reorder Buffer (ROB) 來暫存結果並重新排序，指令在 W 階段會直接修改 ARF。若長指令在執行途中發生例外，後續已寫回 ARF 的短指令無法撤銷（Rollback），這是此架構最大的缺陷。
 - 總結：
+  <br>I2O2 架構採用「順序發射、可變管道長度、亂序寫回」設計。其執行管道長度依功能而異（X管道1階、M管道2階、Y管道4階），使短延遲指令能提早完成，提升執行效率。暫存器 ARF 與記分板 SB 於 I 階段讀取/更新，並於 W 階段直接寫回/解鎖。然而，變長管道導致寫回順序顛倒（OOO Writeback），易產生 Writeback 衝突與 WAW 危害，且因缺乏 Reorder Buffer (ROB) 暫存結果，無法保障精確例外處理（Precise Exceptions）。
 
 ## slide：5
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0005.jpg" width="50%">
 </div>
 
+這張投影片主題為 過早提交點（Early Commit Point?），透過一段組合語言程式碼的時序圖（Pipeline Timing Diagram），深入探討在沒有 Reorder Buffer (ROB) 的架構下，過早將結果寫回/提交（Early Commit） 所引發的精確例外（Precise Exceptions）問題與流水線停頓（Stall）現象。
 - 本教學重點內容：
+  - 程式碼執行時序分析：
+    - 指令 0（mul x1, x2, x3）：走長延遲管道（Y 管道），經歷 $Y_0 \rightarrow Y_1 \rightarrow Y_2 \rightarrow Y_3$。
+    - 指令 1（addi x11, x10, 1）：走短延遲管道（X 管道），在 $X_0$ 執行完畢後立即進入 W 階段寫回。由於它比指令 0 更早完成並修改暫存器，形成了 Early Commit（過早提交）。
+    - 指令 2（mul x5, x1, x4）：依賴指令 0 的結果（x1）。因為指令 0 還在 $Y$ 管道中執行，發射（Issue）階段必須卡住停頓（Stall） 3 個週期（I I I），直到資料準備就緒。
+    - 指令 3 與 4（mul, addi）：受到前方指令 2 停頓的影響，分別被阻擋在解碼階段（D D D）與取指階段（F F F）。
+  - 核心限制：限制了可支援的例外類型（Limits certain types of exceptions）：
+    - 在指令 1 已經寫回 W（Commit）之後，如果前面的指令 0 在執行後半段（如 $Y_2$ 或 $Y_3$）突然觸發了硬體算術例外（如溢位）：
+      - 指令 1 已經永久修改了架構暫存器 x11，無法回復（Rollback）。
+      - 處理器無法將狀態還原到「指令 0 發生例外前」的正確樣子，這打破了精確例外（Precise Exception）的原則。
 - 個人看法與分析：
+  - 效能與正確性的矛盾（Early Commit 的副作用）：雖然允許短指令提前寫回可以釋放執行單元，但這會讓 CPU 的狀態陷入「未完成前指令，卻已提交後指令」的混亂狀態。
+  - 引發全線阻塞（Cascading Stalls）：圖中可以清楚看到，因為 RAW（Data Hazard）資料依賴，長延遲指令（指令 0）會讓後續依賴它的指令（指令 2）卡在 I 階段，並進一步向上游擴散，導致整個前端（Decode、Fetch）完全癱瘓。這凸顯了僅靠 Scoreboard 缺乏動態排程（Issue Queue）與結果暫存（ROB）時的效能瓶頸。
 - 總結：
+  <br>本頁透過時序圖展示了無 ROB 亂序寫回架構中「過早提交（Early Commit）」的問題。長延遲指令 mul（指令0）仍在執行時，後方短指令 addi（指令1）已完成並寫回暫存器。若此時長指令於後續階段觸發例外，已改變的暫存器狀態無法復原，嚴重破壞精確例外處理（Precise Exceptions）。此外，資料依賴（RAW Hazard）導致後續指令卡在 I 階段，引發連鎖停頓（Stall）使前端癱瘓。這說明了引入 Reorder Buffer (ROB) 實現「順序提交」以維持狀態正確性的必要性。
 
 ## slide：6
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0006.jpg" width="50%">
 </div>
 
+這張投影片為課程行政事務宣佈（Course Admin），主要向學生交代當前課程作業與實驗的最新進度與釋出狀況。
 - 本教學重點內容：
+  - PS1 解答公佈（PS1 solutions are out）：問題集 1（Problem Set 1）的標準解答已經發布，供學生核對與複習。
+  - PS2 作業出爐（PS2 is out）：問題集 2（Problem Set 2）已經正式勾選/發布，學生需開始著手撰寫。
+  - Lab2 實驗出爐（Lab2 is out）：第二個實驗項目（Lab 2）也已同步釋出，學生需進行相關的硬體實作或模擬實驗。
 - 個人看法與分析：
 - 總結：
 
