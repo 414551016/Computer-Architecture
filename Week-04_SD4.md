@@ -422,8 +422,25 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在動態排程微架構中，兩種主要的發射佇列（Issue Queue, IQ）佈局組織與組織差異：集中式發射佇列（Centralized Issue Queue） 與 分散式發射佇列（Distributed Issue Queue）。
+  - 集中式發射佇列（Centralized Issue Queue）
+    - 架構組織：所有解碼後的指令不論類型（如算術邏輯、記憶體存取、乘除法），全部進入同一個共享的 Issue Queue（IQ）。
+    - 運送流程：在單一 IQ 中統一進行運算子就緒監控（Wakeup & Select），一旦條件滿足，再發射至各自對應的執行管道（如 $X_0$ 算術管道、 $M_0$ 記憶體管道、 $Y_0$ 乘法管道）。
+    - 優缺點：
+      - 優點：硬體資源利用率高，不易因為特定類型指令突發而造成單一 Queue 溢位停頓（Stall）。
+      - 缺點：IQ 體積龐大，Port 數量多（需要同時連接所有執行單元），搜尋與比對邏輯（Wakeup/Select）的臨界路徑極長，限制了 CPU 時脈頻率。
+  - 分散式發射佇列（Distributed Issue Queue）
+    - 架構組織：根據指令類型將 Issue Queue 分離為多個獨立的子佇列（例如 IQ A 負責整數/算術管道，IQ B 負責浮點數或乘法管道）。
+    - 運送流程：指令在 Decode 階段就被分流（Steer）寄送至指定的 IQ A 或 IQ B，各自獨立監控並發射至對應的管道（如 $X_0/M_0$ 或 $Y_0$）。
+    - 優缺點：
+      - 優點：每個子 Queue 的 Entry 數與 Port 數大幅減少，喚醒與選擇邏輯顯著簡化，能有效提升時脈頻率（Clock Frequency）與降低功耗。
+      - 缺點：負載平衡較差，若連續出現大量相同類型的指令（例如連續整數指令），即使其他 Queue 空閒，對應的子 Queue 仍可能滿載導致 Decode 停頓。
 - 個人看法與分析：
+  - 微架構權衡的典型案例：集中式與分散式 IQ 的比較，完美體現了「資源利用率」與「硬體延遲/面積」之間的經典 Trade-off。
+    - 集中式能最大化利用每一個 Queue Entry，但隨著 Superscalar 發射寬度擴張，其複雜度呈次方級成長。
+    - 分散式則透過「分而治之（Divide and Conquer）」成功降低了臨界路徑延遲，因此在當代許多高效能 CPU（例如 Intel 的 Reservation Station 演進、AMD Zen 微架構）中，多採用分散式或半分散式的 Cluster 設計。
 - 總結：
+  <br>本頁介紹了 Centralized（集中式）與 Distributed（分散式）Issue Queue 的架構設計。集中式 IQ 由所有執行管道共享 Entry，資源利用率高但控制邏輯最為複雜；分散式 IQ 則按指令類型將 Queue 拆分（如 IQ A 與 IQ B），有效簡化了 Wakeup/Select 邏輯與 Port 數量，雖可能產生負載不均問題，卻能顯著優化 CPU 時脈與功耗表現。
 
 ## slide：20
 <div align="left" >
@@ -431,8 +448,30 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0020.jpg）展示了一個支援動態排程與超純量執行的 Pipeline 微架構範例，並透過一組組譯指令序列說明指令在該架構下的發射與執行時序關係：
+  - 流水線結構（Pipeline Architecture）：
+    - 前段（Front-end）：包含 F（Fetch, 讀取）、D（Decode, 解碼）、IQ（Issue Queue, 發射佇列）與 I（Issue, 發射）。
+    - scoreboard (SB)：於 I（Issue）階段進行記分板狀態更新。
+    - 多執行管道（Execution Pipelines）：
+      - $X_0$ 管道：單週期的 ALU 算術邏輯執行單元。
+      - $M_0 \to M_1$ 管道：雙週期的 Memory 記憶體存取單元。
+      - $Y_0 \to Y_1 \to Y_2 \to Y_3$ 管道：四週期的 Multiply 乘法執行單元。
+    - 後段（Back-end）：W（Writeback, 寫回）寫入 ARF（Architecture Register File, 架構暫存器檔案）。
+  - 範例指令序列（Instruction Trace）：
+    - 0 mul  x1, x2, x3 (乘法，走 $Y$ 管道，需要 4 週期)
+    - 1 addi x11, x10, 1 (加法，走 $X$ 管道，需要 1 週期)
+    - 2 mul  x5, x1, x4 (乘法，相依於指令 0 的 x1，資料相依 RAW Hazard)
+    - 3 mul  x7, x5, x6 (乘法，相依於指令 2 的 x5)
+    - 4 addi x12, x11, 1 (加法，相依於指令 1 的 x11)
+    - 5 addi x13, x12, 1 (加法，相依於指令 4 的 x12)
+    - 6 addi x14, x12, 2 (加法，相依於指令 4 的 x12)
 - 個人看法與分析：
+  - RAW 資料相依性對時序的限制：
+    - 指令 0（mul）產出 x1 需要經由 $Y_0 \to Y_1 \to Y_2 \to Y_3$ 長達 4 個週期的延遲。指令 2 需要用到 x1，因此指令 2 雖然早已進入 Issue Queue，但必須在 x1 經由 Bypass 或 Writeback 準備好後才能發射，展現了動態排程中由資料流驅動（Data-driven）的特質。 
+  - 獨立指令的 Out-of-Order（亂序）優勢：
+    - 指令 1（addi）與指令 0 無資料相依，因此可以在指令 0 執行長延遲乘法時提前發射並完成；同理，後續無相依的 addi 指令序列（如指令 4, 5, 6）也能在乘法鏈卡住時持續推進，充份發揮平行處理的效益。
 - 總結：
+  <br>本頁展示了具備多條不同延遲執行管道（ALU/Memory/Multiply）的動態排程處理器架構。透過微架構圖與底部的時間軸預留表，用來實測並填寫 Out-of-Order 執行時各指令在 $F, D, I, X/M/Y, W$ 各階段的實際週期分配。
 
 ## slide：21
 <div align="left" >
