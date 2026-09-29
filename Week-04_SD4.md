@@ -15,6 +15,15 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 - 個人看法與分析：
 - 總結：
 
+## slide：2
+<div align="left" >
+  <img src="./Lecture/SD4/SD4_page-0002.jpg" width="50%">
+</div>
+
+- 本教學重點內容：
+- 個人看法與分析：
+- 總結：
+
 ## slide：3
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0003.jpg" width="50%">
