@@ -731,8 +731,21 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片為本章節的簡報大綱與進度轉換頁（Agenda）。畫面上高亮顯示了即將進入的核心主題：
+  - 已完成主題（Grayed Out / Completed Topics）：
+    - Out-of-Order Processors：亂序執行處理器架構與時序推導（已說明完畢）。
+  - 當前重點主題（Highlighted Topic）：
+    - Speculation and Branches（猜測執行與分支處理）：探討處理器如何結合分支預測（Branch Prediction）進行猜測執行，以及在猜測失敗（Misprediction）時如何利用 Reorder Buffer (ROB) 與 Pipeline Flush 安全地還原架構狀態。
+  - 後續預告主題（Upcoming Topics）：
+    - Register Renaming：暫存器重命名技術，用以消除 WAR（Write-After-Read）與 WAW（Write-After-Write）等假性數據相依（Name Dependencies）。
+    - Memory Disambiguation：記憶體位址消歧義技術，用以處理 Load/Store 指令間的記憶體相依性與亂序存取安全。
 - 個人看法與分析：
+  - 從 Out-of-Order 跨入 Speculation 的必要性：
+    - 前面幾頁討論的亂序發射與 In-order Commit 機制（如 $IO_2I$ 架構），其最大的實務價值之一就是為了支援猜測執行（Speculative Execution）。如果沒有 ROB 提供的「暫存且不寫入 ARF」機制，CPU 就無法在分支結果出來前先行執行後續指令。  
+  - 學習邏輯的承先啟後：
+    - 本頁代表課程從單純的「資料相依（RAW Hazard）與執行單元排程」，正式進階到「控制相依（Control Hazard）與猜測錯誤復原」的硬體設計層面，是現代亂序處理器最核心且複雜的設計環節之一。
 - 總結：
+  <br>本頁作為大綱索引頁，標示了課程進度正從「亂序處理器架構（Out-of-Order Processors）」轉移至「猜測執行與分支處理（Speculation and Branches）」，為接下來探討分支預測失敗恢復與控制流優化奠定基礎。
 
 ## slide：31
 <div align="left" >
@@ -740,8 +753,29 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0031.jpg）展示了在 傳統 $I_4$ 管道（In-order Frontend, In-order Issue, In-order Writeback, In-order Commit） 下，當程式遇到條件分支指令（Branch Instruction） 時，無猜測執行（No Speculation）與控制相依（Control Hazard）的時序處理機制：
+  - 流水線結構與分支約束（$I_4$ Architecture Constraint）：
+    - 下方微架構圖顯示，所有指令必須順序經過 $F \to D \to I \to (X/M/Y) \to W$ 階段。
+    - 核心原則："No speculative instructions commit state"（不允許猜測的指令修改架構狀態）。在 $I_4$ 架構中，因為缺乏 Reorder Buffer (ROB) 來暫存猜測結果，分支指令必須確定結果（Taken / Not-Taken）後，後續的正確指令才能被 Issue/Execute。
+  - 指令序列與時間軸（Instruction Trace Analysis）：
+    - 0 mul  x1, x2, x3：週期 2 發射 ($I$)，週期 7 完成 $W$。
+    - 1 addi x4, x5, 1：週期 3 發射 ($I$)，週期 8 完成 $W$。
+    - 2 mul  x6, x1, x4：RAW 相依於指令 0（x1）與指令 1（x4），於週期 4~6 在 Issue Queue 等待 (I…I)，週期 7 發射進入 Y0 ，週期 11 完成 W。
+    - 3 beq  x6, x0, Target：RAW 相依於指令 2 的 x6。
+      - 於週期 3 完成 $F$、週期 4 完成 $D$。
+      - 由於需要 x6 的計算結果，beq 於週期 5~10 在管道中等待/停頓 (D…D)。
+      - 於週期 11 取得 x6 並發射至 $X_0$ 進行條件判斷，週期 15 完成 $W$。
+    - 分支後的指令 4~6 (Sequential Stream) 與 Target (Jump Target)：
+      - 控制阻塞（Control Stall）：指令 4 (addi x8, x9, 1) 雖然在週期 4 就已 Fetch ($F$)，但由於 beq（指令 3）結果未知，指令 4 被鎖在 Decode 階段 ($D\dots D$) 長達 4 個週期（週期 8~11），禁止發射。
+      - 當週期 11 beq 確定分支成立（Branch Taken）後，流水線清空（Flush）原本預取的前段指令（指令 4、5、6 被標註 -- 廢棄）。
+      - 正確的目标指令 T（Target）延後至週期 13 才開始 Fetch (F)，並於週期 14 Decode、週期 15 Issue。
 - 個人看法與分析：
+  <br>$I_4$ 架構面對 Control Hazard 的極大缺點：
+  - 從時間軸可以清楚看到，因為不進行猜測執行（No Speculation），分支指令 beq 為了等待 x6 的算術結果，直接造成流水線停擺了整整 4 個週期。再加上確定 Taken 後清空前段指令的損失，目標指令 T 直到週期 13 才被 Fetch，產生了嚴重的分支懲罰（Branch Penalty）。
+  - 引出猜測執行（Speculative Execution）的必要性：
+    - 本頁範例是極佳的反面教材，展示了若不使用分支預測（Branch Prediction）與猜測執行（Speculation），高延遲指令（如 mul）接條件分支時會對流水線吞吐量造成多麼嚴重的打擊。這也順理成章地引出下一頁主題：如何透過 ROB 實現猜測執行以消除這類控制阻塞。
 - 總結：
+  <br>本頁展示了在傳統 $I_4$ 管道下，分支指令因數據相依而阻塞後續指令發射的時序過程。由於缺乏猜測執行機制，流水線必須等待分支結果完全確定後才能排程後續指令，導致嚴重的效能損失。此練習為接下來介紹「動態分支預測」與「基於 ROB 的猜測執行機制」提供了明確的對照基準。 
 
 ## slide：32
 <div align="left" >
