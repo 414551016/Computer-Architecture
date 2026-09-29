@@ -149,36 +149,102 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   <img src="./Lecture/SD4/SD4_page-0008.jpg" width="50%">
 </div>
 
+這張投影片主題為 I2OI 架構（全名：In-order Frontend/Issue, Out-of-order Writeback, In-order Commit）。這是一種透過引入 Reorder Buffer (ROB) 與 Physical Register File (PRF / Future File)，成功解決前幾頁提到的「Early Commit 與精確例外（Precise Exceptions）」難題的關鍵架構。
 - 本教學重點內容：
+  - 流水線階段與核心運作（Pipeline Flow）：
+    - 前端與發射（In-order Frontend/Issue）：F（Fetch） $\rightarrow$ D（Decode） $\rightarrow$ I（Issue） 保持順序執行。
+    - 可變長度執行管道：包含 X（1階）、M（2階）、Y（4階）等不同延遲管道。
+    - 亂序寫回（Out-of-order Writeback, W）：執行完畢後，指令結果會先寫入 PRF（實體暫存器檔案），同時在 ROB（重排序緩衝區） 中標記為已完成（Finished）。
+    - 順序提交（In-order Commit, C）：依據程式原本順序，自 ROB 標頭（Head）順序將結果更新至 ARF（架構暫存器檔案）。
+  - 各硬體組件的操作時機與分工：
+    - ARF（Architectural Register File）：僅在 C 階段進行寫入（W），代表指令真正安全地退休（Commit）。
+    - SB（Scoreboard）：於 I 階段讀取/更新（R/W），於 W 階段解除鎖定（W）。
+    - PRF（Physical Register File / Future File）：於 I 階段讀取推測值（R），於 W 階段寫入執行結果（W）。
+    - ROB（Reorder Buffer）：於 I 階段分配 Entry（R/W），於 W 階段更新完成狀態（W），於 C 階段讀取並釋放（R/W）。
+    - FSB（Finished Store Buffer）：於 W 階段暫存已執行的 Store 資料（W），於 C 階段確定無例外後才真正寫入記憶體（R/W）。
 - 個人看法與分析：
+  - 成功解決精確例外（Precise Exceptions）：這張圖展現了電腦結構發展上的重要里程碑。藉由分離「寫回暫存結果（Writeback 至 PRF）」與「最終永久生效（Commit 至 ARF）」，就算執行過程是亂序的，也能在發生例外時直接丟棄 PRF 與 ROB 的推測狀態，精確地還原 ARF。
+  - 為完全亂序執行（OOO Issue）鋪路：I2OI 雖然發射（Issue）階段仍是順序的（In-order），但它引入的 ROB、PRF 與 Store Buffer 機制，已經構建好了亂序執行所需的最後一道防線（In-order Commit）。後續只需在 I 階段前加上 Issue Queue，即可升級為現代完整的 OOO 處理器（如 IO2I）。
 - 總結：
+  <br>I2OI 架構結合了「順序發射、亂序寫回、順序提交」。其核心在於引入 ROB 與 PRF：指令於 I 階段分配 ROB 位置；執行完畢於 W 階段先將結果寫入 PRF 並標記 ROB（亂序寫回）；最後於 C 階段按程式原本順序將結果寫入 ARF（順序提交）。FSB 則確保 Store 指令在 Commit 前不修改記憶體。此設計徹底解決了過早提交造成的精確例外問題，為現代高階 CPU 的亂序執行奠定了重要基礎。
 
 ## slide：9
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0009.jpg" width="50%">
 </div>
 
+這張投影片的主題為 重排序緩衝區（Reorder Buffer, ROB）的硬體結構與運作機制，詳細解構了 ROB 作為環形佇列（Circular Queue）的欄位定義與指標運作方式。
 - 本教學重點內容：
+  - ROB 的內部欄位定義（Entry Fields）：
+    - State（狀態）：記錄該指令目前的生命週期，共有三種狀態：Empty (-- )（空）、Pending (P)（執行中/等待中）、Finished (F)（已完成）。
+    - S（Speculative Bit，推測位元）：標示該指令是否屬於推測執行的指令（例如位於尚未確認結果的分支指令之後）。
+    - ST（Store Bit，儲存位元）：標示該指令是否為 Store 記憶體寫入指令。
+    - V（Valid Bit，有效位元）：標示實體暫存器編號（Preg）是否有效。
+    - Preg（Physical Register File Specifier）：儲存該指令所分配到的實體暫存器編號。
+  - ROB 的指標與運作流程（Pointers & Lifecycle）：
+    - Head of ROB（標頭指標）：指向佇列中最老（Oldest）的指令。Commit 階段（提交）會持續檢查 Head 的狀態，必須等到 Head 指令變為 Finished (F) 時才能進行順序提交。
+    - Tail of ROB（標尾指標）：指向佇列最新分配的位置。新指令在解碼/發射階段（D/I）會從 Tail 入列並分配一個 Entry。
+    - Out-of-Order Writeback（亂序寫回）：指令可在管道中亂序完成，完成時直接將對應 Entry 的 State 改為 Finished (F)（例如圖中中間已有指令標示為 F）。
+    - Speculative Execution（推測執行）：若前方有分支指令尚未確定結果（In flight），後續進入 ROB 的指令其 $S$ 位元會設為 $1$。
 - 個人看法與分析：
+  - 精緻的 FIFO 設計與邏輯隔離：ROB 透過 FIFO（First-In, First-Out）結構完美解決了「亂序執行、順序提交」的矛盾。圖中清楚展示：就算後方的指令已經早早完成變成 Finished (F)，只要 Head 的指令還處於 Pending (P)，提交階段（Commit）就必須嚴格等待，這保證了精確例外處理（Precise Exceptions）與程式邏輯順序。
+  - 支援推測執行（Speculation）與撤銷：$S$ 位元的設計展現了 ROB 強大的例外復原能力。一旦分支預測錯誤，處理器只需將 Tail 壓回至該分支指令的位置，並將標有 $S=1$ 的 Entry 清除（Flush），即可瞬間撤銷所有推測執行的無效變更，不留副作用。
 - 總結：
+  <br>本頁詳細解構了 Reorder Buffer (ROB) 的硬體結構與運作機制。ROB 採環形佇列設計，包含 State（Empty/Pending/Finished）、Speculative bit (S)、Store bit (ST) 及實體暫存器指標 (Preg) 等欄位。新指令自 Tail 分配入列，執行完畢於 W 階段亂序標記為 Finished；Commit 階段則嚴格等待 Head 變為 Finished 才順序退休並寫回 ARF。透過 S 位元與 FIFO 結構，ROB 成功維護了分支推測失敗時的快速撤銷機制與精確例外處理。
 
 ## slide：10
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0010.jpg" width="50%">
 </div>
 
+這張投影片的主題為 已完成儲存緩衝區（Finished Store Buffer, FSB），主要探討在亂序執行/順序提交架構中，如何暫存已執行完畢的 Store（記憶體寫入）指令資料，並分析硬體 Entry 數量對系統設計複雜度的影響。
 - 本教學重點內容：
+  - FSB 的硬體結構欄位：
+    - V（Valid Bit）：有效位元，標示該 Entry 是否存放著待寫入的資料。
+    - Op（Operation）：操作碼，標示記憶體寫入指令的具體類型。
+    - Addr（Address）：目標記憶體實體/虛擬位址。
+    - Data（Data）：準備寫入記憶體的數值/資料。
+  - 單一 Entry（Single-Entry FSB）與多 Entry 的權衡：
+    - 限制單一記憶體指令（Single Memory Instruction in flight）：若系統限制同時只能有一條記憶體指令在執行/等待，FSB 只需要 一個 Entry。
+    - 極簡化分配（Single Entry makes allocation trivial）：單一 Entry 讓硬體的配置與控制邏輯變得極為簡單，無需複雜的佇列管理。
+    - 多記憶體指令的挑戰（Address Aliasing）：若要支援多條記憶體指令同時在流水線中（More than one memory instruction in flight），就必須處理 Load/Store 位址別名/衝突（Address Aliasing） 問題（即後續 Load 指令可能需要讀取前方尚未正式寫入記憶體的 Store 位址，需引入 Store Forwarding 或 Memory Disambiguation）。
 - 個人看法與分析：
+  - 保護記憶體狀態與精確例外：Store 指令不能像一般算術指令一樣在 W 階段就直接寫入主記憶體或 Cache，因為一旦寫入就無法撤銷（Rollback）。FSB 扮演了「緩衝池」的角色，讓 Store 指令在 W 階段先將位址與資料算好存入 FSB（寫回），直到 C 階段（Commit）確定沒有任何例外發生後，才真正寫入記憶體。
+  - 效能與硬體複雜度的 Trade-off：單一 Entry FSB 雖然實現簡單且避開了複雜的位址別名檢查，但會成為記憶體密集型程式（Memory-intensive programs）的重大效能瓶頸（每次 Store 都會堵塞後續記憶體存取）。這說明了為何進一步學習課程大綱（Agenda）中的 Memory Disambiguation（記憶體消歧義） 是解鎖現代 CPU 記憶體平行度（ILP）的關鍵下一步。
 - 總結：
+  <br>本頁介紹 Finished Store Buffer (FSB) 的欄位與設計考量。FSB 包含 V、Op、Addr、Data 欄位，用於暫存已完成執行但尚未 Commit 的 Store 資料，確保精確例外。若限制流水線中同時僅能有一條記憶體指令，只需單一 Entry FSB，硬體分配極為簡單；但若要支援多條記憶體指令以提升效能，則必須額外解決 Load/Store 之間的位址別名（Address Aliasing）與衝突問題。這展現了記憶體架構在簡化設計與提升存取平行度之間的取捨。
 
 ## slide：11
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0011.jpg" width="50%">
 </div>
 
+這張投影片呈現了 I2OI 架構（In-order Frontend/Issue, Out-of-order Writeback, In-order Commit）下，執行同一段指令序列的完整時序圖練習（Pipeline Timing Diagram Exercise）。
 - 本教學重點內容：
+  - I2OI 架構運算條件回顧：
+    - In-order Frontend/Issue：F、D、I 必須依序處理。
+    - 管道長度（Latency）：
+      - X 管道（如 addi）：1 週期（ $X_0$）。
+      - M 管道（如 load/store）：2 週期（ $M_0 \rightarrow M_1$）。
+      - Y 管道（如 mul）：4 週期（ $Y_0 \rightarrow Y_1 \rightarrow Y_2 \rightarrow Y_3$）。
+    - Reorder Buffer (ROB) & Commit：指令於 W 階段將結果寫入 PRF/ROB，並於 C 階段順序提交至 ARF。
+  - 指令序列與依賴關係：
+    - 0 mul x1, x2, x3：無相依，走 Y 管道。
+    - 1 addi x11, x10, 1：無相依，走 X 管道，可提前完成（OOO Writeback）。
+    - 2 mul x5, x1, x4：RAW 依賴指令 0 的 x1，必須在 I 階段等待指令 0 寫回結果（W）後才能發射。
+    - 3 mul x7, x5, x6：RAW 依賴指令 2 的 x5，須等待指令 2 完成。
+    - 4 addi x12, x11, 1：RAW 依賴指令 1 的 x11。
+    - 5 addi x13, x12, 1：RAW 依賴指令 4 的 x12。
+    - 6 addi x14, x12, 2：RAW 依賴指令 4 的 x12。
+  - 課堂練習目標：
+    <br>讓學生在 0 到 19 個 Clock Cycle 的時間軸上，填充每條指令在各週期的流水線狀態（F, D, I, $Y_0 \dots$, W, C），體會 In-order Commit 如何透過 ROB 阻擋過早提交（Commit），從而解決前述的 Early Commit 問題。
 - 個人看法與分析：
+  - 理論與推演的結合：前幾頁介紹了 I2OI 架構圖與 ROB 欄位，這張投影片則透過具體的時序填空，讓學生動手推演指令在具備 ROB 時的真實運轉過程。
+  - 凸顯 ROB 的 Commit 阻塞效應：
+    - 指令 1（addi）雖然在週期 4 或 5 就可在 W 階段寫回 PRF，但因為指令 0（mul）仍在執行，指令 1 不能直接 Commit（C 階段被卡住），必須在 ROB 中等待指令 0 先 Commit。
+    - 這清晰展示了 In-order Commit 的運作真諦：寫回（Writeback）可以亂序以提升執行效率，但提交（Commit）必須嚴格順序以維護精確例外（Precise Exceptions）。
 - 總結：
+  <br>本頁為 I2OI 架構的流水線時序圖（Pipeline Timing Diagram）練習。題目給定包含長延遲乘法（mul）與短延遲加法（addi）的指令序列，要求填入 0～19 週期內各指令於 F、D、I、執行管道、W 與 C 階段的狀態。此練習旨在讓學生親自推演：即使短指令可提前於 W 階段亂序寫回 PRF，但受限於 ROB 的 FIFO 順序，仍須等待前方長指令退休後才能於 C 階段提交至 ARF。這具體驗證了 I2OI 架構兼顧執行效率與精確例外的運作細節。
 
 ## slide：12
 <div align="left" >
