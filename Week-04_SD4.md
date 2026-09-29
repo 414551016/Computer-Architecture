@@ -251,9 +251,23 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   <img src="./Lecture/SD4/SD4_page-0012.jpg" width="50%">
 </div>
 
+本頁投影片（SD4_page-0012.jpg）呈現了 I2OI（In-order Issue, Out-of-order Writeback, In-order Commit）架構下完整指令運作的時序解答與 Reorder Buffer (ROB) 狀態演變：
 - 本教學重點內容：
+  - 流水線時序填空解答（Pipeline Timing Diagram）：
+    - 指令 0 (mul x1, x2, x3)：週期 0 到 7 完成（ $F \rightarrow D \rightarrow I \rightarrow Y_0 \rightarrow Y_1 \rightarrow Y_2 \rightarrow Y_3 \rightarrow W$），於週期 8 完成 Commit（C）。
+    - 指令 1 (addi x11, x10, 1)：雖然在週期 5 就已經完成 Writeback（W），但因為必須遵守 In-order Commit，必須停留在 ROB（標示為 $r$），直到週期 9 才跟隨指令 0 之後完成 Commit（C）。
+    - 資料相依性阻塞（RAW Hazard）：
+      - 指令 2 (mul x5, x1, x4) 相依於指令 0 的 x1，因此留在 Issue 階段（ $I$）等待，直到週期 7 指令 0 完成 W 寫回後，才於週期 8 進入 $Y_0$ 執行。
+      - 指令 4 (addi x12, x11, 1) 相依於指令 1 的 x11，雖然指令 1 在週期 5 就已寫回，但指令 4 受到 Frontend 依序發射（In-order Issue）與 Fetch/Decode 佇列的限制，於週期 10 進入 $X_0$ 執行。
+  - ROB 狀態變化追蹤（ROB Life Cycle）：
+    - Entry 分配（Allocation）：當指令進入 Decode/Issue 階段時在 ROB 中取得 Entry（如週期 2 的 x1、週期 3 的 x11 與 x5）。
+    - 完成標記（Finished / Circle）：當指令執行完畢並在 W 階段寫回結果後，ROB 中的對應欄位會被圈起來（Circle），表示已完成（Finished，例如週期 6 的 x11）。
+    - 順序退休與釋放（Commit & Free Entry）：只有位於 ROB 頭部的已完成指令才能 Commit，並在下一個週期釋放（Free）ROB 空間（如週期 8 的 x1 Commit、週期 9 釋放）。
 - 個人看法與分析：
+  - 圖像化解構 ROB 運作機制：這頁投影片是理解 In-order Commit 最經典且直觀的範例。透過下方 ROB Entry 的生命週期追蹤，學生可以非常清楚地看到「指令寫回（Writeback）」與「指令退休（Commit）」在時間軸上的分離。
+  - 亂序執行與精確例外的完美結合：指令 1（addi）早在週期 5 就已運算完畢，但其 ROB Entry 一直被鎖定到週期 9 才釋放。這種「允許 Writeback 亂序以提昇效能、強制 Commit 順序以維持狀態正確性」的設計，正是現代亂序執行 CPU 能同時實現高平行度與精確例外（Precise Exception）的關鍵所在。
 - 總結：
+  <br>本頁展示了 I2OI 架構下指令執行的完整時序與 ROB 狀態演變。時序圖清楚揭示：短延遲指令（如 addi）雖能提前於 W 階段寫回結果，但受限於 In-order Commit 規則，必須在 ROB 中等待前方長延遲指令（如 mul）退休後才能進行 Commit。ROB 透過 Entry 分配、完成標記與順序釋放，確保了運算亂序執行與狀態精確提交的完美平衡。
 
 ## slide：13
 <div align="left" >
@@ -261,8 +275,20 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0013.jpg）探討了 當第一條指令（最老指令）發生例外（Exception）時，流水線與 Reorder Buffer (ROB) 的處理流程與狀態演變：
+  - 例外發生的情境：
+    - 指令 0（mul x1, x2, x3）在執行或寫回階段（W）觸發了例外（例如算術溢位等）。
+    - 此時，後續的指令（指令 1 ~ 4）已經在流水線的不同階段執行或等待（例如指令 1 的 addi 已在週期 5 完成 W 寫回，並停留在 ROB 等待提交 $r$）。
+  - 精確例外（Precise Exception）的恢復機制：
+    - 阻擋非法提交（Block Commit）：當指令 0 在 C 階段被確認發生例外時，系統絕不提交指令 0，同時也不允許後續任何已完成寫回的指令（如指令 1）進行 Commit。
+    - 清空流水線（Pipeline Flush /）：圖中右側的斜線 / 表示控制邏輯會立即清空（Flush）流水線中所有位於指令 0 之後的指令（指令 1、2、3、4 等）。
+    - 保持架構狀態不被污染（State Protection）：因為所有後續指令的結果都只暫存在 PRF/ROB 中而尚未寫入 ARF，清空流水線並不會破壞 CPU 的架構暫存器狀態（Architectural State）。
+    - 轉跳至例外處理程式（Exception Handler）：流水線清空後，程式計數器（PC）重置並跳轉至例外處理常式（底部的 $F \rightarrow D \rightarrow I \dots$）。
 - 個人看法與分析：
+  - ROB 實現「精確例外」的終極體現：這張投影片完美解答了「為什麼短指令明明算完了（如指令 1 在 W 階段），卻不能直接寫入 ARF/Memory」的根本原因。如果指令 1 提前 Commit 變更了架構狀態，當前方指令 0 發生例外時，系統將無法乾淨地恢復到指令 0 執行前的狀態。
+  - 亂序執行與狀態還原的代價：透過 ROB 的 In-order Commit 機制，處理器能以極低代價實現精確例外——只需將未 Commit 的 ROB Entry 標記為無效（Flush）即可，無需進行複雜的回滾（Rollback）計算。
 - 總結：
+  <br>本頁展示了當第一條指令觸發例外時的流水線處理機制。即使後續指令已完成執行（如指令 1 已到達 W/r 階段），受限於 ROB 的 In-order Commit 規則，這些結果皆未提交至 ARF。當指令 0 確定發生例外時，硬體會直接清空（Flush）流水線中所有後續指令，確保架構狀態不被破壞，隨後轉跳執行例外處理程式，展現了 ROB 維護精確例外（Precise Exceptions）的核心價值。
 
 ## slide：14
 <div align="left" >
@@ -270,8 +296,23 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片探討在具備 Reorder Buffer (ROB) 的架構中，當發生分支猜測錯誤（Branch Misprediction）時，系統處理與清空猜測指令（Squash Speculative Instructions）的三種策略機制：
+  - Option 1：早期清除（Squash instructions earlier）
+    - 運作機制：一旦分支指令在執行階段（ $X_0$）計算出實際結果並發現猜測錯誤時，立刻清空 Issue/Pipeline 中的後續猜測指令。
+    - 優缺點：能最早釋放資源並降低猜測錯誤懲罰（Misprediction Penalty），但硬體複雜度極高，需要 ROB 支援多個讀寫埠（Many ports）來隨機存取並清除任意位置的 Entry。
+  - Option 2：分支提交時清除（Squash instructions in ROB when Branch commits）
+    - 運作機制：分支指令正常走完 Writeback，直到到達 Commit 階段（C）正式退休時，才一次性清空 ROB 中位居其後的所有猜測指令（斜線 /）。
+    - 優缺點：簡化了 ROB 的控制邏輯（只需在 Commit 時集體 Flush），但猜測指令會在流水線與 ROB 中佔用資源較長時間。
+  - Option 3：猜測指令到達 Commit 時才清除（Squash in Commit stage）
+    - 運作機制：允許所有猜測指令繼續執行完畢（ $X_0 \rightarrow W$），逐一到達 Commit 階段時，再由 Commit 邏輯判定其屬於錯誤路徑而予以拋棄（Squash /）。
+    - 優缺點：控制最為簡單統一（與 Exception 處理邏輯完全一致），但浪費最多的執行單元能耗與 ROB 空間。
 - 個人看法與分析：
+  - 設計折衷（Trade-off）的典範：這三種 Option 展現了處理器設計中「效能、功耗與硬體複雜度」的權衡：
+    - Option 1 追求極致效能（最低 Pipeline Flush Latency），但付出了巨大的晶片面積與設計複雜度代價。
+    - Option 2 提供了極佳的平衡點，是許多實務超純量（Superscalar）亂序執行 CPU 採用的折衷方案。
+  - 統一的狀態保護機制：不論選擇哪種 Option，核心原則始終不變——猜測指令在未確定正確前絕不允許 Commit 修改 ARF。這確保了分支預測錯誤時，CPU 能夠無縫還原至正確的分支目標位址（如圖中的 T addi x12, x11, 1）。
 - 總結：
+  <br>本頁介紹了處理分支預測錯誤（Branch Misprediction）的三種清空（Squash）策略：Option 1 於執行階段立即清除，效能最高但 ROB 埠數多、硬體最複雜；Option 2 於分支指令 Commit 時集體清空 ROB 中的錯誤指令；Option 3 則讓猜測指令執行完後於 Commit 階段逐一拋棄。三者均依賴 ROB 阻止錯誤指令寫入架構狀態（ARF），以維護程式執行的正確性。
 
 ## slide：15
 <div align="left" >
@@ -279,8 +320,19 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0015.jpg）整理了在具備 Reorder Buffer (ROB) 的微架構中，針對分支指令（Branches）與猜測執行（Speculation）的硬體設計考量與三種撤銷（Squash）時間點：
+  - 三種清除猜測指令（Squash Speculative Instructions）與釋放 ROB Entry 的時機點（按複雜度遞減）：
+    - 1. As soon as branch resolves（分支結果一確定立即清除）：複雜度最高，但能最快釋放資源與減少效能損失。
+    - 2. When branch commits（當分支指令提交時清除）：複雜度居中，在分支到達 Commit 階段時一次性清空 ROB 後續 Entry。
+    - 3. When speculative instructions reach commit（當猜測指令到達提交階段時清除）：複雜度最低，讓猜測指令依序走到 Commit 階段才予以拋棄。
+  - 多重在途分支（Multiple In-flight Branches）的支援：
+    - 基礎設計（Base Design）：一次僅允許一條分支指令在流水線中執行（Only one branch at a time）。若遇到第二條分支指令，必須在 Decode 階段停頓（Stall）。
+    - 擴充設計（Extended Design）：可透過增加追蹤位元（More bits / Branch Mask / Branch ID），讓系統能夠同時追蹤與管理多條在途的分支指令，以提升流水線的平行度與吞吐量。
 - 個人看法與分析：
+  - 設計觀念的系統化歸納：本頁將前一頁（Page 14）的三種 Option 做出了清晰的文字總結與複雜度排序。硬體設計師必須在「追求極致效能（Option 1）」與「控管邏輯複雜度/晶片面積（Option 2/3）」之間做出權衡。
+  - 邁向現代超純量（Superscalar） CPU 的關鍵一步：基礎設計只允許單一在途分支會嚴重限制 Instruction-Level Parallelism (ILP)。引入多重分支追蹤機制（如使用 Branch Stack 或 Shadow Registers），是現代高性能處理器（如 RISC-V 亂序核心、Intel Core 系列）不可或缺的核心技術。
 - 總結：
+  <br>本頁總結了處理分支猜測錯誤的三種時間點策略（分支確定時、分支提交時、猜測指令到達提交時），其硬體控制複雜度依次遞減。同時指出基礎設計僅支援單一在途分支，若要突破效能瓶頸，需透過增加控制位元以支援多條分支同時在流水線中執行，為現代超純量亂序處理器的分支管理提供了完整架構觀念。
 
 ## slide：16
 <div align="left" >
