@@ -783,8 +783,28 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 $I_2O_2$ 微架構（In-order Frontend/Issue, Out-of-order Writeback/Commit） 下，面對條件分支指令（Branch Instruction）時的時序推導與控制相依處理：
+  - 流水線結構特徵（ $I_2O_2$ Architecture Constraints）：
+    - 前端與發射（In-order Frontend & Issue）：指令按順序 Decode 並進入發射隊列。
+    - 寫回與提交（Out-of-order Writeback & Commit）：允許亂序寫回（ $W$），且沒有 Reorder Buffer (ROB)。
+    - 核心限制："No speculative instructions commit state"（不允許猜測指令修改架構狀態）。由於 $I_2O_2$ 缺乏 ROB 暫存機制，一旦指令寫回（ $W$）就會直接破壞架構暫存器檔案（ARF）。因此，在分支指令（beq）確定結果前，後續指令絕對不能被 Issue 或執行。
+  - 指令時序推導與流水線停頓（Pipeline Stall Analysis）：
+    - 0 mul  x1, x2, x3：週期 2 發射 ($I$)，週期 7 完成 $W$。
+    - 1 addi x4, x5, 1：週期 3 發射 ($I$)，週期 5 完成 $W$。
+    - 2 mul  x6, x1, x4：RAW 相依於指令 0（x1），週期 7 發射 ($I$)，週期 11 完成 $W$。
+    - 3 beq  x6, x0, Target：RAW 相依於指令 2 的 x6。
+      - 週期 3 完成 $F$、週期 4 Decode。
+      - 因等待 x6 完成，beq 在 Issue 階段停頓至週期 7，週期 7 發射進入 $X_0$，週期 8 完成 $W$（確定分支成立 Target）。  
+    - 分支後指令 4~6 與 Target 指令 T 的互動：
+      - 控制停頓（Control Stall）：指令 4 (addi x8, x9, 1) 雖然在週期 4 就已 Fetch ( $F$)，但由於 beq 結果未定，指令 4 被強制鎖在 Decode 階段 ( $D\dots D$) 長達 4 個週期（週期 7~10）。
+      - 當週期 8 beq 寫回並確定 Branch Taken 後，前段預取的指令 4、5、6 於週期 11 被標註 -- 清空（Flush）。
+      - 目標指令 T 延後至週期 12 才開始 Fetch ( $F$)，週期 13 Decode、週期 14 Issue。
 - 個人看法與分析：
+  <br>$I_2O_2$ 對比 $I_4$ 在分支處理上的異同：
+  - 相同點：兩者都缺乏 ROB，因此都無法支援猜測執行（Speculative Execution）。後續指令（如指令 4）必須在 Decode 階段苦等分支指令算完結果，否則一旦提前執行並 Writeback，就會寫入 ARF 造成無法復原的錯誤。
+  - 相異點（執行速度差異）：在 $I_2O_2$ 中，分支指令 beq 只需要 1 個算術週期（$X_0$）並於週期 8 完成寫回（$W$），比 $I_4$（需要順序經過 $X_0 \to X_1 \to X_2 \to X_3$，週期 15 才 $W$）快了許多。這使得目标指令 T 在 $I_2O_2$ 可以在週期 12 就 Fetch，大大縮短了分支懲罰（Branch Penalty）。
 - 總結：
+  <br>本頁展示了在無 ROB 的 $I_2O_2$ 架構下，分支指令對流水線造成的控制阻塞現象。雖然算術單元的亂序寫回加速了分支結果的產生，但由於缺乏猜測執行能力，系統仍必須暫停後續指令發射，進一步突顯了後續章節引進 ROB（Reorder Buffer） 實現 Speculation 的重要性。
 
 ## slide：33
 <div align="left" >
@@ -792,8 +812,31 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0033.jpg）展示了在 $I_2O_1$ 微架構（In-order Frontend/Issue, Out-of-order Writeback, In-order Commit） 下，當遇到條件分支指令（Branch Instruction）且未進行猜測執行（No Speculation）時的流水線時序推導與 squash/flush 清空機制：
+  - 流水線結構特徵（ $I_2O_1$ Architecture Constraints）：
+    - 前端與發射（In-order Frontend & Issue）：指令按原始程式順序進入 Decode 與 Issue。
+    - 亂序寫回與順序提交（OOO Writeback, In-order Commit）：具備 Reorder Buffer (ROB) 與 Future Status Buffer (FSB)。寫回階段（ $W$）將結果寫入 PRF，但必須等 Commit 階段（ $C$）按順序寫入 ARF。
+    - 控制保護原則（Squash Control）：
+      - "Must squash instructions in pipeline after branch to prevent PRF write"：分支未確認前被預取的指令，若發現分支成立（Taken），必須在流水線中將其清空（Squash），防止其錯誤寫入 PRF。
+      - "Can remove from ROB immediately or wait until commit"：被廢棄的猜測指令可以選擇立刻從 ROB 中移除，或者留在 ROB 直到輪到 Commit 時再被無聲忽略（Squash/Drop）。
+  - 指令時序與流水線停頓（Pipeline Stall Analysis）：
+    - 0 mul  x1, x2, x3：週期 2 發射 ( $I$)，週期 7 完成 $W$，週期 8 Commit ( $C$)。
+    - 1 addi x4, x5, 1：週期 3 發射 ( $I$)，週期 5 完成 $W$，於 ROB 處於 $r$ 狀態等待，週期 9 Commit ( $C$)。
+    - 2 mul  x6, x1, x4：RAW 相依於指令 0（ x1），週期 7 發射 ($I$)，週期 11 完成 $W$，週期 12 Commit ( $C$)。
+    - 3 beq  x6, x0, Target：RAW 相依於指令 2 的 x6。
+      - 週期 3 完成 $F$、週期 4 Decode。
+      - 在 Issue 階段停頓等待 x6 至週期 7，週期 11 發射進入 $X_0$，週期 12 完成 $W$，週期 13 Commit ( $C$)。
+    - 分支後指令 4~6 與 Target 指令 T 的互動：
+      - 控制停頓（Control Stall）：指令 4 雖然在週期 4 完成 $F$，但因 $I_2O_1$ 未開放分支猜測發射，指令 4 被鎖在 Decode 階段 ( $D\dots D$) 長達 4 個週期（週期 7~10）。
+      - 於週期 11 beq 發射並確定 Branch Taken 後，前段預取的指令 4、5、6 在週期 13 標註 -- 清空。
+      - 目標指令 T 於週期 13 才開始 Fetch ($F$)，週期 14 Decode、週期 15 Issue。   
 - 個人看法與分析：
+  - ROB 在分支失敗（Misprediction/Branch Taken）時的作用：
+    - 相較於 $I_2O_2$，引入 ROB 的 $I_2O_1$ 架構雖然在此範例中尚未開啟動態猜測發射（Speculative Issue），但 ROB 提供了清晰的指令生命週期管理。當分支結果確定 Taken 時，硬體可以直接無效化（Squash）流水線與 ROB 中該分支之後的所有指令條目，確保 PRF/ARF 的狀態絕對不受破壞。  
+  - 效能瓶頸與下一步改進（引入 Speculative Execution）：
+    - 在 $I_2O_1$ 架構下，因為 Issue 依然是 In-Order，使得 beq 必須苦等前面的 mul 算完才能進入發射。這種「等待分支算完才敢繼續發射」的保守作法帶來了顯著的流水線氣泡（Bubble）。要完全解放硬體效能，就必須結合 Branch Predictor（分支預測器） 與 Issue Queue（IQ，如 $IO_2I$ 架構），讓後續指令在分支結果未知時就能預先猜測發射與執行。
 - 總結：
+  <br>本頁展示了在具備 ROB 的 $I_2O_1$ 架構下，條件分支指令導致的控制停頓與流水線清空（Squash）過程。影片說明了 ROB 如何作為保護架構狀態（ARF/PRF）的屏障，並為下一階段將介紹的「結合分支預測的猜測執行（Speculative Execution with Branch Prediction）」建立了關鍵概念。
 
 ## slide：34
 <div align="left" >
@@ -801,8 +844,33 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 $IO_3$ 微架構（In-order Frontend, OOO Issue/Writeback/Commit） 下，當遭遇條件分支指令（Branch Instruction）時，缺乏控制猜測（No Control Speculation）所導致的致命缺陷——猜測指令非預期地寫入架構暫存器檔案（ARF）：
+  - 流水線結構特徵（$IO_3$ Architecture Constraints）：
+    - 前端順序，後端全亂序（In-order Frontend, OOO Issue/WB/Commit）：具備 Issue Queue (IQ)，允許指令亂序發射與寫回。
+    - 缺乏 Reorder Buffer (ROB)：寫回階段（ $W$）直接將計算結果寫入 ARF（Architectural Register File）。
+    - 控制猜測限制（No Control Speculation）：
+      - "No control speculation for $IO_3$"：因為缺乏 ROB 的暫存機制，如果盲目猜測發射分支後續的指令，其結果一旦寫回就會不可逆地破壞 ARF。
+      - "Could stall on branch"：如果不進行控制猜測，流水線就必須在分支指令確定結果前停頓。
+  - 指令時序與錯誤情況推導（Pipeline Timing & Failure Analysis）：
+    - 0 mul  x1, x2, x3：週期 2 發射 ( $I$)，週期 7 完成 $W$。
+    - 1 addi x4, x5, 1：週期 3 發射 ($I$)，週期 5 完成 $W$。
+    - 2 mul  x6, x1, x4：RAW 相依於指令 0（ x1），於 Issue Queue (IQ) 中等待至週期 7 發射 ( $I$)，週期 11 完成 $W$。
+    - 3 beq  x6, x0, Target：RAW 相依於指令 2 的 x6。
+      - 於週期 3 完成 $F$、週期 4 Decode、進入 IQ ( $i$)。
+      - 在 IQ 中等待 x6 的結果直到週期 10，週期 11 才發射 ($I$) 進入算術單元 $X_0$，週期 12 完成 $W$（確定 Branch Taken）。
+    - 分支後續指令（指令 4~6）的錯誤寫入（The Hazard of Speculation without ROB）：
+      - 指令 4 (addi x8, x9, 1) 與指令 5 (addi x10, x11, 1) 沒有資料相依，於週期 7 與 8 提前發射 ( $I$) 並於週期 8 與 9 完成寫回 ( $W$)。
+      - 指令 6 (addi x12, x13, 1) 於週期 11 發射 ( $I$)，週期 12 完成 $W$。
+      - 致命後果：當週期 12 分支指令 beq 終於確定 Branch Taken 並準備跳轉至 Target (T) 時，指令 4、5、6（Speculative Instructions）早就已經將結果寫入 ARF（"Speculative Instructions Wrote to ARF"）。由於沒有 ROB 進行復原（Rollback），這些被錯誤執行的指令狀態無法撤銷，導致程式執行結果出錯！
+      - 正確的目标指令 T 延後至週期 12 才開始 Fetch ($F$)。
 - 個人看法與分析：
+  - 展示「沒有 ROB 就不能做猜測執行」的經典案例：
+    - 本頁範例極具啟發性。它清楚說明了為什麼 $IO_3$（亂序發射/寫回但無 ROB）在實務上不能對分支進行猜測執行（No Control Speculation）。如果不加以限制，讓 IQ 隨意發射分支後的指令，就會發生圖中指令 4、5、6 污染 ARF 的災難。
+  - 修正方法與微架構演進：
+    - 若要在 $IO_3$ 中避免此問題，系統必須在 Decode/Issue 階段強制 Stall 分支後的指令（直到 beq 完成），但這會嚴重削弱超純量處理器的效能。
+    - 這正是為什麼現代高效能處理器必定採用 $IO_2I$ 架構（In-order Frontend, OOO Issue/WB, In-order Commit with ROB）——唯有配合 Reorder Buffer (ROB)，才能讓猜測指令的結果先「暫存」在 ROB 中，等到分支結果確定正確後才 Commit 到 ARF，若預測失敗則可直接 Flush 清空，同時兼顧高效能與安全性。
 - 總結：
+  <br>本頁投影片透過完整的時序圖，深刻示範了在缺乏 ROB 的 $IO_3$ 架構下進行猜測執行所帶來的狀態破壞風險。這也為本單元的架構比較畫下圓滿句點，說明了為何 ROB（Reorder Buffer） 是現代處理器實現「安全猜測執行（Safe Speculative Execution）」不可或缺的微架構元件。   
 
 ## slide：35
 <div align="left" >
@@ -810,8 +878,31 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在現代主流 $IO_2I$ 微架構（In-order Frontend, OOO Issue/Writeback, In-order Commit） 下，當遭遇條件分支指令（Branch Instruction）且進行猜測執行（Speculative Execution）時，流水線的時序推導與選取性還原機制（Selective Rollback）：
+  - 流水線結構特徵（$IO_2I$ Architecture Constraints）：
+    - 前端順序（In-order Frontend）：指令按順序經過 Fetch ( $F$)、Decode ( $D$)，並進入 Issue Queue (IQ, $i$)。
+    - 後端亂序發射與寫回（OOO Issue & Writeback）：只要資料準備就緒，IQ 中的指令可亂序發射（ $I$）並寫回結果（ $W$）至 PRF（Physical Register File）。
+    - 順序提交（In-order Commit with ROB）：配置 Reorder Buffer (ROB) 與 Future Status Buffer (FSB)。指令必須按原始程式順序提交（ $C$）並將結果寫入 ARF。
+  - 指令時序與猜測錯誤還原推導（Timing & Selective Rollback Analysis）：
+    - 0 mul  x1, x2, x3：週期 2 發射 ( $I$)，週期 7 完成 $W$，週期 8 Commit ( $C$)。
+    - 1 addi x4, x5, 1：週期 3 發射 ( $I$)，週期 5 完成 $W$，於 ROB 處於 $r$ 狀態等待，週期 9 Commit ( $C$)。
+    - 2 mul  x6, x1, x4：RAW 相依於指令 0（x1），於 IQ 中等待至週期 7 發射 ( $I$)，週期 11 完成 $W$，週期 12 Commit ( $C$)。
+    - 3 beq  x6, x0, Target：RAW 相依於指令 2 的 x6。
+      - 於週期 3 完成 $F$、週期 4 Decode、進入 IQ ( $i$)。
+      - 在 IQ 中等待 x6 至週期 10，週期 11 發射 ( $I$) 進入算術單元 $X_0$，週期 12 完成 $W$（確定 Branch Taken），週期 13 Commit ( $C$)。
+    - 分支猜測執行與還原（Speculative Execution & Rollback）：
+      - 指令 4 (addi x8, x9, 1) 與指令 5 (addi x10, x11, 1) 在分支結果出來前（週期 7 與 8）即被猜測性地發射與執行（Speculative Issue），並分別於週期 8 與 9 將結果寫入 PRF（標示為 $W$ 與 $r$）。
+      - 分支預測失敗處置（Branch Misprediction Handling）：當週期 11 分支指令 beq 發射並於週期 12 確定 Branch Taken 時，系統檢測到猜測錯誤：
+        - Pipeline Flush：清空前段流水線（指令 4~11 被標註 -- 廢棄）。
+        - Selective Rollback / PRF Cleanup："Need to clean up Speculative state In PRF. Needs selective rollback"。由於指令 4、5 的結果僅寫入 PRF/ROB 而尚未 Commit 到 ARF，系統只需透過暫存器重命名對照表（Rename Map Table）回復狀態，並釋放指令 4、5 佔用的 PRF 條目即可完成安全還原。
+      - 正確的目标指令 T（Target）於週期 13 順利開始 Fetch ($F$)，週期 14 Decode、週期 15 Issue。
 - 個人看法與分析：
+  <br>$IO_2I$ 完美解決 $IO_3$ 的 ARF 污染問題：
+  - 相較於前一頁 $IO_3$ 架構因缺乏 ROB 而導致猜測指令不可逆地污染 ARF 的重大缺陷，$IO_2I$ 透過 ROB + PRF 建立了「隔離層」。猜測執行的結果會被安全地鎖在 PRF 與 ROB 中，只有確認分支預測正確時才允許寫入 ARF（Commit）。
+  - 猜測失敗的代價（Misprediction Penalty）：
+    - 雖然 $IO_2I$ 能夠完美保障精確例外與架構狀態正確性，但選取性還原（Selective Rollback）與清空流水線（Flush）依然產生了約 2~3 個週期的時間氣泡。這也說明了為什麼現代處理器除了 $IO_2I$ 架構外，還需要極度精準的分支預測器（Branch Predictor）來盡可能降低預測失敗率。
 - 總結：
+  <br>本頁投影片作為猜測執行與分支處理單元的完結頁，完整展示了 $IO_2I$ 架構如何利用 ROB 與 PRF 實現「安全的猜測執行」與「高效的狀態還原（Selective Rollback）」。這是現代高效能 CPU 設計中最為關鍵且成功的微架構典範。
 
 ## slide：36
 <div align="left" >
