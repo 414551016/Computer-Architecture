@@ -406,7 +406,7 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
       <br>Instruction Ready = ( $!V_{\text{src0}}$ || $!P_{\text{src0}}$) &&  ( $!V_{\text{src1}}$ || $!P_{\text{src1}}$) && no structural hazards
     - 邏輯解讀：一條指令若要被認定為就緒（Ready），必須同時滿足：
       - Src0 就緒：不需要 Src0（ $!V_{\text{src0}}$），或者 Src0 已準備完畢不處於等待狀態（ $!P_{\text{src0}}$）。
-      - Src1 就緒：不需要 Src1（$!V_{\text{src1}}$），或者 Src1 已準備完畢不處於等待狀態（ $!P_{\text{src1}}$）。
+      - Src1 就緒：不需要 Src1（ $!V_{\text{src1}}$），或者 Src1 已準備完畢不處於等待狀態（ $!P_{\text{src1}}$）。
       - 無結構衝突：對應的執行管道/算術邏輯單元（ALU）目前空閒（No structural hazards）。
     - 效能優化（For High Performance）：
       - 為了追求高效能，發射邏輯需要結合 Bypassing / Forwarding（旁路/前饋） 機制。當前方指令在執行階段（如 $X_0$ 或 $W$）產出結果時，可直接透過 Bypass 網絡廣播給 IQ 內處於 Pending 狀態的指令，使其無需等資料寫入暫存器即可提前解鎖發射。
@@ -414,7 +414,7 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   - 動態排程（Dynamic Scheduling）的核心心臟：Issue Queue 是實現 Out-of-order Issue（亂序發射）最關鍵的組合邏輯單元。透過保留區 Entry 中的 Pending ($P$) 位元，處理器能在硬體層級自動解決 RAW (Read-After-Write) 相依性。
   - 喚醒與選擇（Wakeup and Select）的硬體挑戰：投影片呈現的 Ready 邏輯雖然看起來直觀，但在多發射超純量（Superscalar）處理器中，IQ 每個週期都需要同時比對數十個 Entry 的 Tag 並進行仲裁（Select），這構成了微架構設計中最關鍵的臨界路徑（Critical Path）與晶片面積/功耗來源之一。
 - 總結：
-  <br>本頁詳細解析了 Issue Queue (IQ) 的硬體結構欄位與動態發射邏輯。IQ 透過 Valid ($V$) 與 Pending ($P$) 位元精確追蹤來源操作數的就緒狀態，當指令的操作數皆已就緒且執行單元無結構衝突時即可發射。結合 Bypassing 機制，IQ 能夠將剛產出的資料即時前饋給等待中的指令，從而最大化指令層級平行度（ILP）與亂序執行效能。
+  <br>本頁詳細解析了 Issue Queue (IQ) 的硬體結構欄位與動態發射邏輯。IQ 透過 Valid ( $V$) 與 Pending ( $P$) 位元精確追蹤來源操作數的就緒狀態，當指令的操作數皆已就緒且執行單元無結構衝突時即可發射。結合 Bypassing 機制，IQ 能夠將剛產出的資料即時前饋給等待中的指令，從而最大化指令層級平行度（ILP）與亂序執行效能。
 
 ## slide：19
 <div align="left" >
