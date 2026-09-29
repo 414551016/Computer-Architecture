@@ -403,7 +403,7 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
       - P（Pending）：待產生狀態，標示來源資料是否還在等待前方指令計算產出（1 表示 Waiting，0 表示 Ready）。
   - 指令就緒判斷邏輯（Instruction Ready Logic）：
     - 判斷條件公式：
-      <br> $$\text{Instruction Ready} = ( !V_{\text{src0}} \mid\mid !P_{\text{src0}}) \ \&\&\  (!V_{\text{src1}} \mid\mid !P_{\text{src1}}) \ \&\&\ \text{no structural hazards}$$
+      <br>Instruction Ready = ( $!V_{\text{src0}}$ || $!P_{\text{src0}}$) &&  ( $!V_{\text{src1}}$ || $!P_{\text{src1}}$) && no structural hazards
     - 邏輯解讀：一條指令若要被認定為就緒（Ready），必須同時滿足：
       - Src0 就緒：不需要 Src0（ $!V_{\text{src0}}$），或者 Src0 已準備完畢不處於等待狀態（ $!P_{\text{src0}}$）。
       - Src1 就緒：不需要 Src1（$!V_{\text{src1}}$），或者 Src1 已準備完畢不處於等待狀態（ $!P_{\text{src1}}$）。
