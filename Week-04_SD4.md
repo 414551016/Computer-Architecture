@@ -620,8 +620,28 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 亂序執行 2-Wide 超純量（Out-of-order 2-Wide Superscalar with 1 ALU） 環境下的指令執行時序圖：
+  - 架構規格特徵（2-Wide Superscalar, 1 ALU）：
+    - 2-Wide 前段（2-Wide Frontend）：每週期最多可同時讀取（Fetch）、解碼（Decode）與解鎖發射（Issue）2 條指令（如週期 0 的指令 0 與指令 1 同時進行 $F$）。
+    - 單一 ALU 執行單元（1 ALU）：硬體僅配備 1 個 $X_0$ 管道（ALU），因此在同一週期內最多只能有一條加法指令在 $X_0$ 執行（Structural Hazard 結構衝突）。
+    - In-order Commit (IO2I 延伸)：透過 Reorder Buffer (ROB) 強制指令依原始程式順序提交。
+  - 指令時序與瓶頸分析：
+    - 指令 0 (mul) & 指令 1 (addi)：
+      - 於週期 0 同時 Fetch ( $F$)，週期 1 同時 Decode ( $D$)。
+      - 於週期 2 同時 Issue ( $I$)，分別進入 $Y_0$（乘法器）與 $X_0$（ALU）執行，展現了 2-Wide 超純量並行處理能力。
+    - 指令 2 (mul) & 指令 3 (mul)：
+      - 於週期 1 同時 Fetch ( $F$)，週期 2 同時 Decode ( $D$) 並進入 Issue Queue ( $i$)。
+    - 指令 4、5、6 的結構衝突與發射限制（ALU Bottleneck）：
+      - 指令 4 (addi x12, x11, 1)：等待指令 1 於週期 4 完成 $W$，於週期 4 解鎖發射 ( $I$) 並佔用 $X_0$（週期 4）。
+      - 指令 5 (addi x13, x12, 1)：雖然與指令 4 一起在週期 2 Fetch、週期 3 Decode，但因相依於指令 4 的 x12，必須等到指令 4 於週期 6 完成 $W$，於週期 5 發射/週期 5 執行。
+      - 指令 6 (addi x14, x12, 2)：相依於指令 4 的 x12，在週期 5 結束時 x12 已經準備完畢（可被 Issue Queue 喚醒）。然而因為硬體只有 1 個 ALU ( $X_0$)，且週期 5 已被指令 5 佔用，指令 6 必須順延至週期 6 才能發射 ( $I$) 進入 $X_0$。 
 - 個人看法與分析：
+  - 前段頻寬提升對整體產出的效益：
+    - 對比單發射（1-Wide）的 IO2I（Page 25，最後一條指令於週期 18 完成 Commit），進入 2-Wide Superscalar 後，指令 0 到 3 能更快進入 Issue Queue，整體指令 6 的 Commit 完成時間提前到了週期 17。
+  - 結構衝突（Structural Hazard）成為新瓶頸：
+    - 本頁範例極佳地說明了「雙發射（2-Wide）」並不等於「效能直接翻倍」。當程式碼中連續出現同類型指令（如連續的 addi 算術指令），若硬體資源（ALU 數量）不足（僅 1 個 ALU），即使 Issue Queue 中有多條指令準備就緒，仍會因爭奪 $X_0$ 執行單元而產生序列化延遲（Structural Hazard）。
 - 總結：
+  <br>本頁展示了 2-Wide 超純量與單一 ALU 配置下的亂序執行時序解答。透過將 Fetch/Decode 頻寬提升至每週期 2 條指令，加速了指令充實 Issue Queue 的速度；同時也展示了當多條加法指令（指令 4、5、6）競爭唯一 ALU 資源時所發生的結構衝突與順序發射現象，完整傳達了超純量微架構中軟硬體資源搭配的平衡思考。
 
 ## slide：27
 <div align="left" >
