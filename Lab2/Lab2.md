@@ -263,6 +263,88 @@ We have created the blank test file in /lab2/tests/riscv, you need to fill it an
   > 其他：任何您覺得有趣的額外測試。
 
 ### 7. Evaluation (Optional)／評估（選做）
+The following evaluation tasks are optional and are not required for completing this lab.
+> 以下評估任務為選填項目，完成本實驗不需要這些內容：
+- Performance Comparison: Comparethe riscvooo processor with the riscvlong processor. For each benchmark, record the total cycle count and IPC (instructions per cycle). You can analyze:
+  > 效能比較：比較 `riscvooo` 與 `riscvlong` 處理器。對每個基準測試，記錄總週期數與 IPC（每個週期執行的指令數）。你可以分析：
+  - Whenandwhyonedesignoutperforms the other.
+    > 哪些情況下一種設計的效能優於另一種，以及原因。
+  - Situations where performance differences are minimal.
+    > 哪些情況下兩者的效能差異很小。
+  - Whichterms in the Iron Law of Processor Performance are affected.
+    > 「處理器效能鐵律」中的哪些項目受到影響。
+- Reorder Buffer (ROB) Analysis: Explore how performance scales with different ROB sizes. Vary the number of ROB slots (2–16) and measure the cycle count and IPC for riscv-test5.S. Discuss:
+  > 重排序緩衝區（ROB）分析：探討效能如何隨 ROB 大小而改變。調整 ROB 槽位數量（2 至 16 個），並量測 `riscv-test5.S` 的週期數與 IPC。討論：
+  - Howperformance changes as the ROB size increases.
+    > 隨著 ROB 大小增加，效能如何變化。
+  - TheminimumnumberofROBslots needed for this lab and your reasoning.
+    > 本實驗所需的最少 ROB 槽位數量，以及你的理由。
+
+### 8. Submission／繳交
+#### 8.1 Modified Files／需要修改的檔案
+You will modify the following files for this lab:
+> 本實驗將修改以下檔案：<br>譯註：原 PDF 的最後一項在「See Section 6.」後另有疑似排版殘留的引號符號，沒有可翻譯的語意。
+- riscvooo-CoreDpath.v: Make minor edits as indicated by the comments in the source code.
+  > riscvooo-CoreDpath.v: 依照原始碼註解的指示，進行少量修改。
+- riscvooo-CoreScoreboard.v: Complete the scoreboard implementation.
+  > riscvooo-CoreScoreboard.v: 完成記分板實作。
+- riscvooo-CoreReorderBuffer.v: Implement your reorder buffer design here.
+  > riscvooo-CoreReorderBuffer.v: 在此實作你的重排序緩衝區設計。
+- riscvooo-InstMsg.v: Adjust the parameter that specifies the number of ROB slots.
+  > riscvooo-InstMsg.v: 調整 ROB 槽位數參數。
+- riscv-test1.S to riscv-test5.S: See Section 6. “‘
+  > riscv-test1.S 至 riscv-test5.S: 自訂測試檔。請參見第 6 節。
+
+#### 8.2 Deliverables／應繳交的內容
+Submit a .tar.gz file of your working directory, keeping the original structure intact. All source files should be in $LAB2_ROOT/riscvooo/ or in the $LAB2_ROOT/tests/ directory. Be sure to clean up generated waveforms or compiled code by running the following commands:
+> 將你的工作目錄打包為 `.tar.gz` 檔案繳交，並完整保留原本的目錄結構。所有原始碼檔案應放在 `$LAB2_ROOT/riscvooo/` 或 `$LAB2_ROOT/tests` 目錄中。務必執行以下指令，清除產生的波形檔或編譯後的程式碼：
+```
+% cd $LAB2_ROOT/build
+% make clean
+% cd $LAB2_ROOT/tests
+% rm-rf build
+% cd $LAB2_ROOT/ubmark
+% rm-rf build
+```
+Create a tarball of your completed lab with the following commands:
+> 使用以下指令，將完成的實驗打包成 tar 封存檔：
+```
+% cd $LAB2_ROOT
+% cd ..
+% tar-cvzf student_id-lab2.tar.gz lab2
+```
+
+#### 8.3 Submission Instructions／繳交指示
+- Keepyourcode in the lab2 folder. If the code is not in this tarball, we cannot grade it.
+  > 將程式碼保留在 `lab2` 資料夾中。如果程式碼沒有包含在這份 tar 封存檔內，我們就無法評分。
+- Submit the tarball via e3.– student_id-lab2.tar.gz
+  > 透過 e3 繳交 tar 封存檔，檔名為 `student_id-lab2.tar.gz`。
+
+### 9 Grading Rubric／評分標準
+- Code(90%)
+  > 程式碼 (Code): 90% (ROB + Scoreboard)   
+  - ROB
+  - Scoreboard
+- Test case(10%)
+  > 測試案例 (Test cases): 10% (riscv-test1.S ~ riscv-test5.S)
+  - riscv-test1.S to riscv-test5.S
+
+### 10 Tips／提示
+- Develop incrementally—code and test small sections at a time to avoid overwhelming debugging.
+  > 採取漸進式開發：每次只撰寫並測試一小部分，避免除錯工作變得過於龐大、難以處理。
+- Alwaysdrawthehardwaredesignbeforecoding, ensuringclear interaction between control logic and the datapath.
+  > 撰寫程式碼之前，務必先畫出硬體設計，確保控制邏輯與資料路徑之間的互動清楚明確。
+- Modifythe control unit as needed—it’s a starting point for your own logic and signals.
+  > 依需求修改控制單元；它是你設計自身邏輯與訊號的起點。
+- Start early and run simulations regularly to catch issues early in the process.
+  > 提早開始，並定期執行模擬，以便在開發初期就發現問題。
+
+
+
+
+
+
+
 
 
 
