@@ -339,7 +339,27 @@ Create a tarball of your completed lab with the following commands:
 - Start early and run simulations regularly to catch issues early in the process.
   > 提早開始，並定期執行模擬，以便在開發初期就發現問題。
 
+## 譯者補充：常用詞對照（非講義原文）
 
+| 英文 | 中文及閱讀提示 |
+| --- | --- |
+| Out-of-Order（OoO） | 亂序；指令的某些處理步驟可以不按照程式原本的先後順序進行。 |
+| In-order | 依序；按照程式中指令原本的先後順序進行。 |
+| Single-issue | 單發射；每個週期最多發射一條指令。 |
+| Scoreboard | 記分板；追蹤暫存器數值的狀態與相依性，協助判斷指令能否前進。 |
+| Reorder Buffer（ROB） | 重排序緩衝區；本實驗用它管理指令依序提交。 |
+| Writeback | 寫回；在本實驗中，結果寫回不代表已經提交。 |
+| Commit | 提交；在本實驗的暫存器結果路徑中，將結果正式寫入架構暫存器檔案。 |
+| Bypassing | 旁路傳遞；從指定的中間位置直接取得運算元數值。 |
+| Stall | 停等；暫時停止相關指令或管線階段向前推進。 |
+| Hazard | 冒險；可能妨礙指令正確推進的相依或資源衝突情況。 |
+| Latency | 延遲；完成某項操作需要的時間，本文通常以週期計。 |
+| WAW：Write After Write | 寫後寫；兩條指令寫入同一個目的暫存器，必須確保最後保留下來的值正確。 |
+| IPC：Instructions Per Cycle | 每週期指令數；用於觀察處理器的指令處理效率。 |
+| Register file | 暫存器檔案／暫存器組；此處是硬體中的暫存器集合，不是磁碟上的檔案。 |
+| Datapath | 資料路徑；處理器中傳送、儲存與運算資料的硬體部分。 |
+
+**原文用語提醒：** 第 3 節明確說明本設計只有一個架構暫存器檔案，但表 1 及部分連接埠說明仍使用「physical register」一詞。本譯文保留這個用詞；第 3 頁原文則說明該欄位記錄的是架構暫存器檔案中的目的暫存器，不能只因欄位名稱便認定本實驗另有一組實體暫存器檔案。
 
 
 
