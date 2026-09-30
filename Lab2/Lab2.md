@@ -79,11 +79,28 @@ Then run the benchmark:
 % make run-bmark-rand-riscvooo
 ```
 
+### 3. Out-of-Order Processor Description／亂序處理器說明
+The out-of-order (OoO) processor in Lab 2 is derived from the riscvlong microarchitecture from Lab 1, so most of the design should feel familiar. After you complete the scoreboard, the processor with the dummy ROB operates as a simplified I2O2 processor: fetch, decode, and issue occur in order, while execution, writeback, and commit are out of order. You will then implement and integrate the ROB to convert it into an I2OI processor. Key differences from the lecture model include:
+> Lab 2 中的亂序（OoO）處理器衍生自 Lab 1 的 riscvlong 微架構，因此大部分設計應該很熟悉。完成記分板後，帶有虛設 ROB 的處理器運作方式就像簡化的 I2O2 處理器：擷取（Fetch）、解碼（Decode）、發射（Issue）順序進行，而執行（Execution）、寫回（Writeback）、提交（Commit）則是亂序的。接著您將實作並整合 ROB，將其轉換為 I2OI 處理器。與課堂模型的關鍵差異包括：
+- The pipeline includes three pipes: The MUL pipe handles muldiv operations and takes four cycles to execute. The MEM pipe handles memory accesses and takes two cycles to execute. The ALU pipe handles all other operations and takes one cycle to execute.
+  > 管線包含三個管道：MUL 管道處理乘除法操作，需要 4 個週期執行；MEM 管道處理記憶體存取，需要 2 個週期執行；ALU 管道處理所有其他操作，需要 1 個週期執行。
+- Memory writes occur directly in the M stage without the need for a store buffer. This simplifies the design in this lab by ensuring that memory operations execute sequentially and without exception handling.
+  > 記憶體寫入直接在 M 階段發生，不需要 Store Buffer。這確保了記憶體操作按順序執行且無例外處理，簡化了本實驗設計。
+- Unlike some configurations discussed in lecture, this processor includes a single (architectural) register file. Instead of using a physical register file or storing uncommitted data directly in the ROB, we have a dedicated buffer within the datapath to hold data that has been written back but not yet committed.
+  > 與課堂討論的部分配置不同，此處理器僅包含單一（架構）暫存器檔案（ARF）。我們在資料通道內有一個專用緩衝區，用於存放已寫回但尚未提交的資料，而不是使用實體暫存器檔案（PRF）或直接將未提交資料存放在 ROB 中。
+- The reorder buffer in this lab does not include speculative bits, as speculative execution is not needed.
+  > 本實驗中的重排序緩衝區不包含推測位元（Speculative Bits），因為不需要推測執行。
 
+In this lab, you will work with a reorder buffer containing 16 entries, sufficient for the maximum expected in-flight instructions. The structure of the ROB is illustrated in Table 1.
+> 在本實驗中，您將使用包含 16 個表項（Entries）的重排序緩衝區，這足以容納預期的最大在途（In-Flight）指令數。ROB 的結構如表 1 所示：
 
-
-
-
+**Table 1: Reorder Buffer Contents／表 1：重排序緩衝區內容**
+Entry／項目 | Valid／有效 | Pending／等待結果 | Physical Register／實體暫存器 | Data／資料 |
+| --- | --- | --- | --- | --- |
+| 0 | 1 | 1 | 0 | 0x00000000 |
+| 1 | 1 | 0 | 3 | 0xDEADBEEF |
+| ... | ... | ... | ... | ... |
+| 15 | 1 | 1 | 0 | 0x00000000
 
 
 
