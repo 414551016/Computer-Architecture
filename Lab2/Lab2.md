@@ -195,6 +195,75 @@ After completing the scoreboard, run the provided test suites and verify that th
 > 完成記分板後，執行提供的測試套件，驗證處理器是否正確處理暫存器相依性和運算元旁路。在此階段，某些與亂序提交相關的測試案例可能仍會失敗，這些問題將在下一節實作 ROB 後解決。
 
 ### 5. Building the ROB／建立 ROB
+Using the scoreboard you completed in Section 4, build the I2O2 processor with the dummy ROB and run the included RISC-V test suites. Interestingly, even though the I2O2 processor may commit values out of order, it still passes all provided tests! This suggests that the test suite is not exhaustive, as you may have noticed in previous labs.
+> 使用您在第 4 節完成的記分板，建置帶有虛設 ROB 的 I2O2 處理器並執行 RISC-V 測試套件。有趣的是，儘管 I2O2 處理器可能會亂序提交數值，它依然通過了所有提供的測試！ 這表明測試套件並不完整，正如您在先前的實驗中可能注意到的那樣。
+
+Your first task is to design an assembly test that reveals the flaw in the I2O2 processor's commit behavior. Specifically, construct a scenario where out-of-order commits lead to incorrect program execution, and verify this behavior on the I2O2 processor. (Hint: such a test should be straightforward to create.)
+> 您的第一個任務是設計一個組合語言測試，以揭示 I2O2 處理器提交行為中的缺陷。具體來說，建立一個亂序提交導致程式執行錯誤的情境，並在 I2O2 處理器上驗證此錯誤行為。（提示：這樣的測試應該很容易建立。）
+
+Once you've confirmed the need for in-order commit and have created a suitable assembly test (or, ideally, multiple tests), it's time to build the reorder buffer (ROB).
+> 一旦您確認了順序提交（In-Order Commit）的必要性並建立合適的組合語言測試後，就可以開始建立重排序緩衝區（ROB）了。
+> <br>譯註：第 4 節表示某些亂序提交案例「仍可能失敗」，第 5 節則表示「所有已提供的測試都會通過」。這裡保留原文兩處說法，未自行將它們改寫成一致的結論。
+
+The ROB uses two integers defined in riscvooo-InstMsg.v: SLOTS (The number of ROB slots) and LOG_S (The ceiling of log(SLOTS)).
+> ROB 使用定義在 riscvooo-InstMsg.v 中的兩個整數：SLOTS（ROB 槽位數量）與 LOG_S（log(SLOTS) 取 Ceiling 的值）。
+> <br>譯註：名稱前的反引號是 Verilog 巨集前綴，寫法如下。原文未標明 log 的底數。
+- `SLOTS`- The number of ROBslots.
+  > `SLOTS`- ROB 槽位數量。
+- `LOG_S`- The ceiling of log(`SLOTS).
+  > `LOG_S`- log(`SLOTS) 向上取整後的值。
+
+The ROB consists of three main port groups, each serving a distinct function:
+> ROB 由三組主要的連接埠（Ports）組成：
+- Alloc- Instructions in the decode stage must be assigned a new ROB entry before they execute.
+  > Alloc (分配): 解碼階段的指令在執行前必須被分配一個新的 ROB 表項。
+- Fill- Instructions in the writeback stage write their data into the ROB through the fill ports.
+  > Fill (填入): 寫回階段的指令透過 Fill 連接埠將資料寫入 ROB。
+- Commit-Oneinstruction may be committed per cycle, provided all necessary values are ready.
+  > Commit (提交): 在所有必要數值都準備好的前提下，每個週期可以提交一條指令。
+
+The ports of the ROB are described below:
+> ROB Ports Description (的各個連接埠說明如下):
+- rob_alloc_req_val: Indicates if an allocation request is valid in the current cycle.
+  > rob_alloc_req_val: 表示目前週期分配請求是否有效。
+- rob_alloc_req_rdy: Indicates if the ROB is ready to accept an allocation request.
+  > rob_alloc_req_rdy: 表示 ROB 是否準備好接收分配請求。
+- rob_alloc_req_preg: Specifies the physical destination register for the incoming instruction.
+  > rob_alloc_req_preg: 新進指令的實體/架構目標暫存器。
+- rob_alloc_resp_slot: The slot number in the ROB assigned to the new instruction.
+  > rob_alloc_resp_slot: 分配給新指令的 ROB 槽位編號。
+- rob_fill_val: Indicates if a value is being written back into the ROB during the current cycle.
+  > rob_fill_val: 目前週期是否有數值正在寫回 ROB。
+- rob_fill_slot: Specifies the slot being written back during the current cycle.
+  > rob_fill_slot: 目前週期正在寫回的槽位。
+- rob_commit_wen: Indicates if an entry is being committed to the register file in this cycle.
+  > rob_commit_wen: 目前週期是否有表項正在提交至暫存器檔案。
+- rob_commit_slot: Specifies which slot is committed, used as an index for the rob_data array.
+  > rob_commit_slot: 指定提交哪個槽位，用作 rob_data 陣列的索引。
+- rob_commit_rf_waddr: Specifies the physical register address to commit.
+  > rob_commit_rf_waddr: 指定要提交的實體暫存器地址。
+
+Implement the ROB logic by modifying only the riscvooo-CoreReorderBuffer.v file. After completing the ROB, update the register file module in riscvooo-CoreDpath.v to retrieve values from the ROB instead of directly from the writeback stage. Then, enable (uncomment) the lines in riscvooo-CoreScoreboard.v that allow for bypassing from the ROB. Finally, rerun the provided test suites to ensure they pass, and confirm that your custom test case also now passes correctly.
+> 僅透過修改 riscvooo-CoreReorderBuffer.v 來實作 ROB 邏輯。完成 ROB 後，更新 riscvooo-CoreDpath.v 中的暫存器檔案模組，使其從 ROB 擷取數值，而不是直接從寫回階段擷取。接著，取消註解 riscvooo-CoreScoreboard.v 中允許從 ROB 進行旁路（Bypassing）的程式碼。最後，重新執行測試套件以確保通過，並確認您自訂的測試案例現在也能正確通過。
+
+### 6. Testing Methodology／測試方法
+We have created the blank test file in /lab2/tests/riscv, you need to fill it and modify /lab2/tests/riscv/riscv.mk and /lab2/build/Makefile, then, execute, and include in your submission at least the following tests:<br>(Please make sure that each of your tests is less than 30 instructions)
+> 我們已在 /lab2/tests/riscv 中建立了空白測試檔案，您需要填寫這些檔案並修改 /lab2/tests/riscv/riscv.mk 及 /lab2/build/Makefile，執行並在提交中至少包含以下測試（請確保每個測試小於 30 條指令）：
+- riscv-test1.S:A testthatfailsduetoout-of-ordercommitsbutpasseswiththereorderbuffer(ROB) implemented (see Section 5).
+  > riscv-test1.S: 一個會因亂序提交而失敗，但在實作重排序緩衝區，但實作 ROB 後可通過的測試（見第 5 節）。   
+- riscv-test2.S: A test case requiring a value to be bypassed from the ROB (i.e., bypassing a value that has been written back but not yet committed).
+  > riscv-test2.S: 一個必須從 ROB 旁路取得數值的測試案例，也就是旁路傳遞已寫回但尚未提交的值。
+- riscv-test3.S: A write-after-write (WAW) scenario that executes correctly on both the original and the final processor. (Hint: Consider the time elapsed between the two writes.)
+  > riscv-test3.S: 寫後寫（WAW, Write-After-Write）情境，在原始處理器與最終處理器上都能正確執行（提示：考慮兩次寫入之間經過的時間）。
+- riscv-test4.S: A scenario in which the riscvlong processor achieves a higher IPC than the com pleted riscvooo processor. (Hint: What features are present in riscvooo but not in riscvlong?)
+  > riscv-test4.S: riscvlong 處理器達成比完整 riscvooo 處理器更高 IPC 的情境（提示：riscvooo 中有哪些功能是 riscvlong 所沒有的？）
+- riscv-test5.S: A test which will use as many ROB slots as your design can.
+  > riscv-test5.S: 會盡可能使用您設計中最多 ROB 槽位的測試。
+- Anyadditional tests you find interesting.
+  > 其他：任何您覺得有趣的額外測試。
+
+### 7. Evaluation (Optional)／評估（選做）
+
 
 
 
