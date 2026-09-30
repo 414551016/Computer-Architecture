@@ -49,6 +49,55 @@ Inside the lab root directory, you'll find these subdirectories, each serving a 
 Most directories remain unchanged from the previous lab. The new directory, riscvooo, contains the OoO processor framework, including an incomplete scoreboard and a dummy ROB implementation.
 > 大多數目錄與上次實驗相同。新增的目錄 riscvooo 包含亂序處理器框架，其中包括未完成的記分板與虛設的 ROB 實作。
 
+### 2.2 Building the Project／建置專案
+The commands below describe the build and test procedure. As usual, we'll start by compiling the reference processors and running the RISC-V assembly tests:
+> 以下指令說明建置與測試流程。照常，我們先編譯參考處理器並執行 RISC-V 組合語言測試：
+```
+% cd $LAB2_ROOT/tests
+% mkdir build && cd build
+% ../configure --host riscv32-unknown-elf
+% make && ../convert
+
+% cd $LAB2_ROOT/build
+% make
+% make check
+% make check-asm-riscvooo
+% make check-asm-rand-riscvooo
+```
+Then run the benchmark:
+> 接著執行基準測試：
+```
+% cd $LAB2_ROOT/ubmark
+% mkdir build && cd build
+% ../configure --host riscv32-unknown-elf
+% make && ../convert
+
+% cd $LAB2_ROOT/build
+% make
+% make check
+% make run-bmark-riscvooo
+% make run-bmark-rand-riscvooo
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
