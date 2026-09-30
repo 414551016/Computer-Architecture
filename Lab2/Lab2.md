@@ -35,7 +35,8 @@ After obtaining the Lab 2 materials, extract them using the following commands:
 ```
 Inside the lab root directory, you'll find these subdirectories, each serving a specific purpose:
 > 在實驗根目錄下，您會找到以下子目錄，各自有其特定用途：
-目錄 | English | 中文 |
+
+|目錄 | English | 中文 |
 | --- | --- | --- |
 | `build` | Makefile and compiled code. | Makefile 與編譯後的程式碼。 |
 | `riscvooo` | Out-of-Order RISC-V processor source code (includes a placeholder reorder buffer). | 亂序 RISC-V 處理器原始碼（包含暫代用的重排序緩衝區）。 |
@@ -43,8 +44,10 @@ Inside the lab root directory, you'll find these subdirectories, each serving a 
 | `tests/riscv` | RISC-V assembly tests. | RISC-V 組合語言測試。 |
 | `tests/scripts` | Utility scripts for the build system. | 建置系統所用的輔助腳本。 |
 | `ubmark` | Benchmarks for evaluation. | 用於評估的基準測試程式。|
+| `vc`|Additional Verilog components.|額外的 Verilog 組件。|
 
-
+Most directories remain unchanged from the previous lab. The new directory, riscvooo, contains the OoO processor framework, including an incomplete scoreboard and a dummy ROB implementation.
+> 大多數目錄與上次實驗相同。新增的目錄 riscvooo 包含亂序處理器框架，其中包括未完成的記分板與虛設的 ROB 實作。
 
 
 
