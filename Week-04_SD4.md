@@ -910,6 +910,16 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片展示了在 $IO_2I$ 微架構（In-order Frontend, OOO Issue/WB, In-order Commit） 下，分支預測失敗（Misprediction）時，系統如何透過 ARF 與 PRF 之間的狀態同步 來完成狀態復原：
+  - 流水線狀態與分支 Commit（Pipeline State & Branch Commit）：
+    - 指令序列時序：
+      - 0 mul  x1, x2, x3 與 1 addi x4, x5, 1 分別於週期 8 與週期 9 完成 Commit ( $C$)。
+      - 2 mul  x6, x1, x4 於週期 12 完成 Commit ($C$)。
+      - 3 beq  x6, x0, Target 於週期 11 發射 ($I$)、週期 12 完成 $W$，並於週期 13 完成 Commit ($C$)。
+    - 猜測指令狀態（Speculative State）：
+      - 指令 4 (addi x8, x9, 1) 與指令 5 (addi x10, x11, 1) 在週期 7 與 8 提前發射並執行，將計算結果寫入 PRF 並標示為 $r$ 狀態。
+      - **核心差異**：投影片右側特別強調 "Speculative Instructions Wrote to PRF, Not ARF"（猜測指令的結果僅寫入實體暫存器 PRF，並未污染架構暫存器 ARF）。
+  - 分支預測失敗還原機制（Misprediction Recovery Mechanism）：
 - 個人看法與分析：
 - 總結：
 
