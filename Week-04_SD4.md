@@ -1371,16 +1371,34 @@ If Free == 0, physical register is in use and cannot be used for renaming
 - 總結：
   <br>本頁投影片揭示了實體暫存器（PRF）安全釋放的核心法則。若在指令 Commit 時立刻釋放其 PRF（如 $p_0$），可能導致該暫存器被新指令重用並覆蓋，使尚未發射的讀取指令讀到錯誤資料。正確機制為：當架構暫存器 $X_i$ 映射至 $p_j$ 時，必須等待「下一個寫入 $X_i$ 的指令正式 Commit」後，才能將舊的 $p_j$ 安全釋放回 Free List。這確保了所有讀取舊值的指令皆已執行完畢，是維護亂序處理器資料正確性的關鍵邏輯。
 
-## slide：50
+## slide：50 Unified Physical/Architectural Register File
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0050.jpg" width="50%">
 </div>
 
+Unified Physical/Architectural Register File
+> 統一實體/架構暫存器檔案（Unified PRF/ARF）
 
+- Combine PRF and ARF into one register file
+  > 將實體暫存器檔案（PRF）與架構暫存器檔案（ARF）合併為單一暫存器檔案
+- Replace ARF with Architectural Rename Table
+  > 以架構重命名表（Architectural Rename Table, ART / Committed State Table）取代實體 ARF 儲存空間
+- Instead of copying Values, Commit stage copies Preg pointer into appropriate entry of Architectural Rename Table
+  > 提交（Commit）階段不再複製數值（Values），而是將實體暫存器指標（Preg Pointer）複製更新至架構重命名表（ART）的對應條目中
+- Unified Physical/Architectural Register file can be smaller than separate
+  > 統一後的實體/架構暫存器檔案總容量可以比各自獨立分離時更小
 
 - 本教學重點內容：
+  - 統一暫存器檔案（Unified Register File, URF）架構設計：
+    - 結構整合：將獨立的 ARF（架構暫存器）與 PRF（實體暫存器）融合，全機僅維護一個大容量的實體暫存器陣列（URF）。
+    - 以指標取代數值搬移（Pointer-based Commit）：傳統架構在 Commit 階段需要把 PRF 中的計算結果「實際複製（Copy Value）」到 ARF 中；而在 Unified 架構下，Commit 階段僅需將該指令分配到的 Preg 指標更新到 Architectural Rename Table (ART / Architectural State) 中即可。
+    - 減少面積與硬體開銷：消除實體數據的大量複製動作，不僅省去數據傳輸管道與功耗，更能有效縮減整體暫存器檔案的晶片面積需求。
 - 個人看法與分析：
+  - 現代高效能處理器的主流選擇（如 MIPS R10k, Alpha 21264, Intel Sandy Bridge）：
+    - 消除數據複製（Zero Data Movement at Commit）：傳統的分離式設計（PRFs + ARF）在 Commit 時需要跨暫存器寫入實際 64-bit 數據，這在多發射（Multi-issue）超純量處理器中會造成極大的數據匯流排（Bus）與功耗壓力。Unified 架構將「數據複製」轉化為「指標的更新（Pointer Switching）」，大幅降低了 Commit 階段的延遲與功耗。
+    - 精確狀態維護（Architectural Rename Table）：利用 фронт-end 的 Rename Table（RT，追蹤最新猜測狀態）與 Commit 端的 Architectural Rename Table（ART，追蹤已提交的確定狀態），在發生分支猜測錯誤或例外事件時，僅需將 ART 的指標直接複製蓋回 RT，即可在短短數個週期內瞬間恢復至正確的架構狀態，復原效率極高。
 - 總結：
+  <br>本頁投影片介紹了「統一實體/架構暫存器檔案（Unified Register File）」的微架構設計。該架構將 PRF 與 ARF 整合為單一實體陣列，並以架構重命名表（Architectural Rename Table）取代獨立的 ARF。指令在 Commit 階段時，無需在暫存器間搬移實際數值，只需將實體暫存器指標（Preg）寫入 Architectural Rename Table。這種「指標更新」機制顯著降低了數據傳輸功耗與電路面積，同時大幅提升了狀態復原與提交的效率。
 
 ## slide：51
 <div align="left" >
