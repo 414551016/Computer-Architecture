@@ -938,8 +938,20 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片為本章節的簡報大綱與進度轉換頁（Agenda）。畫面上高亮顯示了即將進入的核心主題：
+  - 已完成主題（Grayed Out / Completed Topics）：
+    - Out-of-Order Processors：亂序執行處理器架構與時序推導（已說明完畢）。
+    - Speculation and Branches：猜測執行、分支處理以及預測失敗時的流水線清空（Pipeline Flush）與狀態還原（Selective Rollback / ARF-to-PRF Copy，已說明完畢）。
+  - 當前重點主題（Highlighted Topic）：
+    - Register Renaming（暫存器重命名）：探討如何利用硬體重新映射機制（如 Rename Map Table、PRF 與 ARF）消除程式中的 WAR（Write-After-Read）與 WAW（Write-After-Write）等假性數據相依（Name Dependencies / Anti- & Output Dependencies），進而釋放更高等級的指令層級平行度（ILP）。
+  - 後續預告主題（Upcoming Topic）：
+    - Memory Disambiguation（記憶體位址消歧義）：解決 Load/Store 指令間的記憶體定址衝突與動態記憶體相依性。
 - 個人看法與分析：
+  - 從 Speculation 到 Register Renaming 的核心關聯：
+    - 前面討論分支猜測執行（Speculation）時，已頻繁使用到 PRF（Physical Register File） 與 ARF（Architectural Register File） 的分離觀念。而這背後最重要的支撐技術就是 Register Renaming。
+    - 暫存器重命名不僅解決了有限架構暫存器（如 RISC-V 的 32 個暫存器）所帶來的「名稱衝突（Name Dependencies）」，更是讓猜測執行的結果能夠安全地「暫存」在實體暫存器（PRF）中的核心樞紐。
 - 總結：
+  <br>本頁作為大綱索引頁，標示了課程進度已順利完成「猜測執行與分支處理（Speculation and Branches）」，並正式跨入「暫存器重命名（Register Renaming）」主題，為後續深入剖析映射表（Map Table）管理與實體暫存器釋放機制奠定基礎。
 
 ## slide：38
 <div align="left" >
@@ -947,8 +959,26 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片正式進入 Register Renaming（暫存器重命名） 主題，深入解析程式碼中的假性相依（Name Dependencies）概念與打破相依性時可能引發的問題：
+  - 資料相依性的本質分類（Types of Dependencies）：
+    - WAW (Write-After-Write) 與 WAR (Write-After-Read) 屬於 "Name" Dependencies：這兩者並非真正的資料傳遞，而是因為暂存器名稱重疊而發生的衝突。
+    - RAW (Read-After-Write) 是唯一的 "True" Data Dependency：因為讀取者（Reader）實質上需要等待寫入者（Writer）計算出的結果資料。
+    - "Name" Dependencies 的成因：來自於硬體中「名稱/資源數量有限（Limited number of Names）」（例如 ISA 僅提供 32 個架構暫存器或有限的記憶體位址）。
+  - 盲目打破 Name Dependencies 導致的錯誤推導（Breaking "Name" Dependencies Problem）：
+    <br>投影片以一組指令序列示範若未正確控制排程，直接打亂執行順序會發生的危害：
+    - 指令 0: mul  x1, x2, x3（週期 2 發射 $I$，週期 7 寫回 $W$，週期 8 $C$）
+    - 指令 1: mul  x4, x1, x5（RAW 相依於指令 0 的 x1，週期 6 發射 $I$，週期 10 寫回 $W$）
+    - 指令 2: addi x6, x4, 1（RAW 相依於指令 1 的 x4）
+    - 指令 3: addi x4, x7, 1（與指令 1 產生 WAW，與指令 2 產生 WAR 相依於 x4）
+    - 危害分析：
+      - WAW 衝突：指令 3 如果在週期 6 發射並於週期 7 完成 $W$，會早於指令 1（週期 10 完成 $W$）寫入 x4，導致最終 x4 被指令 1 的舊值覆蓋。
+      - WAR 衝突：若指令 3 早於指令 2 寫入 x4，指令 2 就會讀到指令 3 更新後的錯誤新值。
 - 個人看法與分析：
+  - 為何需要 Register Renaming（暫存器重命名）：
+    - 本頁範例清楚展示了 WAW 與 WAR 會如何限制指令層級平行度（ILP）。如果為了追求效能而強制亂序執行，就可能發生 WAW/WAR 導致的資料破壞。
+    - 暫存器重命名的核心思想，就是透過硬體將指令中的架構暫存器（如 x4）映射到不同的實體暫存器（如 p10, p11），從而在語意上徹底消滅 WAW 與 WAR 相依，讓原本被阻塞的指令（如指令 3）能夠安心地並列執行。
 - 總結：
+  <br>本頁投影片釐清了真資料相依（RAW）與名稱相依（WAW/WAR）的根本差異，並具體說明了忽略 WAW/WAR 強行亂序會造成的執行錯誤，為接下來介紹如何利用 Map Table 與 PRF 實作 Register Renaming 提供了最核心的理論基礎。
 
 ## slide：39
 <div align="left" >
@@ -956,17 +986,52 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
 </div>
 
 - 本教學重點內容：
+  <br>本頁投影片（SD4_page-0039.jpg）展示了在 $IO_2I$ 微架構（In-order Frontend, OOO Issue/Writeback, In-order Commit） 下，當遭遇假性數據相依（WAW / WAR Name Dependencies）時，如何透過人工重命名（Manual Register Renaming）來消除停頓（Stall）並提升流水線效能：
+  - 打破假性相依引發的問題（Breaking "Name" Dependencies）：
+    - 指令序列：
+      - 指令 0: mul  x1, x2, x3
+      - 指令 1: mul  x4, x1, x5（RAW 相依於指令 0 的 x1）
+      - 指令 2: addi x6, x4, 1（RAW 相依於指令 1 的 x4）
+      - 指令 3: addi x4, x7, 1（與指令 1 產生 WAW，與指令 2 產生 WAR）
+    - 問題：若無任何控制機制直接讓指令 3 亂序發射與寫回，會發生指令 3 提前覆蓋 x4 的 WAW/WAR 數據破壞問題。
+  - $IO_2I$ 架構的保守停頓（$IO_2I$ Conservatively Stalls）：
+    - 在缺乏動態暫存器重命名（Dynamic Register Renaming）的情況下，為了維護程式結果的正確性，$IO_2I$ 硬體不得不採取保守策略。
+    - 停頓過程：指令 3 被強制鎖在 Decode/Issue 階段（ $D\dots D$）長達 8 個週期，直到指令 1 與指令 2 都完成寫回（ $W$）並釋放 x4 後，指令 3 才能在週期 12 發射（ $I$）。這造成了極大的流水線氣泡與效能損失。
+  - 人工暫存器重命名解決方案（Manual Register Renaming）：
+    - 核心構想："What if we could use more registers? Second $X_4$ Write to $X_8$?"（如果我們能使用更多暫存器，將第二次寫入 x4 的指令改寫至全新的暫存器 x8 呢？） 
+    - 改寫後效果：將指令 3 修改為 addi x8, x7, 1。
+    - 效能提升：由於消除了對 x4 的 WAW 與 WAR 衝突，指令 3 不再需要停頓，能在週期 7 就直接發射（ $I$）並於週期 8 完成寫回（$W$），使流水線恢復高吞吐量執行。
 - 個人看法與分析：
+  - 名稱相依（Name Dependency）對亂序執行的瓶頸：
+    - 本頁範例極為直觀地展示了 WAW 與 WAR 對流水線性能的殺傷力。在 $IO_2I$ 中，為了防止 Hazard，硬體必須插入大量的 $D$ Stall 週期；然而，指令 3 與指令 1、2 之間根本沒有真正的數據傳遞（RAW），僅僅是因為共享了相同的暫存器名稱 x4。
+  - 引出硬體動態重命名（Hardware Dynamic Renaming）：
+    - 「人工重命名（Manual Register Renaming）」雖然在編譯器優化階段可行，但受到 ISA 暫存器數量有限（如 RISC-V 僅 32 個通用暫存器）以及跨模組/函數介面規格的限制。
+    - 這頁投影片完美地為後續的硬體動態暫存器重命名（Hardware Register Renaming with RAT & PRF）打下鋪陳——硬體可以在執行期（Runtime）自動將有限的架構暫存器（ARF, 如 x4）映射至豐富的實體暫存器（PRF, 如 p1~p64），從而在編譯器感知不到的情況下，自動達到手動重命名的極致平行效能。
 - 總結：
+  <br>本頁投影片比較了保守停頓與暫存器重命名兩種策略，深刻證明了打破假性相依對於釋放超純量亂序處理器（Out-of-Order CPU）效能的重要性。
 
-## slide：40
+## slide：40 How many Instructions can be in the pipeline?
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0040.jpg" width="50%">
 </div>
 
+How many Instructions can be in the pipeline?
+> 流水線中可以同時存在多少條指令？
+
+Throughput is limited by number of instructions in flight, but which feature of an ISA limits the number of instructions in the pipeline?
+> 吞吐量（Throughput）受限於飛翔中/執行中（In-flight）的指令數量，但指令集架構（ISA）的哪一個特性限制了流水線中的指令數量？
+
 - 本教學重點內容：
+  - 流水線與吞吐量的核心瓶頸：
+    - In-flight 指令數量的限制：處理器的效能與吞吐量取決於流水線內能同時「飛翔/執行（In-flight）」的指令數量。
+    - ISA 的架構暫存器數量限制：指令集架構（ISA）所定義的架構暫存器數量（Register Specifiers/Names，例如 RISC-V 或 x86 的 32 個通用暫存器），是限制流水線指令容納量的主要瓶頸。
+    - 假性相依（Name Dependencies）的產生：當流水線想容納更多指令時，編譯器會頻繁重複使用有限的暫存器名稱，進而引發大量的 WAW（Write-After-Write）與 WAR（Write-After-Read）名稱相依。若無硬體解法，處理器就必須保守地將指令停頓在前端。
 - 個人看法與分析：
+  - 連結 ISA 軟體規範與微架構硬體解法的橋樑：
+    - 本頁問題點出了軟體層面（ISA 僅有 32 個暫存器）與硬體效能（希望流水線擠入數十條指令）之間的根本衝突。
+    - 這頁投影片為引入 「動態暫存器重命名（Dynamic Register Renaming）」 提供了最強而有力的動機——處理器可透過映射表（Map Table）將 ISA 的 32 個架構暫存器（ARF）動態映射至數量龐大的實體暫存器（PRF，如 64 或 128 個），從而在不修改 ISA 規範的前提下徹底消除 WAW/WAR 鎖定，讓流水線容納極大化的 In-flight 指令數。
 - 總結：
+  <br>本頁投影片探討了限制超純量亂序處理器吞吐量的核心原因。流水線效能取決於同時飛翔（In-flight）的指令數量，而 ISA 受限的架構暫存器數量（Names）會迫使指令頻繁重用暫存器，引發大量 WAW 與 WAR 假性相依。這說明了現代 CPU 必須引入「暫存器重命名（Register Renaming）」機制，將有限的架構暫存器動態映射至龐大的實體暫存器（PRF），以解開資源鎖定並極大化流水線平行度。
 
 ## slide：41
 <div align="left" >
