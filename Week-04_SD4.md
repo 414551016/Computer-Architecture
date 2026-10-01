@@ -920,8 +920,17 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
       - 指令 4 (addi x8, x9, 1) 與指令 5 (addi x10, x11, 1) 在週期 7 與 8 提前發射並執行，將計算結果寫入 PRF 並標示為 $r$ 狀態。
       - **核心差異**：投影片右側特別強調 "Speculative Instructions Wrote to PRF, Not ARF"（猜測指令的結果僅寫入實體暫存器 PRF，並未污染架構暫存器 ARF）。
   - 分支預測失敗還原機制（Misprediction Recovery Mechanism）：
+    - "Copy ARF to PRF on Mispredict"：當週期 13 分支指令 beq Commit 並確認分支成立（Branch Taken / Mispredicted）時，處理器直接將 ARF 的正確架構狀態複製/同步回 PRF（或重新指向映射表 Map Table），瞬間將猜測指令（4、5、6）對 PRF 所作的修改全數清空與廢棄。
+    - 流水線重置與重新 Fetch：
+      - 流水線中所有未 Commit 的猜測指令（指令 4~12 被標註 --）均被 Squash 清空。
+      - 正確的分支目標指令 T（Target）於週期 14 開始 Fetch ($F$)，週期 15 Decode、週期 16 Issue。
 - 個人看法與分析：
+  - 狀態復原（Rollback）的硬體設計巧思：
+    - 在 $IO_2I$ 架構中，因為所有指令都必須在 ROB 中順序 Commit，所以 ARF 中永遠保存著「確定正確的歷史架構狀態」。當分支預測失敗時，只需執行 "Copy ARF to PRF"（或重置 Rename Map Table），就能以極低代價將 PRF 恢復到分支發生前一刻的正確狀態，完全避免了前幾頁 $IO_3$ 架構中 ARF 被永久破壞的災難。
+  - 時序懲罰（Misprediction Penalty）的折衷：
+    - 相較於前一頁在分支 Writeback（$W$）階段就進行 Selective Rollback 的作法，本頁展示的是在分支 Commit（$C$）階段才統一進行 Flush & Recovery 的情境。雖然目標指令 T 延後至週期 14 才 Fetch（比起在 $W$ 階段復原晚了 1~2 個週期），但硬體控制邏輯相對簡單且更為穩健。
 - 總結：
+  <br>本頁投影片透過完整的時序細節，清楚演繹了 $IO_2I$ 架構如何利用 ARF 作為安全底線（Safe Baseline），在分支預測失敗時藉由「將 ARF 複製回 PRF」與 Pipeline Flush 實現精確的狀態還原。這完整示範了現代亂序 CPU 兼具高執行效率與精確例外/錯誤復原能力的微架構機制。 
 
 ## slide：37
 <div align="left" >
