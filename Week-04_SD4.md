@@ -52,7 +52,7 @@ Prompt：請說明本教學重點內容：及你的看法，最後以250字內�
   <img src="./Lecture/SD4/SD4_page-0002.jpg" width="50%">
 </div>
 
-這張簡報投影片的主題為亂序執行（Out-Of-Order, OOO）機制的重點複習（Recap: Out-Of-Order (OOO)），透過比較不同處理器架構與架構代號（如 I4、I2O2、I2O1、IO3、IO2I），分類說明指令在各階段為順序（In-Order, IO）或亂序（Out-Of-Order, OOO）執行，並列出實現該機制所需的硬體組件。
+這張簡報投影片的主題為[亂序執行（Out-Of-Order, OOO）](#亂序執行out-of-order-ooo-execution)機制的重點複習（Recap: Out-Of-Order (OOO)），透過比較不同處理器架構與架構代號（如 I4、I2O2、I2O1、IO3、IO2I），分類說明指令在各階段為順序（In-Order, IO）或亂序（Out-Of-Order, OOO）執行，並列出實現該機制所需的硬體組件。
 - 本教學重點內容：
   <br>投影片依照處理器流水線（Pipeline）的四大階段：前端（Frontend）、發射（Issue）、寫回（Writeback）與提交（Commit），展示了不同的架構演進與對應技術：
   - 流水線階段的執行順序模式：
