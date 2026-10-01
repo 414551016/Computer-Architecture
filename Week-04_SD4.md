@@ -1,4 +1,6 @@
-Prompt：請說明本教學重點內容及你的看法，最後以250字內總結
+Prompt：
+- 1.請將本教學內容英/中翻譯比對
+- 2.說明本教學重點內容及你的看法，最後以250字內總結
 ### Week 4 課堂逐字稿
 這份教材主要探討先進的電腦處理器設計，特別聚焦於亂序執行與超純量架構的運作機制。課程核心圍繞四大主題展開：包括允許指令不按順序完成的亂序處理器、處理條件跳躍的預測與推測執行、消除名稱相依性的暫存器命名技術，以及處理記憶體存取順序的記憶體消歧義。透過介紹如重定序緩衝區和發布佇列等硬體結構，教材詳細解析了處理器如何在維持程式正確執行的同時，大幅提升指令的執行並行度與整體效能。
 
@@ -1037,6 +1039,24 @@ Throughput is limited by number of instructions in flight, but which feature of 
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0041.jpg" width="50%">
 </div>
+
+Register Renaming 
+> 暫存器重命名（Register Renaming）
+
+Adding more “Names” (registers/memory) removes dependence, but architecture namespace is limited.
+> 增加更多的「名稱/命名空間」（暫存器或記憶體）能消除資料相依性，但架構層面的命名空間是有限的。
+
+Registers: Larger namespace requires more bits in instruction encoding. 32 registers = 5 bits, 128 registers = 7 bits.
+> 暫存器方面：擴大命名空間需要在指令編碼中加入更多位元（Bits）。例如 32 個暫存器需要 5 個位元，而 128 個暫存器則需要 7 個位元。
+
+Register Renaming: Change naming of registers in hardware to eliminate WAW and WAR hazards
+> 暫存器重命名：透過硬體動態更改暫存器的命名，藉此消除 WAW（Write-After-Write）與 WAR（Write-After-Read）風險。
+
+Floating Point pipelines often cannot be kept filled with small number of registers.
+> 浮點數執行流水線經常無法僅靠少量暂存器就維持滿載填滿狀態。
+
+$\rightarrow$ IBM 360 had only 4 Floating Point Registers
+> $\rightarrow$ 以 IBM 360 為例，其架構僅提供 4 個浮點數暫存器。
 
 - 本教學重點內容：
 - 個人看法與分析：
