@@ -1059,85 +1059,324 @@ $\rightarrow$ IBM 360 had only 4 Floating Point Registers
 > $\rightarrow$ 以 IBM 360 為例，其架構僅提供 4 個浮點數暫存器。
 
 - 本教學重點內容：
+  - ISA 指令編碼與暫存器數量的矛盾：
+    - 若要消除假性相依（Name Dependencies），最直觀的方法是增加暫存器數量（名稱空間）。然而 ISA 指令長度有限，每增加暫存器數量，指令編碼中用來指定暫存器的位元數（Register Specifier Bits）就會增加。例如從 32 個暫存器（ $2^5 \rightarrow 5$ bits）擴增至 128 個暫存器（$2^7 \rightarrow 7$ bits），會大幅增加指令長度與程式碼體積（Code Size）。
+  - 硬體動態暫存器重命名（Dynamic Register Renaming）的定價與價值：
+    - 解決方案：不修改 ISA 規範（維持 32 個架構暫存器 ARF），而在硬體內部引入動態暫存器重命名，將有限的 ARF 映射至數量龐大的硬體實體暫存器（PRF）。
+    - 成果：在保持軟體/ISA 相容性的同時，徹底消除 WAW 與 WAR 假性相依與冒險（Hazards）。
+  - 歷史經典案例（IBM 360）：
+    - 早期 IBM 360 僅有 4 個浮點數暫存器（FPRs），極易造成 WAR/WAW 鎖定而讓深層流水線出現大量氣泡。1967 年 Robert Tomasulo 提出托馬蘇洛演算法（Tomasulo's Algorithm），正是透過動態重命名成功突破了這 4 個暫存器的硬體天花板。
 - 個人看法與分析：
+  - 軟硬體分工的極致展現：
+    - 本頁說明了為什麼我們無法僅靠「擴充 ISA 暫存器數量」來解決平行度問題。增加 ISA 暫存器不僅使得編譯器與指令編碼變得極其複雜，還會增加上下文切換（Context Switch）保存狀態的時間。
+    - 透過硬體動態重命名（Register Renaming），ISA 能保持簡潔的 32 個暫存器介面，而硬體則能在背後偷偷使用 128 個以上的實體暫存器（PRF），達到「軟體簡單、硬體高效」的完美平衡。
 - 總結：
+  <br>本頁投影片闡明了「暫存器重命名（Register Renaming）」的必要性與優點。單純增加 ISA 架構暫存器會增加指令編碼位元數（如 128 個暫存器需 7 個 bits），膨脹程式碼體積。早期的 IBM 360 因僅有 4 個浮點數暫存器，經常導致流水線無法填滿。現代處理器透過硬體動態暫存器重命名，在不修改 ISA 規範與指令格式的前提下，將架構暫存器映射至龐大的硬體實體暫存器（PRF），成功消除 WAW 與 WAR 風險，極大化超純量 CPU 的指令平行度。
 
-## slide：42
+## slide：42 Register Renaming Overview
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0042.jpg" width="50%">
 </div>
 
-- 本教學重點內容：
-- 個人看法與分析：
-- 總結：
+Register Renaming Overview
+> 暫存器重命名概述
 
-## slide：43
+2 schemes
+> 2 種實作方案
+
+Pointers in the Issue Queue/ReOrder Buffer
+> 在發射隊列（Issue Queue）/ 重排緩衝區（ROB）中使用指標（Pointers）
+
+Values in the Issue Queue/ReOrder Buffer
+> 在發射隊列（Issue Queue）/ 重排緩衝區（ROB）中使用數值（Values）
+
+IO2I uses pointers in IQ and ROB therefore start with that design
+> $IO_2I$ 架構在 IQ 與 ROB 中採用指標機制，因此我們將從該設計開始介紹
+
+- 本教學重點內容：
+  - 暫存器重命名的兩大硬體實作機制（Two Schemes）：
+    - 指標方案（Pointers Scheme）：
+      - 發射隊列（Issue Queue, IQ）與重排緩衝區（Reorder Buffer, ROB）中僅儲存指向實體暫存器（PRF）的指標/標號（Pointers/Tag），不直接儲存指令的操作數資料值（Data Values）。
+      - 指令執行時，由 IQ/ROB 的指標去存取中央實體暫存器檔案（PRF）來讀寫數據。
+    - 數值方案（Values Scheme）：
+      - 發射隊列（IQ）或重排緩衝區（ROB）內部直接帶有儲存欄位，用來直接暫存與旁路傳輸數據數值（Data Values）（類似經典的 Tomasulo 演算法中的保留站 Reservation Stations 與 ROB 結構）。
+  - $IO_2I$ 微架構的選擇：
+    - 本課程後續要介紹的 $IO_2I$ 架構採用「指標（Pointers）」機制。因此教學將以此架構設計為起點，推導其 Rename Map Table、PRF 與 ROB 間的指標運作流程。 
+- 個人看法與分析：
+  - 指標方案（Pointers Scheme）的微架構優勢：
+    - 採用 Explicit PRF + Pointers Scheme 是現代超純量處理器（如 Intel Haswell/Skylake、AMD Zen 系列以及 Apple M 系列）的主流選擇。
+    - 面積與功耗優化：若在 IQ 和 ROB 中儲存 64-bit 的完整數據值（Values Scheme），每個 entry 都需要龐大的暫存邏輯，會在發射隊列（IQ）造成嚴重的面積與動態功耗負擔。相對地，使用指標（Pointers/Tag，例如僅需 6~8 個 bits 來索引 64~256 個 PRF 條目）能大幅簡化 IQ 內部的比對邏輯與電路面積。
+  - 資料傳輸（Data Movement）的簡化：
+    - 在指標方案中，計算結果直接寫入 PRF，後續指令 Commit 時僅需更改邏輯映射表（Map Table）或釋放指標，無需將數據從 ROB/IQ 搬移至 ARF，顯著減少了內部 Bus 的翻轉與能耗。
+- 總結：
+  <br>本頁投影片歸納了硬體「暫存器重命名」的兩種核心實作方案：於 IQ/ROB 中儲存「指標（Pointers）」或直接儲存「數值（Values）」。指標方案藉由僅在 IQ/ROB 中維持指向 PRF 的索引，能大幅降低發射隊列的電路面積與功耗，並簡化 Commit 階段的資料搬移。由於本課程的 $IO_2I$ 微架構即採用指標機制，後續講義將以此設計展開詳細的動態重命名與狀態還原推導。
+
+## slide：43 IO2I: Register Renaming with Pointers in IQ and ROB
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0043.jpg" width="50%">
 </div>
 
+IO2I: Register Renaming with Pointers in IQ and ROB
+> $IO_2I$：在發射隊列（IQ）與重排緩衝區（ROB）中使用指標實作暫存器重命名
+
+All data structures same as in IO2I Except:
+> 所有資料結構與原本的 $IO_2I$ 相同，除了以下幾點：
+
+Add two fields to ROB
+> 在重排緩衝區（ROB）中新增兩個欄位
+
+Add Rename Table (RT) and Free List (FL) of registers
+> 新增重命名表（Rename Table, RT）與可用的實體暫存器空閒列表（Free List, FL）
+
+Increase size of PRF to provide more register "Names"
+> 擴大實體暫存器檔案（PRF）的容量，以提供更多的暫存器「名稱/數量」
+
 - 本教學重點內容：
+  <br>$IO_2I$ 微架構的硬體擴充（Hardware Extensions）：
+  - 重命名表（Rename Table, RT）：位於 Decode ($D$) 階段，用於將指令中的 ISA 架構暫存器（ARF Specifiers）動態映射至當前最新的實體暫存器（PRF Pointers）。
+  - 空閒列表（Free List, FL）：維護當前未被使用的 PRF 索引列表， Decode 階段遇到寫入指令時會從 FL 申請一個空閒的 PRF 分配給該指令。
+  - ROB 欄位擴充（Two Fields in ROB）：ROB 條目中新增額外欄位，用於記錄舊的實體暫存器映射（Old PRF Mapping）與新的實體暫存器映射（New PRF Mapping），以利在指令 Commit 階段進行 PRF 的釋放，或在分支猜測失敗時進行狀態還原。
+  - 擴充 PRF 數量：增加 PRF 的容量（如提供 64~128 個實體暫存器），徹底打散暫存器名稱衝突。
+  - 硬體流水線結構：
+    - 前端包含 $F \rightarrow D$（連結 FL/RT）$\rightarrow IQ \rightarrow I$。
+    - 後端並行執行單元（ $X_0, L_0/L_1, S_0, Y_0/Y_1/Y_2/Y_3$）計算完成後寫回（$W$）至 PRF。
+    - 最後經由 ROB/FSB 順序提交（ $C$）並將確定結果同步至 ARF。
 - 個人看法與分析：
+  - 「指標型」暫存器重命名的極致展現：
+    - 本頁展示了現代超純量亂序 CPU 的標準骨幹結構。透過引進 RT（Rename Table） 與 FL（Free List）， Decode 階段能以極低的時脈週期成本完成重命名。
+    - 在 ROB 中記錄舊映射（Old PRF）的巧思非常關鍵：當一條寫入暫存器的指令正式 Commit 時，代表先前佔用該架構暫存器的舊 PRF 已經再無指令需要讀取，此時才將舊 PRF 放回 Free List（FL）回收利用，從而完美解決了實體暫存器資源生命週期（Resource Lifecycle）的管理問題。
 - 總結：
+  <br>本頁投影片介紹了在 $IO_2I$ 微架構中實作「指標型動態暫存器重命名」所需的關鍵硬體元件擴充。系統在 Decode 階段新增重命名表（RT）與空閒列表（FL），用來動態將架構暫存器映射至擴充後的實體暫存器檔案（PRF）。同時，在 ROB 中加入舊與新 PRF 指標欄位，用以精確管理實體暫存器的釋放與猜測失敗時的狀態還原。這套機制在不改變 ISA 規範下，徹底消除了 WAW/WAR 風險，是現代超純量亂序處理器的核心架構。 
 
 ## slide：44
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0044.jpg" width="50%">
 </div>
 
+IO2I: Register Renaming with Pointers in IQ and ROB
+> $IO_2I$：在發射隊列（IQ）與重排緩衝區（ROB）中使用指標實作暫存器重命名
+
+ARF: C: W
+> 架構暫存器檔案（ARF）： Commit (C) 階段進行寫入（W）
+
+SB: D: R/W | W
+> 比對/儲存緩衝區（SB）： Decode (D) 階段進行讀取與寫入（R/W），Writeback (W) 階段進行寫入（W）
+
+PRF: D: R | W
+> 實體暫存器檔案（PRF）： Decode (D) 階段進行讀取（R），Writeback (W) 階段進行寫入（W）
+
+ROB: D: R/W | W | C: R/W
+> 重排緩衝區（ROB）： Decode (D) 階段進行讀取與寫入（R/W），Writeback (W) 階段進行寫入（W），Commit (C) 階段進行讀取與寫入（R/W）
+
+FSB: W | C: R/W
+> 發射儲存緩衝區（FSB）： Writeback (W) 階段進行寫入（W），Commit (C) 階段進行讀取與寫入（R/W）
+
+IQ: D: W | I: R/W | W
+> 發射隊列（IQ）： Decode (D) 階段進行寫入（W），Issue (I) 階段進行讀取與寫入（R/W），Writeback (W) 階段進行寫入（W）
+
+FL: D: R/W | C: W
+> 空閒列表（FL）： Decode (D) 階段進行讀取與寫入（R/W），Commit (C) 階段進行寫入（W，即回收舊實體暫存器）
+
+RT: D: R/W | W
+> 重命名表（RT）： Decode (D) 階段進行讀取與寫入（R/W），Writeback (W) 階段進行寫入（W，更新準備狀態/標誌位元）
+
 - 本教學重點內容：
+  - 各流水線階段與微架構資料結構之存取行為（Access Patterns）：
+    - Decode ( $D$) 階段：
+      - RT / FL：讀取 RT 以查詢來源暫存器對應的 PRF，並寫入/更新目的暫存器的 PRF 映射；同時向 FL 申請（R/W）一個新的空閒 PRF。
+      - IQ / ROB：將指令及其分配到的 PRF 指標寫入 IQ 與 ROB 進行分配。
+    - Issue ( $I$) 階段：
+      - IQ：監聽比對準備好的操作數（R/W），條件滿足時將指令發射至執行單元。
+      - PRF：從 PRF 讀取（R）運算所需的操作數數據。
+    - Writeback ( $W$) 階段：
+      - PRF / ROB / IQ：將執行結果寫回（W）PRF，並更新 ROB 與 IQ 中該指令的完成狀態標誌位元。
+    - Commit ( $C$) 階段：
+      - ARF：將最終確認的結果更新至架構暫存器（ARF）。
+      - FL：將被覆蓋替換掉的舊實體暫存器（Old PRF）釋放（W）並歸還給空閒列表（Free List）。
 - 個人看法與分析：
+  - 極其嚴密的控制與資料流梳理：
+    - 這張矩陣表清楚展現了亂序執行（OoO）CPU 在各階段的讀寫脈絡。最值得注意的關鍵設計在於 FL（Free List）的釋放時機點：FL 在 Decode 階段被消耗（分配新的 PRF），但必須等到 Commit 階段才能釋放舊的 PRF。這是因為在指令正式 Commit 之前，舊的 PRF 數據隨時可能因前面的分支猜測失敗或例外（Exception）而需要被重新讀取與還原。
 - 總結：
+  <br>本頁投影片詳細梳理了 $IO_2I$ 重命名微架構中，各個硬體資料結構在流水線各階段（Decode $D$、Issue $I$、Writeback $W$、Commit $C$）的讀寫存取行為（R/W）。Decode 階段主要進行 RT 與 FL 的查表與分配；Issue 階段從 PRF 讀取操作數；Writeback 階段將計算結果寫回 PRF 並通知 ROB；最後在 Commit 階段更新 ARF，並將舊的實體暫存器歸還給 FL 回收。這套存取控制陣列精確地維持了指令動態執行的正確性與資源生命週期管理。
 
 ## slide：45
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0045.jpg" width="50%">
 </div>
 
+Modified Reorder Buffer (ROB)
+> 修改後的重排緩衝區（ROB）
+
+State: {Empty (--), Pending, Finished}
+> State（狀態）：{空（--）、等待中（P）、已完成（F）}
+
+S: Speculative
+> S（推測執行位元）：Speculative
+
+ST: Store bit
+> ST（儲存指令位元）：Store bit
+
+V: Destination is valid
+> V（目的暫存器有效位元）：Destination is valid
+
+Preg: Physical Register File Specifier
+> Preg（實體暫存器編號）：Physical Register File Specifier
+
+Areg: Architectural Register File Specifier
+> Areg（架構暫存器編號）：Architectural Register File Specifier
+
+Ppreg: Previous Physical Register
+> Ppreg（前一個實體暫存器編號）：Previous Physical Register
+
 - 本教學重點內容：
+  - 支援暫存器重命名的 ROB 欄位結構（Modified ROB Entry Fields）：
+    - State（執行狀態）：記錄指令目前的生命週期階段，包含空（--）、執行等待中（Pending / P）與執行完成（Finished / F）。
+    - S (Speculative)：標記指令是否處於猜測執行（Speculative Execution）路徑上。
+    - ST (Store bit)：標記該指令是否為記憶體寫入（Store）指令。
+    - V (Destination Valid)：標記該指令是否有寫入目的暫存器（如 Branch 指令無寫入暫存器，則 $V=0$）。
+    - Preg (Physical Register)：該指令新分配到的實體暫存器編號（目的暫存器的新映射）。
+    - Areg (Architectural Register)：該指令對應的 ISA 架構暫存器編號（如 x4）。
+    - Ppreg (Previous Physical Register)：核心欄位！記錄在該指令被分配之前，相同架構暫存器（Areg）所映射的舊實體暫存器編號。
 - 個人看法與分析：
+  - Ppreg 欄位是維持正確性與資源回收的靈魂關鍵：
+    - 舊暫存器回收（Resource Recycling）：當指令進入 Commit 階段時，硬體必須知道哪一個舊的實體暫存器已經不再被任何在途（In-flight）指令所需要。Ppreg 記錄了這個舊實體暫存器編號，讓系統在 Commit 時能安全地將其釋放回空閒列表（Free List, FL）。
+    - 精確例外與猜測失敗還原（Precise Exceptions & Branch Misprediction Recovery）：若發生分支猜測失敗或管道沖刷（Pipeline Flush），處理器需要迅速將重命名表（Rename Table, RT）復原到正確狀態。透過由後往前倒放 ROB 中的 Ppreg 紀錄，硬體能將暫存器映射恢復成分支發生前最精確的映射關係。
 - 總結：
+  <br>本頁投影片展示了支援暫存器重命名的「修改版重排緩衝區（ROB）」結構。除了控制與狀態欄位（State, S, ST, V）外，新增了 Preg（新分配實體暫存器）、Areg（架構暫存器）與 Ppreg（舊實體暫存器）三個核心欄位。其中 Ppreg 扮演極其關鍵的角色，它不僅讓指令在 Commit 階段能安全釋放舊的實體暫存器歸還給 Free List，更能在發生分支猜測錯誤或例外事件時，提供快速恢復暫存器映射表（Rename Table）的歷史依據。
 
 ## slide：46
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0046.jpg" width="50%">
 </div>
 
-- 本教學重點內容：
-- 個人看法與分析：
-- 總結：
+Rename Table (RT)
+> 重命名表（Rename Table, RT）
 
-## slide：47
+P: Pending, Write to Destination in flight
+> P（等待/進行中位元）：Pending，代表對目的暫存器的寫入操作正在流水線中執行（In-flight）
+
+Preg: Physical Register Architectural Register maps to
+> Preg（實體暫存器編號）：Physical Register，代表該架構暫存器目前所映射到的實體暫存器
+
+X1, X2, X3, ..., X31
+> X1, X2, X3, ..., X31（ISA 定義的 31 個通用架構暫存器條目）
+
+- 本教學重點內容：
+  - 重命名表（Rename Table, RT）的結構與功能：
+    - 索引欄位（Index）：以 ISA 架構暫存器（$X_1, X_2, \dots, X_{31}$）作為索引，每個條目對應一個架構暫存器的最新狀態。
+    - Preg (Physical Register)：記錄該架構暫存器當前映射到的最新實體暫存器編號。後續讀取該架構暫存器的指令會透過此欄位取得最新的 PRF 索引。
+    - P (Pending Bit)：狀態標誌位元。
+      - 當 $P=1$（Pending）時：代表寫入該實體暫存器（Preg）的指令仍在流水線中執行（In-flight），數據尚未計算出並寫入 PRF。
+      - 當 $P=0$ 時：代表該實體暫存器中的數據已經準備完畢（計算完成並已寫回 Writeback），後續指令可以直接讀取該 PRF 數據。
+- 個人看法與分析：
+  - 前端 Decode/Rename 階段的效能心臟：
+    - RT（Rename Table） 是重命名流水線中速度要求極高的一環。每一條指令在 Decode 階段都會查詢 RT：讀取來源暫存器（Source Areg）映射的 PRF，並將目的暫存器（Dest Areg）更新為從 Free List 領取的新 PRF，同時將其 $P$ bit 設為 1。
+    - 快速依賴判斷（Dependency Tracking）：藉由 $P$ bit，後續指令在 Decode 階段能瞬間知道資料是否已經 ready。若 $P=1$，代表有 RAW 相依存在，指令必須攜帶該 PRF tag 進入 Issue Queue（IQ）等待廣播；若 $P=0$，代表資料已在 PRF 中，可直接發射或讀取，大幅簡化了依賴關係的判讀機制。
+- 總結：
+  <br>本頁投影片介紹了「重命名表（Rename Table, RT）」的結構與運作機制。RT 以架構暫存器（$X_1 \dots X_{31}$）為索引，包含 Preg（映射的實體暫存器編號）與 P（Pending 標誌位元）兩個主要欄位。當指令寫入某暫存器時，RT 將其映射至新 PRF 並將 $P$ 設為 1，代表數據還在執行中；當 Writeback 階段完成計算後 $P$ 歸 0。RT 能在 Decode 階段快速解開 WAW/WAR 風險並標記 RAW 依賴關係，是超純量 CPU 進行動態暫存器重命名的核心結構。
+
+## slide：47 Free List (FL)
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0047.jpg" width="50%">
 </div>
 
+Free List (FL)
+> 空閒列表（Free List, FL）
+
+p1, p2, p3, ..., pN
+> p1, p2, p3, ..., pN（實體暫存器編號，從 $p_1$ 到 $p_N$）
+
+Free: Register is free for renaming
+> Free（空閒狀態）：表示該實體暫存器處於空閒狀態，可用於重命名（Renaming）
+
+If Free == 0, physical register is in use and cannot be used for renaming
+> 若 Free == 0，代表該實體暫存器正在使用中（In use），無法用於重命名
+
 - 本教學重點內容：
+  - 空閒列表（Free List, FL）的結構與機制：
+    - 索引與狀態：列出處理器內部所有的實體暫存器（$p_1 \dots p_N$），並以一個位元 Free 來表示其是否可用。
+    - 狀態判讀：
+      - $\text{Free} = 1$：代表該實體暫存器未被任何指令佔用，在 Decode/Rename 階段可以被分配給有寫入需求的指令。 
+      - $\text{Free} = 0$：代表該實體暫存器已被分配或包含尚待讀取/提交的數據（正在使用中），不可被重新分配。
+    - 流水線動態運作：
+      - 分配（Allocating）：指令在 Decode 階段寫入暫存器時，從 FL 尋找 $\text{Free} = 1$ 的實體暫存器並將其設為 0。
+      - 回收（Deallocating / Freeing）：當後續更新相同架構暫存器的指令在 Commit 階段正式提交時，被替換掉的舊實體暫存器（Previous Physical Register, Ppreg）會被歸還至 FL，重新將 Free 設為 1。
 - 個人看法與分析：
+  - 實體暫存器資源池的動態管理者：
+    - Free List (FL) 是處理器能否維持高指令平行度（ILP）的核心資源庫。當 FL 中完全沒有可用的實體暫存器（即全部 $\text{Free} = 0$）時，處理器前端必須強制停頓（Stall），發生 Resource Stall。
+    - 實作結構的多樣性：講義中展示的是以 Bit-vector（位元陣列）形式呈現的 FL（用 Free 位元標記）。在許多高標量 CPU 設計中，FL 也常被實作記為 FIFO 佇列（Queue/Stack），Decode 階段從 Head 彈出（Pop）空閒編號，Commit 階段將舊編號推入（Push）Tail，兩種設計皆能達到精確管理 PRF 生命週期的目的。
 - 總結：
+  <br>本頁投影片介紹了「空閒列表（Free List, FL）」的結構與管理機制。FL 追蹤所有實體暫存器（$p_1 \dots p_N$）的可用狀態（Free）。當 $\text{Free}=1$ 時代表該暫存器空閒，可在 Decode 階段分配給新指令並設為 0（使用中）。被佔用的實體暫存器直到舊映射的指令於 Commit 階段正式提交後，才會被歸還至 FL 重置為 $\text{Free}=1$。FL 精確控制了實體暫存器的生命週期，是確保動態重命名不發生資源衝突的關鍵結構。
 
 ## slide：48
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0048.jpg" width="50%">
 </div>
 
+|英文原文 / 符號 (English/Symbols)  |繁體中文翻譯 (Traditional Chinese)|
+|--|--|
+|0 mul x1, x2, x3   |指令 0：乘法 mul  x1, x2, x3  |
+|1 mul x4, x1, x5   |指令 1：乘法 mul  x4, x1, x5  |
+|2 addi x6, x4, 1   |指令 2：加法 addi x6, x4, 1   |
+|3 addi x4, x7, 1   |指令 3：加法 addi x4, x7, 1   |
+|Cy / D / I / W / C   |Cy（週期/Cycle）、D（解碼/Decode）、I（發射/Issue）、W（寫回/Writeback）、C（提交/Commit）|
+|RT / FL / IQ / ROB  |RT（重命名表/Rename Table）、FL（空閒列表/Free List）、IQ（發射隊列/Issue Queue）、ROB（重排緩衝區/Reorder Buffer）|
+|p0~p6 mapped, p{7,8,9,10} in FL  |初始狀態：$p_0 \sim p_6$ 已映射，空閒列表 FL 為 $\{p_7, p_8, p_9, p_10\}$|
+
 - 本教學重點內容：
+  - 完整的動態暫存器重命名與執行追蹤（Trace Walkthrough）：
+    - 週期 0~1：指令 0 (mul) 進入 Decode 階段。寫入架構暫存器 x1，從 FL 領取 $p_7$。RT 更新 x1 $\rightarrow p_7$；ROB 紀錄條目 0 為 p7/x1/p0（代表新 PRF 是 $p_7$，舊 PRF 是 $p_0$）。
+    - 週期 3：指令 1 (mul) Decode。寫入 x4，從 FL 領取 $p_8$。RT 更新 x4 $\rightarrow p_8$；ROB 條目 1 為 p8/x4/p3。
+    - 週期 4：指令 2 (addi) Decode。寫入 x6，從 FL 領取 $p_9$。RT 更新 x6 $\rightarrow p_9$；ROB 條目 2 為 p9/x6/p5。
+    - 週期 5：指令 3 (addi) Decode。寫入 x4（發生 WAW/WAR 名稱衝突）。從 FL 領取 $p_{10}$。RT 更新 x4 $\rightarrow p_{10}$；ROB 條目 3 為 p10/x4/p8（代表舊 PRF 是 $p_8$）。
+    - 消除停頓（Stall Free）：指令 3 雖然與指令 1 寫入相同的 x4，但因為被分配到了全新的實體暫存器 $p_{10}$，因此完全不需要等待指令 1 或 2 完成。指令 3 在週期 7 直接發射（I）並於週期 8 完成寫回（W）。
+    - 資源回收（Resource Retirement / Deallocation）：
+      - 週期 8：指令 0 在 Commit（C）時，釋放其舊的實體暫存器 $p_0$ 歸還給 FL。
+      - 週期 12~15：後續指令陸續 Commit 時，舊的實體暫存器 $p_3, p_5, p_8$ 依序被釋放並歸還給 FL。
 - 個人看法與分析：
+  - 強大的逐週期圖表展示了重命名演算法的核心價值：
+    - 對比第 39 頁未重命名時指令 3 必須保守停頓 8 個週期，本頁展示了重命名機制（$p_7, p_8, p_9, p_{10}$）如何讓指令 3 無縫執行。
+    - `Ppreg` 回收邏輯完全展現在 ROB 與 FL 的變化中：例如指令 3 寫入 x4 並領取 $p_{10}$，其 ROB 記錄的舊 PRF 為 $p_8$（指令 1 分配的 PRF）。當指令 3 在週期 14/15 最終 Commit 時，代表 $p_8$ 已再無後續指令讀取，此時 $p_8$ 正式被安全地歸還至 Free List。這精確地演練了現代超純量處理器底層實體暫存器生命週期的維護流程。
 - 總結：
+  <br>本頁投影片以具體的指令序列與逐週期（Cycle 0~15）狀態追蹤圖，展現了 $IO_2I$ 微架構下動態暫存器重命名的完整運作。指令 3 因寫入 x4 產生名稱衝突，透過重命名機制分配到全新實體暫存器 $p_{10}$，徹底消除了 WAW/WAR 鎖定，在週期 7 順利發射執行。同時，ROB 條目精確記錄各指令的新舊 PRF 映射（如 p10/x4/p8），確保指令 Commit 時能將舊的實體暫存器（如 $p_8$）正確回收至 Free List（FL）。這證明了動態重命名能極大化流水線平行度與資源利用率。
 
 ## slide：49
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0049.jpg" width="50%">
 </div>
 
+|英文原文 (English)   |繁體中文翻譯 (Traditional Chinese)|
+|--|--|
+|Freeing Physical Registers  |釋放實體暫存器（Freeing Physical Registers） |
+|add x1, x2, x3 $\Leftarrow$ Assume Arch. Reg X1 maps to Phys. Reg p0 |add x1, x2, x3 $\Leftarrow$ 假設架構暫存器 $X_1$ 映射至實體暫存器 $p_0$|
+|add x4, x1, x5   |add x4, x1, x5（RAW 相依於指令 0 的 $X_1$）|
+|add x1, x6, x7 $\Leftarrow$ Next write of Arch Reg X1, Mapped to Phys. Reg p1   |add x1, x6, x7 $\Leftarrow$ 下一次對架構暫存器 $X_1$ 的寫入，映射至實體暫存器 $p_1$|
+|add x8, x9, x10   |add x8, x9, x10  |
+|[錯誤示範 / 提前釋放] Write p0 $\rightarrow$ Free p0 $\rightarrow$ Alloc p0 $\rightarrow$ Write p0 $\rightarrow$ Read Wrong value in p0   |[錯誤示範 / 提前釋放] 寫入 $p_0$ $\rightarrow$ 指令 0 Commit 時太早釋放 $p_0$ $\rightarrow$ $p_0$ 被重新分配給其他指令並覆蓋數據 $\rightarrow$ 指令 1 讀取到 $p_0$ 中的錯誤數值！|
+|[正確機制 / Commit 釋放] Write p0 $\rightarrow$ Alloc p2 $\rightarrow$ Write p2 $\rightarrow$ Dealloc p0   |[正確機制 / Commit 釋放] 寫入 $p_0$ $\rightarrow$ 指令 2 為 $X_1$ 分配新實體暫存器 $p_2$ 並寫入 $\rightarrow$ 當指令 2 Commit 時才正式解分配/釋放舊的 $p_0$|
+|If Arch. Reg Xi mapped to Phys. Reg pj, we can free pj when the next instruction that writes Xi commits   |核心法則：若架構暫存器 $X_i$ 映射至實體暫存器 $p_j$，只有當「下一個寫入 $X_i$ 的指令正式提交（Commit）時」，我們才能安全地釋放 $p_j$。|
+
 - 本教學重點內容：
+  - 實體暫存器釋放（Freeing PRF）的安全性衝突與致命錯誤：
+    - 錯誤情境（錯誤示範，圖中上方）：如果指令 0（add x1, x2, x3）一完成寫回並 Commit 時，就立即將其佔用的 $p_0$ 釋放回 Free List（FL）。此時後續的指令 3（add x8, x9, x10）可能會從 FL 重新領取到 $p_0$ 並覆蓋其數值。這會導致尚未執行的指令 1（add x4, x1, x5）在後續讀取 $p_0$ 時讀到被指令 3 破壞掉的錯誤數值（Read Wrong value in $p_0$）。
+  - 實體暫存器生命週期的金科玉律（正確機制，圖中下方與底欄）：
+    - 正確釋放時機：當指令 0 將 $X_1$ 寫入 $p_0$ 後，$p_0$ 絕對不能在指令 0 Commit 時釋放。
+    - 觸發條件：必須等到下一個同樣寫入架構暫存器 $X_1$ 的指令（即指令 2 add x1, x6, x7）正式提交（Commit）時，才能將舊的實體暫存器 $p_0$ 安全歸還給 Free List。
+    - 邏輯證明：因為當指令 2 Commit 時，代表在程式順序中，所有需要讀取舊 $X_1$（即 $p_0$）的指令（指令 1）都已經順利完成發射與讀取，此時 $p_0$ 的任務才正式結束。
 - 個人看法與分析：
+  - 亂序執行（OoO）中最經典且關鍵的資源釋放法則：
+    - 這頁投影片極其精闢地解答了初學者常有的疑問：「為什麼 PRF 不能在指令完成/提交時就立刻釋放？」
+    - WAR 相依的硬體保護機制：由於亂序執行中指令 1 可能因某些因素（如等待其他操作數）延遲發射，若 $p_0$ 提前被釋放並被其他指令覆蓋，就會爆發 WAR 衝突造成數據毀損。
+    - ROB 欄位設計的連結：這完全體現了前幾頁 ROB 中必須設置 Ppreg（Previous Physical Register）欄位的價值！當指令 2（下一個寫入 $X_1$ 的指令）進入 Commit 階段時，硬體正是讀取指令 2 在 ROB 中記錄的 Ppreg = p0，並將其推回 Free List 進行回收，設計非常環環相扣且優雅。
 - 總結：
+  <br>本頁投影片揭示了實體暫存器（PRF）安全釋放的核心法則。若在指令 Commit 時立刻釋放其 PRF（如 $p_0$），可能導致該暫存器被新指令重用並覆蓋，使尚未發射的讀取指令讀到錯誤資料。正確機制為：當架構暫存器 $X_i$ 映射至 $p_j$ 時，必須等待「下一個寫入 $X_i$ 的指令正式 Commit」後，才能將舊的 $p_j$ 安全釋放回 Free List。這確保了所有讀取舊值的指令皆已執行完畢，是維護亂序處理器資料正確性的關鍵邏輯。
 
 ## slide：50
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0050.jpg" width="50%">
 </div>
+
+
 
 - 本教學重點內容：
 - 個人看法與分析：
@@ -1147,6 +1386,8 @@ $\rightarrow$ IBM 360 had only 4 Floating Point Registers
 <div align="left" >
   <img src="./Lecture/SD4/SD4_page-0051.jpg" width="50%">
 </div>
+
+
 
 - 本教學重點內容：
 - 個人看法與分析：
