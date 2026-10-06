@@ -35,7 +35,17 @@ VLIW（Very Long Instruction Word，超長指令字） 是一種利用**指令�
     ├─ sub
     └─ mul
   ```
+- VLIW 的特色
+  - 平行化由編譯器決定：
+    - 傳統 Superscalar CPU：硬體找平行性
+    - VLIW：編譯器找平行性，因此硬體較簡單。
+  - 指令字較長：
+    - 例如：128-bit、256-bit、512-bit
+    - 一個指令字可能包含：ALU指令、Load指令、Store指令、Branch指令，同時發射（Issue）。
+  - 多功能單元
+    - ALU1、ALU2、Multiplier、Load/Store Unit 可同時運作。
 
+- VLIW（Very Long Instruction Word）是一種利用指令級平行化的處理器架構，其特色是由編譯器在編譯期間分析指令相依性，並將多條可同時執行的指令打包成單一超長指令字，使多個執行單元能在同一個時脈週期內平行運作。與 Superscalar 處理器由硬體動態發掘平行性不同，VLIW 將複雜度轉移至編譯器，因此硬體設計較簡單、功耗較低。然而其效能高度依賴編譯器最佳化能力，且程式相容性較差。VLIW 是研究指令級平行化（ILP）與平行處理器設計的重要代表架構。
 
 ## slide：2
 <div align="left" >
