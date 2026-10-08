@@ -3,7 +3,9 @@
 #### 教學資源：
 - [SD5.pdf](./Lecture/SD5.pdf)
 - Prompt：
+  - 請將本教學內容英/中翻譯比對
   - 請說明本教學重點內容及你的看法，最後以250字內總結
+
 
 ## slide：1 -2
 <div align="left" >
