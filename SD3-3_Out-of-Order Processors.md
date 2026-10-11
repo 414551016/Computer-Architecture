@@ -5,7 +5,7 @@
   - 請將本教學內容英/中翻譯比對
   - 請說明本教學重點內容及你的看法，最後以250字內總結
 ## 知識點：
-- [亂序執行（Out-Of-Order, OOO Execution）]()
+- [亂序執行（Out-Of-Order, OOO Execution）](#亂序執行out-of-order-ooo-execution)
 ### 亂序執行（Out-Of-Order, OOO Execution）
 
 ## slide：34 Out-of-Order Processors（亂序執行處理器）
