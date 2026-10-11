@@ -6,7 +6,59 @@
   - 請說明本教學重點內容及你的看法，最後以250字內總結
 ## 知識點：
 - [亂序執行（Out-Of-Order, OOO Execution）](#亂序執行out-of-order-ooo-execution)
+- [亂序執行處理器（Out-of-Order Processor, 簡稱 OOO Processor）]()
 ### 亂序執行（Out-Of-Order, OOO Execution）
+亂序執行（Out-Of-Order, OOO Execution） 是一種現代 CPU 用來提高指令級平行度（Instruction-Level Parallelism, ILP）與處理器效能的動態排程機制。
+<br>在傳統的按序執行（In-Order, IO）處理器中，指令必須完全按照程式碼寫好的順序依次進入管線執行。如果前方有一條執行時間較長的指令（例如乘除法或讀取記憶體 Cache Miss），後方即使有已經準備好且完全不相干的指令，也必須被強制停頓（Stall）等待。
+<br>**亂序執行**的核心概念是：只要指令的輸入資料已就緒（Data Ready）且所需的計算單元空閒，處理器就可以打破原本程式的順序，優先執行該指令。
+- 亂序執行處理器的四大關鍵階段：
+  <br>現代典型的亂序處理器（如 $IO_2I$ / $IO_2I$ 架構）將指令週期拆分為以下四個主要階段：
+  - Frontend（前段取指與解碼 - 按序 In-Order）：<br>按照程式碼的原始順序（Program Order）將指令取出並解碼。
+  - Issue（發射與排程 - 亂序 Out-of-Order）：<br>指令進入發射佇列（Issue Queue / Reservation Station）等待。一旦資料相依性解除且運算單元就緒，即可亂序發射執行。
+  - Writeback（執行與寫回 - 亂序 Out-of-Order）：<br>不同運算費時不同（例如 ALU 費時 1 週期，乘法費時 4 週期，記憶體存取費時多週期），指令會以亂序的方式完成並將結果寫回內部緩衝區。
+  - Commit（提交 - 按序 In-Order）：<br>為了維持程式邏輯的正確性與精確例外（Precise Exceptions），最後必須將亂序執行的結果重新拉回原本的順序按序提交，正式更新暫存器與記憶體狀態。
+- 實現亂序執行的核心硬體元件：
+  - Issue Queue / Reservation Station（發射佇列 / 保留站）：暫存解碼後的指令，動態監控資料是否就緒，實現亂序發射。
+  - Reorder Buffer, ROB（重排序緩衝區）：追蹤所有在途（In-Flight）指令，負責將亂序完成的結果重新排序，確保指令依序提交（In-Order Commit）。
+  - Store Buffer（儲存緩衝區）：暫存記憶體寫入操作，確保 Store 指令在確定提交前不會污染 Cache 或主記憶體。
+  - Scoreboard（記分板）：用於監控資料相依性與暫存器狀態，防止資料危害（Data Hazards）。
+- 主要優勢：
+  - 擺脫管道阻塞（Head-of-Line Blocking）：當某一條長延遲指令（如讀取記憶體）卡住時，後續無相依關係的指令可以繼續執行。
+  - 極大化硬體利用率：利用多條獨立的相依鏈（Dependency Chains）填滿 CPU 内的多個執行單元（ALU, MUL, MEM 等）。
+  - 兼顧效能與正確性：採用 $IO_2I$ 架構（Execute OOO, Commit In-Order），既能達到最高效能，又能完美維護精確例外與程式正確語意。
+
+### 亂序執行處理器（Out-of-Order Processor, 簡稱 OOO Processor）
+亂序執行處理器（Out-of-Order Processor, 簡稱 OOO Processor） 是一種現代高效能 CPU 採用的微架構設計，其核心宗旨是透過動態排程（Dynamic Scheduling） 來提高指令級平行度（Instruction-Level Parallelism, ILP）與處理器吞吐量。
+- 一、為什麼需要亂序執行？（動機）
+  <br>在傳統的按序執行（In-Order, IO）處理器中，指令必須嚴格按照程式碼寫好的順序進入管線執行。若前方有一條執行時間較長的指令（如多週期乘法、記憶體存取或發生 Cache Miss）陷入等待，後方即使有已經準備好資料且完全獨立的指令，也會被強制卡住（即 Head-of-Line Blocking / 管道阻塞）。
+  <br>**亂序執行的核心思想：**
+  <br>「資料就緒即執行」只要指令所需的輸入運算元已經準備好（Data Ready），且對應的硬體執行單元空閒，處理器就可以跳過前方被阻塞的指令，優先發射並執行該指令。
+- 二、亂序執行處理器的四大階段（以現代 $IO_2I$ 架構為例）
+  <br>現代標準的亂序處理器（如 Intel Core、AMD Zen、Apple M 系列與 RISC-V 高效能核心）將指令週期拆分為四個主要階段：
+  - Frontend（前段 / 按序 In-Order）：
+    - 按照程式碼的原始順序（Program Order）進行取指（Fetch）與解碼（Decode）。
+  - Issue（發射與排程 / 亂序 Out-of-Order）：
+    - 解碼後的指令進入發射佇列（Issue Queue / 保留站 Reservation Station）等待。一旦資料相依性解除（運算元就緒）且執行單元空閒，即可亂序發射到相應的運算管道（如 ALU、MUL、MEM）。
+  - Writeback（執行與寫回 / 亂序 Out-of-Order）：
+    - 由於不同管道的執行延遲不同（如 ALU 需 1 週期、MEM 需 2 週期、MUL 需 4 週期），指令會以亂序的方式完成，並將結果寫回內部緩衝區。
+  - Commit（提交 / 按序 In-Order）：
+    - 為了維持程式邏輯的正確性與精確例外（Precise Exceptions），亂序執行的結果必須在 Reorder Buffer (ROB) 中排隊，重新拉回原本的順序按序提交，正式更新架構暫存器與記憶體狀態。
+- 三、實現亂序執行的核心硬體組件：
+  <br>亂序處理器之所以能做到「亂而不雜」，依賴以下關鍵硬體分工：
+  - Scoreboard（計分板）：用於監控與記錄暫存器狀態、運算單元佔用情況以及資料相依性（Data Hazards）。
+  - Issue Queue / Reservation Station（發射佇列 / 保留站）：暫存解碼後的指令，動態監控資料暫存器與運算單元是否就緒，實現數據驅動（Data-Driven）的亂序發射。
+  - Reorder Buffer, ROB（重排序緩衝區）：追蹤所有在途（In-Flight）指令，將亂序寫回（OOO WB）的結果依原本程式順序暫存，確保指令能按序提交（In-Order Commit），這是維護精確例外的靈魂元件。
+  - Store Buffer（儲存緩衝區）：暫存寫入記憶體的操作，確保 Store 指令在確定 Commit 之前不會誤寫入 L1 Cache，避免破壞記憶體狀態。
+- 四、主要優勢：
+  - 極大化硬體利用率與 ILP：利用多條獨立的資料相依鏈（Dependency Chains），讓多個 execution pipes（ALU, MUL, MEM）同時運作，充份填滿管線。
+  - 掩蓋長延遲（Latency Hiding）：當存取記憶體或複雜運算卡住時，後續無關的指令能繼續執行，縮短整體程式執行時間。
+  - 兼顧效能與精確例外：採用 $IO_2I$ 架構（Execute OOO, Commit In-Order），既獲得亂序發射的高吞吐量，又保有按序提交帶來的精確例外能力與猜測執行復原能力。
+
+
+
+
+
+
 
 ## slide：34 Out-of-Order Processors（亂序執行處理器）
 <div align="left" >
