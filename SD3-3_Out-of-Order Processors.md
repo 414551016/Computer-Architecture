@@ -6,7 +6,7 @@
   - 請說明本教學重點內容及你的看法，最後以250字內總結
 ## 知識點：
 - [亂序執行（Out-Of-Order, OOO Execution）](#亂序執行out-of-order-ooo-execution)
-- [亂序執行處理器（Out-of-Order Processor, 簡稱 OOO Processor）]()
+- [亂序執行處理器（Out-of-Order Processor, 簡稱 OOO Processor）](#亂序執行處理器out-of-order-processor-簡稱-ooo-processor)
 ### 亂序執行（Out-Of-Order, OOO Execution）
 亂序執行（Out-Of-Order, OOO Execution） 是一種現代 CPU 用來提高指令級平行度（Instruction-Level Parallelism, ILP）與處理器效能的動態排程機制。
 <br>在傳統的按序執行（In-Order, IO）處理器中，指令必須完全按照程式碼寫好的順序依次進入管線執行。如果前方有一條執行時間較長的指令（例如乘除法或讀取記憶體 Cache Miss），後方即使有已經準備好且完全不相干的指令，也必須被強制停頓（Stall）等待。
@@ -53,11 +53,6 @@
   - 極大化硬體利用率與 ILP：利用多條獨立的資料相依鏈（Dependency Chains），讓多個 execution pipes（ALU, MUL, MEM）同時運作，充份填滿管線。
   - 掩蓋長延遲（Latency Hiding）：當存取記憶體或複雜運算卡住時，後續無關的指令能繼續執行，縮短整體程式執行時間。
   - 兼顧效能與精確例外：採用 $IO_2I$ 架構（Execute OOO, Commit In-Order），既獲得亂序發射的高吞吐量，又保有按序提交帶來的精確例外能力與猜測執行復原能力。
-
-
-
-
-
 
 
 ## slide：34 Out-of-Order Processors（亂序執行處理器）
