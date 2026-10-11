@@ -13,6 +13,15 @@
 - Prompt：
   - 請將本教學內容英/中翻譯比對
   - 請說明本slide教學重點內容及你的看法，最後以250字內總結
+- [Week 5 (2026-10-06)課堂逐字稿](week-5-2026-10-06課堂逐字稿-1)
+  - [slide：3 Agenda | 課程大綱 / 議程](#slide3-agenda--課程大綱--議程)
+  - [slide：4 Exploiting ILP (Instruction-Level Parallelism) | 挖掘指令級平行度（ILP）](#slide4-exploiting-ilp-instruction-level-parallelism--挖掘指令級平行度ilp)
+  - [slide：5 Reprise of Dynamic Scheduling | 重溫動態排程（Dynamic Scheduling）](#slide5-reprise-of-dynamic-scheduling--重溫動態排程dynamic-scheduling)
+  - [slide：6-7 Superscalar Control Logic Scaling | 超純量控制邏輯的擴充性/規模化問題](#slide6-7-superscalar-control-logic-scaling--超純量控制邏輯的擴充性規模化問題)
+  - [slide：7 Superscalar Control Logic Scaling | 超純量控制邏輯的擴充性/規模化問題](#slide7-superscalar-control-logic-scaling--超純量控制邏輯的擴充性規模化問題)
+  - [slide：8 Out-of-Order Control Complexity: MIPS R10000 | 亂序執行的控制複雜度實例](#slide8-out-of-order-control-complexity-mips-r10000--亂序執行的控制複雜度實例)
+  - [slide：9 順序指令集架構（Sequential ISA）的瓶頸](#slide9-順序指令集架構sequential-isa的瓶頸)
+  - [slide：10 超純量編譯器（Superscalar Compiler）](#slide10-超純量編譯器superscalar-compiler)
 
 ## 知識點：
 - [Superscalar Complexity（超純量架構複雜度）](#superscalar-complexity超純量架構複雜度)
