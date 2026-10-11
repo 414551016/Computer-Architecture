@@ -129,7 +129,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁複習了超純量與亂序執行（Superscalar/OOO）處理器的整體微架構。系統採用 $IO_2I$ 模式：前端依序取指解碼後進入發射佇列，當資料就緒即亂序發射至各式執行單元並亂序寫回；最後透過重排序緩衝區（ROB）與實體暫存器（PRF）確保指令按原順序提交。此動態排程機制能極大化指令級平行度（ILP），但需要極複雜的硬體邏輯與高功耗。這頁作為背景介紹，精準帶出了後續 VLIW 架構如何利用編譯器靜態排程來取代這些昂貴硬體的核心動機。
 
-## slide：3
+## slide：3 Agenda | 課程大綱 / 議程
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0003.jpg" width="50%">
 </div>
@@ -151,7 +151,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁為本章節的課程大綱。課程首先分析超純量處理器因硬體動態排程導致的電路複雜度與高功耗瓶頸；接著引入 VLIW 架構的核心概念，說明如何將排程與相依性檢查轉移至編譯器靜態處理。隨後將深入探討編譯器排程演算法及傳統 VLIW 的強化機制，最後以 Intel Itanium（EPIC 架構）作為經典實務案例進行討論。整體大綱完整銜接了「發現硬體痛點 → 提出軟體解決方案 → 系統化強化 → 實務應用剖析」的電腦架構核心思考邏輯。
 
-## slide：4
+## slide：4 Exploiting ILP (Instruction-Level Parallelism) | 挖掘指令級平行度（ILP）
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0004.jpg" width="50%">
 </div>
@@ -179,7 +179,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁引用 H&P 教科書表格，比較各種挖掘指令級平行度（ILP）的處理器分類。主流的投機型超純量（Speculative Superscalar）依賴硬體進行動態發射、Hazards 偵測與亂序排程，雖能最大化 ILP 但晶片邏輯與功耗極高。相對地，VLIW 與 EPIC 架構採取靜態發射與靜態排程，將 Hazards 偵測與指令平行度的編排責任轉移至編譯器（軟體）端。這種將動態排程複雜度由硬體轉移至軟體的哲學，是 VLIW 實現高能效比的核心所在。
 
-## slide：5
+## slide：5 Reprise of Dynamic Scheduling | 重溫動態排程（Dynamic Scheduling）
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0005.jpg" width="50%">
 </div>
@@ -208,7 +208,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁重溫了亂序執行（OOO）處理器的優缺點。OOO 透過大型指令視窗動態排程與投機執行，能有效填補高延遲時間，讓後端保持高 ILP 運作。然而，這帶來極高昂的硬體代價，包含複雜的排程邏輯與邊界錯誤處理（如記憶體 RAW 相依導致的投機復原）。這些硬體複雜度與功耗負擔，正是驅使電腦架構師轉向研究 VLIW 架構的核心動機——試圖利用編譯器靜態排程來取代昂貴的硬體動態排程。
 
-## slide：6
+## slide：6-7 Superscalar Control Logic Scaling | 超純量控制邏輯的擴充性/規模化問題
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0006.jpg" width="49%">
   <img src="./Lecture/SD5/SD5_page-0007.jpg" width="49%">
@@ -241,7 +241,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁分析了超純量處理器控制邏輯的擴充性瓶頸。在超純量架構中，單週期發射的 $W$ 個指令必須與管線中存留的 $W \times L$ 個先前指令進行動態相依性檢查，導致 Hazard 偵測電路複雜度呈二次方（$O(W^2 \cdot L)$）爆炸性成長。當發射寬度 $W$ 擴大時，動態排程硬體的面積與功耗負擔將難以承受。這項硬體 scaling 限制，正是 VLIW 架構的核心考量——透過編譯器靜態消除指令相依性，進而省去這龐大的動態檢查邏輯，以極高能效實現寬發射平行運算。
 
-## slide：7
+## slide：7 Superscalar Control Logic Scaling | 超純量控制邏輯的擴充性/規模化問題
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0007.jpg" width="50%">
 </div>
@@ -269,7 +269,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁深入剖析亂序執行（OOO）超純量處理器的硬體擴充瓶頸。在 OOO 架構中，指令除了管線延遲外，還需在發射佇列中等待並透過廣播 Tag 進行相依性檢查。當發射寬度 $W$ 擴大時，必須隨之擴大指令視窗以尋找平行度，進而拉長指令生命週期 $L$。這使得控制邏輯的硬體開銷成長速度超越 $W^2$，達到約 $O(W^3)$ 的幾何級數爆炸。此物理瓶頸清晰地揭示了超純量架構的極限，亦凸顯了 VLIW 透過編譯器靜態排程以解開硬體複雜度鎖鏈的核心價值。
 
-## slide：8
+## slide：8 Out-of-Order Control Complexity: MIPS R10000 | 亂序執行的控制複雜度實例
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0008.jpg" width="50%">
 </div>
@@ -301,7 +301,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 - 內容總結：
   <br>本頁以 1995 年 MIPS R10000 處理器的晶片顯微圖（Die Photo），實體展示了亂序執行（OOO）控制邏輯的極高複雜度。圖中白框標示的動態排程組件（如暫存器重命名、發射佇列、遞交單元與位址佇列）佔據了絕大部分的晶片面積，遠超實際進行算術運算的資料通道（Datapath）。這張圖具體印證了超純量架構在硬體控制邏輯上的龐大負擔與開銷。此實體例證有力地揭示了 OOO 的物理極限，並直接帶出 VLIW 欲以軟體編譯器取代這些昂貴硬體控制電路的核心動機。
 
-## slide：9
+## slide：9 順序指令集架構（Sequential ISA）的瓶頸
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0009.jpg" width="50%">
 </div>
@@ -311,7 +311,7 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
   - Sequential source code | 順序的高階原始碼
 
 
-## slide：10
+## slide：10 超純量編譯器（Superscalar Compiler）
 <div align="left" >
   <img src="./Lecture/SD5/SD5_page-0010.jpg" width="50%">
 </div>
