@@ -15,6 +15,9 @@
   - 請說明本slide教學重點內容及你的看法，最後以250字內總結
 
 ## 知識點：
+- [Superscalar Complexity（超純量架構複雜度）](#superscalar-complexity超純量架構複雜度)
+- [VLIW（Very Long Instruction Word，超長指令字）](#vliwvery-long-instruction-word超長指令字)
+- [Week 5 (2026-10-06)課堂逐字稿]{}
 ### Superscalar Complexity（超純量架構複雜度）
 Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同時發射（Issue）多條指令的 CPU 架構。
 <br>Superscalar Complexity（超純量架構複雜度）指的是超純量（Superscalar）處理器為了在執行期（Run-time）發掘更多的指令級平行度（ILP），而在硬體電路與邏輯控制上付出的巨大負擔與物理極限。
@@ -78,6 +81,8 @@ Superscalar（超純量處理器） 是一種能夠在同一個 Clock Cycle 同�
 
 - VLIW（Very Long Instruction Word）是一種利用指令級平行化的處理器架構，其特色是由編譯器在編譯期間分析指令相依性，並將多條可同時執行的指令打包成單一超長指令字，使多個執行單元能在同一個時脈週期內平行運作。與 Superscalar 處理器由硬體動態發掘平行性不同，VLIW 將複雜度轉移至編譯器，因此硬體設計較簡單、功耗較低。然而其效能高度依賴編譯器最佳化能力，且程式相容性較差。VLIW 是研究指令級平行化（ILP）與平行處理器設計的重要代表架構。
 
+
+# Week 5 (2026-10-06)課堂逐字稿
 
 ## slide：1 -2
 <div align="left" >
