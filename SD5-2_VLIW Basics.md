@@ -25,7 +25,7 @@
 
 ## 知識點：
 - [Superscalar Complexity（超純量架構複雜度）](#superscalar-complexity超純量架構複雜度)
-- [VLIW（Very Long Instruction Word，超長指令字）](#vliwvery-long-instruction-word超長指令字)
+- [VLIW（Very Long Instruction Word，超長指令字）](https://github.com/414551016/Computer-Architecture/blob/main/SD5-2_VLIW%20Basics.md#vliwvery-long-instruction-word%E8%B6%85%E9%95%B7%E6%8C%87%E4%BB%A4%E5%AD%97)
 - [Week 5 (2026-10-06)課堂逐字稿]{}
 
 ### VLIW（Very Long Instruction Word，超長指令字）
