@@ -77,11 +77,15 @@
 
 - 教學內容英/中翻譯比對：
   <br>Agenda（課程大綱 / 議程）
-  - Superscalar Complexity | 超純量架構的複雜度
-  - VLIW Basics | 超長指令字（VLIW）基本概念
-  - Compiler Scheduling | 編譯器排程技術
-  - Enhancements to Classic VLIW | 傳統 VLIW 架構之強化與改進
-  - Case Study: Intel Itanium | 案例研究：Intel Itanium 處理器
+  - [(3)Superscalar Complexity | 超純量架構的複雜度](https://github.com/414551016/Computer-Architecture/blob/main/SD5-1_Superscalar%20Complexity.md)
+    <br>問題起源（Superscalar Complexity）：探討超純量與亂序執行（OOO）處理器因硬體動態排程所帶來的電路複雜度、面積與高功耗瓶頸。
+  - [(11)VLIW Basics | 超長指令字（VLIW）基本概念](https://github.com/414551016/Computer-Architecture/blob/main/SD5-2_VLIW%20Basics.md)
+    <br>核心概念（VLIW Basics）：介紹 Very Long Instruction Word 的基本運作機制，即將多個指令打包並交由靜態排程。
+  - [(19)Compiler Scheduling | 編譯器排程技術](https://github.com/414551016/Computer-Architecture/blob/main/SD5-3_Compiler%20Scheduling.md)
+    <br>軟體核心（Compiler Scheduling）：講解編譯器如何扮演關鍵角色，負責指令排程、相依性檢查與平行度挖掘。
+  - [(42)Enhancements to Classic VLIW | 傳統 VLIW 架構之強化與改進](https://github.com/414551016/Computer-Architecture/blob/main/SD5-4_Enhancements%20to%20Classic%20VLIW.md)
+    <br>架構演進（Enhancements to Classic VLIW）：說明為克服傳統 VLIW 缺點（如程式碼膨脹、相容性問題）所引入的改進技術（如 Predication 謂詞執行、Speculation 投機執行等）。
+  - [(45)Case Study: Intel Itanium | 案例研究：Intel Itanium 處理器](https://github.com/414551016/Computer-Architecture/blob/main/SD5-5_Case%20Study%20Intel%20Itanium.md)
 - 教學重點內容：
 - 我的看法與補充：
 - 內容總結：
