@@ -9,7 +9,7 @@ Why did the end of Dennard scaling change how architects improve performance?
   - 從通用算力轉向能源效率（Energy Efficiency）：架構設計的核心指標從單純追求「最高峰值效能」轉變為「每瓦效能（Performance per Watt）」。
 
 #### 何謂 Dennard？
-Dennard 通常是指 Dennard Scaling（丹納德縮放律），由 IBM 研究員 Robert H. Dennard 於 1974 年提出的半導體縮放理論。其核心觀念是：</b>當電晶體尺寸縮小時，電壓和電流也能等比例下降，因此功耗密度（Power Density）維持不變，但電晶體速度會變得更快。</b>
+Dennard 通常是指 Dennard Scaling（丹納德縮放律），由 IBM 研究員 Robert H. Dennard 於 1974 年提出的半導體縮放理論。其核心觀念是：<b>當電晶體尺寸縮小時，電壓和電流也能等比例下降，因此功耗密度（Power Density）維持不變，但電晶體速度會變得更快。</b>
 
 ## 第 2 題：
 How do memory bandwidth and capacity each limit the benefits of faster processors?
