@@ -1,17 +1,46 @@
 # Study Questions
 
-## 第 1 題：
+## Week1 Study Questions
+### 第 1 題： Dennard Scaling（丹納德縮放律）
 Why did the end of Dennard scaling change how architects improve performance?
 >為什麼 Dennard 縮放比例定律的終結改變了架構師提升效能的方式？
+<br>答：
+<br>Dennard Scaling 失效後，電晶體雖持續縮小，但電壓無法等比例降低，導致功耗與散熱問題增加，因此 CPU 無法再藉由提高時脈頻率來提升效能。為了持續增進系統效能，計算機架構師轉向多核心（Multicore）、指令級平行化（ILP）、快取優化（Cache）及 GPU/AI 加速器等技術。
+
 - Dennard 縮放定律的失效：過往當晶體管尺寸縮小時，功率密度保持不變，因此晶片可以在不大幅增加功耗與發熱的前提下，獲得更高的主頻（Clock Frequency）。但在 2000 年代中期，由於漏電流（Leakage Current）與靜態功耗（Static Power）急劇上升，Dennard 縮放定律終止，晶片迎來「功率牆（Power Wall）」。
 - 效能提升策略的根本轉變：
   - 從單核主頻轉向平行處理：無法繼續透過提升時脈頻率來換取效能，架構師轉而發展指令級平行（ILP）、多核心（Multicore） 與 執行緒級平行（TLP）。
   - 從通用算力轉向能源效率（Energy Efficiency）：架構設計的核心指標從單純追求「最高峰值效能」轉變為「每瓦效能（Performance per Watt）」。
 
 #### 何謂 Dennard？
-Dennard 通常是指 Dennard Scaling（丹納德縮放律），由 IBM 研究員 Robert H. Dennard 於 1974 年提出的半導體縮放理論。其核心觀念是：<b>當電晶體尺寸縮小時，電壓和電流也能等比例下降，因此功耗密度（Power Density）維持不變，但電晶體速度會變得更快。</b>
+Dennard 通常是指 Dennard Scaling（丹納德縮放律），由 IBM 研究員 Robert H. Dennard 於 1974 年提出的半導體縮放理論。<br>其核心觀念是：<b>當電晶體尺寸縮小時，電壓和電流也能等比例下降，因此功耗密度（Power Density）維持不變，但電晶體速度會變得更快。</b>可是妳處的背後有代價，每往下做細一代，光罩要更精準，機器要更好，工廠也要更乾淨，晶片工廠在業界稱為fab。
+- [晶片簡史：世界怎麼被一片晶片改變？｜簡史系列(36:03)](https://www.youtube.com/watch?v=ignI6mQrsNs)
 
-## 第 2 題：
+Dennard Scaling（丹納德縮放定律）的終結是電腦架構發展史上的重要轉折點，它徹底改變了架構師（Architects）提升處理器效能的方式。
+- 一、 終結前：輕鬆獲得「免費」的單核效能
+  <br>在 2004 年以前，Dennard Scaling 成立時：
+  - 原理：當電晶體尺寸縮小時，其工作電壓與電流也會等比例下降，使得晶片的功率密度（Power Density）維持不變。
+  - 影響：工程師可以在不增加晶片整體功耗與發熱的前提下，直接拉高主頻（Clock Rate）。
+  - 結果：架構師只需著重於提升單核心的**指令級平行度（ILP）**，就能讓單核效能以每年約 40% 的速度持續高速成長。
+- 二、 終結的原因：功耗牆（Power Wall）與暗矽（Dark Silicon）
+  <br>大約在 2004 年，由於電晶體微縮至奈米等級，漏電流（Static Power）急劇上升，工作電壓無法再繼續降低，Dennard Scaling 宣告終結。
+  - 功耗牆（Power Wall）：電壓無法下降但電晶體數量與頻率持續增加，導致散熱與功耗達到物理極限。
+  - 暗矽現象（Dark Silicon）：在有限的散熱功耗預算（Energy Budget）下，晶片上甚至無法同時將所有電晶體全部開啟，必須讓部分區域保持「黑暗（未通電）」狀態。
+- 三、 架構師提升效能方式的四大根本轉變
+  <br>由於無法再透過「提高主頻」來獲得效能提升，架構師轉而採取以下策略：
+  - 從單核心轉向多核心與平行處理（Single-core to Multicore/Parallelism）
+    - 既然無法打造更快的單一核心，架構師轉向採用多個能源效率較高的小核心（Multicore）。
+    - 效能提升的重心地由硬體隱式發掘的指令級平行（ILP），轉轉移至需要軟體與程式設計師協助發揮的執行緒級平行（TLP）與資料級平行（DLP）。
+  - 從追求「最高算力」轉向「每瓦效能」（Performance per Watt）
+    - 評估架構優劣的核心指標從過去的「單位面積效能（Performance per $\text{mm}^2$）」轉變為「每瓦效能（Performance per Watt）」或「每焦耳任務數（Tasks per Joule）」。 
+  - 發展領域特定架構（Domain-Specific Architectures, DSA）與異質計算
+    - 通用型 CPU 處理器的效能成長已放緩至極低的水平。
+    - 架構師開始針對特定領域（如 AI/深度學習、影像處理等）設計專用的硬體加速器（如 GPU、TPU、NPU、FPGA）。這些專用架構能在相同的功耗下提供數倍甚至數十倍於通用處理器的效能與能源效率。
+  - 採用先進封裝與非均勻技術微縮（Advanced Packaging & Heterogeneous Integration）
+    - 隨著單純依靠晶圓製程進步的效益遞減，架構師開始重新從基礎設計原則出發，結合 2.5D/3D 堆疊封裝、新型非揮發性記憶體（NVM）與光互連（Optical Interconnects）等新技術來突破效能與頻寬瓶頸。
+
+
+### 第 2 題：
 How do memory bandwidth and capacity each limit the benefits of faster processors?
 > 記憶體頻寬與容量各自如何限制更快處理器帶來的優勢？
 - 記憶體頻寬（Memory Bandwidth）的限制：
