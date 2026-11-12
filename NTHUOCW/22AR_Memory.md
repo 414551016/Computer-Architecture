@@ -4,7 +4,11 @@
 - [11010黃婷婷教授計算機結構_第22AR講 Memory(48:11)](https://www.youtube.com/watch?v=fs6n2Yjt3X4&list=PLpXfHEl2fzl47WOaypHoOWxBIhG42_Vlq&index=31)
 - Prompt：
   - 請將本教學內容英/中翻譯比對<br>請說明本slide教學重點內容及你的看法，最後以250字內總結
+- 教學
+  - [Outline](#outline)
+  - [Memory Technology](#memory-technology)
 
+## Outline
 <div align="left" >
   <img src="./Lecture/22AR_Memory-0001.png" width="49%">
 </div>
