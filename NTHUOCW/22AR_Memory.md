@@ -8,12 +8,12 @@
   - [Outline](#outline)
   - [Memory Technology](#memory-technology)
 
-## Outline
+## Outline 
 <div align="left" >
   <img src="./Lecture/22AR_Memory-0001.png" width="49%">
 </div>
 
-- 教學內容英/中翻譯比對：
+- 教學內容英/中翻譯比對：[[Top]](#教學資源)
   <br>關於記憶體階層（Memory Hierarchy）單元的大綱（Outline），內容主要對應經典教科書《Computer Organization and Design》（David A. Patterson 與 John L. Hennessy 著）的第五章結構。
 
   投影片中列出的七個核心主題：
@@ -31,7 +31,7 @@
   <img src="./Lecture/22AR_Memory-0002.png" width="49%">
 </div>
 
-教學內容英/中翻譯比對
+教學內容英/中翻譯比對：[[Top]](#教學資源)
 <br>Memory Technology | 記憶體技術
 - Random access: | 隨機存取：
   - Access time same for all locations | 所有記憶體位置的存取時間皆相同
